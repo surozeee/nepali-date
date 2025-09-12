@@ -110,11 +110,5 @@ function hasNepaliDate() {
         $('#basic-english').text(adStr);
       }
     });
-  
-    // Example of setting today's BS correctly (no 1-day off)
-    // const t = todayBS();
-    // const api = $('#basic-datepicker').data('nepaliDatepicker');
-    // if (api && typeof api.setDate === 'function') api.setDate(t);
-
   }
   
