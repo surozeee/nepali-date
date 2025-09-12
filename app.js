@@ -103,8 +103,9 @@ function hasNepaliDate() {
       theme: 'light',
       language: 'nepali',
       dateFormat: 'YYYY-MM-DD',
+      date: new Date(),
       onSelect: (bs, formatted) => {
-        const ad = adtobs(bs);
+        const ad = bs2ad(bs);
         const adStr = fmtAD(ad);
         console.log('Selected (BS):', formatted, '→ (AD):', adStr);
         $('#basic-english').text(adStr);

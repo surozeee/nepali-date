@@ -689,22 +689,25 @@
           setDate: function(date){
             var bs;
             if (date && typeof date === 'object' && 'year' in date && 'month' in date) {
-              bs = { year: +date.year, month: +date.month, day: +(date.day||1) };
+                bs = { year: +date.year, month: +date.month, day: +(date.day || 1) };
             } else if (date instanceof Date) {
-              bs = adToBS(date);
-            } else if (typeof date === 'string' && !isNaN(Date.parse(date))) {
-              bs = adToBS(new Date(date));
+                bs = adToBS(date);
+            } else if (typeof date === 'string') {
+                var m = /^(\d{4})-(\d{1,2})-(\d{1,2})$/.exec(date.trim());
+                if (!m) throw new Error('setDate: invalid AD string (YYYY-MM-DD)');
+                bs = adToBS({ year: +m[1], month: +m[2], day: +m[3] });
             } else {
-              bs = getTodayBS();
+                bs = getTodayBS();
             }
+
             var dmax = getDaysInMonth(bs);
             if (bs.day < 1) bs.day = 1;
             if (bs.day > dmax) bs.day = dmax;
-  
+
             state.selected = { year: bs.year, month: bs.month, day: bs.day };
             state.current  = { year: bs.year, month: bs.month, day: bs.day };
             $input.val(fmt(settings, state.selected));
-            render();
+            if (state.$dp) render();
           },
           clear: function(){ state.selected=null; $input.val(''); render(); },
           destroy: function(){
@@ -749,6 +752,7 @@
             var d = new Date(input);
             if (isNaN(d)) throw new Error('adtobs: invalid date string');
             ad = { year: d.getFullYear(), month: d.getMonth()+1, day: d.getDate() };
+            console.log('ad', ad);
           }
         } else if (input && typeof input === 'object') {
           ad = { year:+input.year, month:+input.month, day:+(input.day||1) };
@@ -778,45 +782,45 @@
         return asString ? toYMDString(ad) : ad;
       };
 
-        function positionPickerBelow($input) {
-    const $dp = getOpenPickerEl();
-    if (!$dp) return;
-  
-    // Temporarily show for measurement if hidden
-    const wasHidden = $dp.css('display') === 'none';
-    if (wasHidden) $dp.css({ display: 'block', visibility: 'hidden' });
-  
-    const off  = $input.offset();
-    const ih   = $input.outerHeight();
-    const dw   = $dp.outerWidth() || 320;
-    const dh   = $dp.outerHeight() || 280;
-  
-    const $win = $(window);
-    const vw   = $win.width();
-    const vh   = $win.height();
-    const sl   = $win.scrollLeft();
-    const st   = $win.scrollTop();
-  
-    // Prefer below → flip above if needed → clamp
-    const spaceBelow = (st + vh) - (off.top + ih);
-    const spaceAbove = (off.top - st);
-    let top;
-  
-    if (spaceBelow >= dh + 8) top = off.top + ih + 6;
-    else if (spaceAbove >= dh + 8) top = off.top - dh - 6;
-    else top = Math.min(Math.max(off.top + ih + 6, st + 8), (st + vh) - dh - 8);
-  
-    // Align left to input; clamp inside viewport
-    let left = off.left;
-    const maxLeft = sl + vw - dw - 10;
-    if (left > maxLeft) left = Math.max(sl + 10, maxLeft);
-    if (left < sl + 10) left = sl + 10;
-  
-    $dp.css({ position: 'absolute', top, left, zIndex: 9999 })
-       .toggleClass('positioned-above', top < off.top)
-       .toggleClass('positioned-below', top >= off.top);
-  
-    if (wasHidden) $dp.css({ visibility: '', display: 'none' });
-  }
+    function positionPickerBelow($input) {
+        const $dp = getOpenPickerEl();
+        if (!$dp) return;
+    
+        // Temporarily show for measurement if hidden
+        const wasHidden = $dp.css('display') === 'none';
+        if (wasHidden) $dp.css({ display: 'block', visibility: 'hidden' });
+    
+        const off  = $input.offset();
+        const ih   = $input.outerHeight();
+        const dw   = $dp.outerWidth() || 320;
+        const dh   = $dp.outerHeight() || 280;
+    
+        const $win = $(window);
+        const vw   = $win.width();
+        const vh   = $win.height();
+        const sl   = $win.scrollLeft();
+        const st   = $win.scrollTop();
+    
+        // Prefer below → flip above if needed → clamp
+        const spaceBelow = (st + vh) - (off.top + ih);
+        const spaceAbove = (off.top - st);
+        let top;
+    
+        if (spaceBelow >= dh + 8) top = off.top + ih + 6;
+        else if (spaceAbove >= dh + 8) top = off.top - dh - 6;
+        else top = Math.min(Math.max(off.top + ih + 6, st + 8), (st + vh) - dh - 8);
+    
+        // Align left to input; clamp inside viewport
+        let left = off.left;
+        const maxLeft = sl + vw - dw - 10;
+        if (left > maxLeft) left = Math.max(sl + 10, maxLeft);
+        if (left < sl + 10) left = sl + 10;
+    
+        $dp.css({ position: 'absolute', top, left, zIndex: 9999 })
+        .toggleClass('positioned-above', top < off.top)
+        .toggleClass('positioned-below', top >= off.top);
+    
+        if (wasHidden) $dp.css({ visibility: '', display: 'none' });
+    }
   })(jQuery);
     
