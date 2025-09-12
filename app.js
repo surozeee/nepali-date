@@ -1,387 +1,176 @@
 ﻿/**
- * Application JavaScript for Custom Nepali Datepicker Demo
+ * App JS (no edits to jquery plugin)
+ * Requires: jQuery, nepali-date (https://github.com/surozeee/nepali-date)
  */
 
-// Global variables - now using jQuery
-// ---- BS → AD helper (plugin-only) ----
-function convertBS2AD(bs) {
-    if (window.jQuery && $.nepaliDate && typeof $.nepaliDate.bsToAd === 'function') {
-      // $.nepaliDate.bsToAd({year,month,day}) returns {year,month,day} in AD
-      return $.nepaliDate.bsToAd({ year: bs.year, month: bs.month, day: bs.day });
+// ---------- Conversion helpers using surozeee/nepali-date ----------
+function hasNepaliDate() {
+    return typeof window.NepaliDate === 'function';
+  }
+  
+  // AD (JS Date or {y,m,d}) -> BS {year, month, day}
+  function AD2BS_local(ad) {
+    const d = ad instanceof Date
+      ? new Date(ad.getFullYear(), ad.getMonth(), ad.getDate())  // strip time -> no TZ drift
+      : new Date(ad.year, ad.month - 1, ad.day);
+  
+    if (hasNepaliDate()) {
+      const nd = new window.NepaliDate(d);            // AD -> BS
+      return { year: nd.getYear(), month: nd.getMonth() + 1, day: nd.getDate() };
     }
-    console.error('$.nepaliDate.bsToAd not found. Make sure jquery-nepali-datepicker.js exports it from inside the IIFE.');
+    console.warn('NepaliDate not loaded; AD2BS_local unavailable.');
     return null;
   }
   
-  function formatAD(ad) {
+  // BS {year,month,day} -> AD {year,month,day}
+  function BS2AD_local(bs) {
+    if (hasNepaliDate()) {
+      const nd = new window.NepaliDate(bs.year, bs.month - 1, bs.day); // BS ctor
+      const js = nd.toJsDate();     // -> native Date (AD)
+      return { year: js.getFullYear(), month: js.getMonth() + 1, day: js.getDate() };
+    }
+    console.warn('NepaliDate not loaded; BS2AD_local unavailable.');
+    return null;
+  }
+  
+  function fmtAD(ad) {
     if (!ad) return '';
     const mm = String(ad.month).padStart(2, '0');
     const dd = String(ad.day).padStart(2, '0');
     return `${ad.year}-${mm}-${dd}`;
   }
-
-// Initialize when DOM is loaded
-document.addEventListener('DOMContentLoaded', function() {
-    initializeDatepickers();
-    setupConfigurationPanel();
-    setupModal();
-});
-
-// Initialize all datepickers
-function initializeDatepickers() {
-    // Basic datepicker
+  
+  function todayBS() {                      // today in BS (no 1-day off)
+    const now = new Date();
+    return AD2BS_local(new Date(now.getFullYear(), now.getMonth(), now.getDate()));
+  }
+  
+  // ---------- Smart positioning + outside close (no plugin edits) ----------
+  function getOpenPickerEl() {
+    // The plugin appends the panel to <body>; when open it’s the visible one.
+    const $dp = $('.nepali-datepicker:visible').last();
+    return $dp.length ? $dp : null;
+  }
+  
+//   function positionPickerBelow($input) {
+//     const $dp = getOpenPickerEl();
+//     if (!$dp) return;
+  
+//     // Temporarily show for measurement if hidden
+//     const wasHidden = $dp.css('display') === 'none';
+//     if (wasHidden) $dp.css({ display: 'block', visibility: 'hidden' });
+  
+//     const off  = $input.offset();
+//     const ih   = $input.outerHeight();
+//     const dw   = $dp.outerWidth() || 320;
+//     const dh   = $dp.outerHeight() || 280;
+  
+//     const $win = $(window);
+//     const vw   = $win.width();
+//     const vh   = $win.height();
+//     const sl   = $win.scrollLeft();
+//     const st   = $win.scrollTop();
+  
+//     // Prefer below → flip above if needed → clamp
+//     const spaceBelow = (st + vh) - (off.top + ih);
+//     const spaceAbove = (off.top - st);
+//     let top;
+  
+//     if (spaceBelow >= dh + 8) top = off.top + ih + 6;
+//     else if (spaceAbove >= dh + 8) top = off.top - dh - 6;
+//     else top = Math.min(Math.max(off.top + ih + 6, st + 8), (st + vh) - dh - 8);
+  
+//     // Align left to input; clamp inside viewport
+//     let left = off.left;
+//     const maxLeft = sl + vw - dw - 10;
+//     if (left > maxLeft) left = Math.max(sl + 10, maxLeft);
+//     if (left < sl + 10) left = sl + 10;
+  
+//     $dp.css({ position: 'absolute', top, left, zIndex: 9999 })
+//        .toggleClass('positioned-above', top < off.top)
+//        .toggleClass('positioned-below', top >= off.top);
+  
+//     if (wasHidden) $dp.css({ visibility: '', display: 'none' });
+//   }
+  
+  function bindOutsideClose($input) {
+    // Capture-phase listener so other code can't block it.
+    const handler = (ev) => {
+      const $dp = getOpenPickerEl();
+      if (!$dp) return;
+  
+      if ($input[0] === ev.target || $.contains($input[0], ev.target)) return;
+      if ($dp[0] === ev.target || $.contains($dp[0], ev.target)) return;
+  
+      const api = $input.data('nepaliDatepicker');
+      if (api && typeof api.hide === 'function') api.hide();
+    };
+    document.addEventListener('mousedown', handler, true);
+    document.addEventListener('touchstart', handler, true);
+  
+    // Store for cleanup
+    $input.data('_outsideHandler', handler);
+  }
+  
+  function unbindOutsideClose($input) {
+    const h = $input.data('_outsideHandler');
+    if (!h) return;
+    document.removeEventListener('mousedown', h, true);
+    document.removeEventListener('touchstart', h, true);
+    $input.removeData('_outsideHandler');
+  }
+  
+  function bindRepositionOnMove($input) {
+    const cb = () => positionPickerBelow($input);
+    $(window).on('resize.ndpfix scroll.ndpfix', cb);
+    $input.data('_repositionCb', cb);
+  }
+  function unbindRepositionOnMove($input) {
+    const cb = $input.data('_repositionCb');
+    if (!cb) return;
+    $(window).off('resize.ndpfix scroll.ndpfix', cb);
+    $input.removeData('_repositionCb');
+  }
+  
+  // ---------- Datepicker init ----------
+  document.addEventListener('DOMContentLoaded', () => {
+    initPickers();
+  });
+  
+  function initPickers() {
+    // Basic picker — on select, emit AD version
     $('#basic-datepicker').nepaliDatepicker({
-        theme: 'light',
-        language: 'nepali',
-        dateFormat: 'YYYY-MM-DD',
-        onSelect: function (bs, formattedBS) {
-            const ad = convertBS2AD(bs);
-            const adStr = formatAD(ad);
-            console.log('Selected BS:', formattedBS, '→ AD:', adStr);
-
-            // write to a span if present
-            const $out = $('#basic-english'); // e.g. <span id="basic-english"></span>
-            if ($out.length) $out.text(adStr);
-
-            // optional: fire a custom event from the input
-            $(this).trigger('englishDateChanged', [ad, adStr, bs, formattedBS]);
-        }
-    });
-
-    // Modern style datepicker
-    $('#modern-datepicker').nepaliDatepicker({
-        theme: 'light',
-        language: 'english',
-        dateFormat: 'DD-MM-YYYY',
-        onSelect: function(date, formatted) {
-            console.log('Modern datepicker selected:', date, formatted);
-        }
-    });
-
-    // Modal datepicker with English date display
-    $('#modal-datepicker').nepaliDatepicker({
-        theme: 'light',
-        language: 'nepali',
-        dateFormat: 'YYYY-MM-DD',
-        modal: true,
-        showEnglishDate: true,
-        onSelect: function(date, formatted) {
-            console.log('Modal datepicker selected:', date, formatted);
-            $('#modal-result').text('Selected: ' + formatted);
-        },
-        onOpen: function() {
-            console.log('Modal datepicker opened');
-        },
-        onClose: function() {
-            console.log('Modal datepicker closed');
-        }
-    });
-
-    // Minimal style datepicker
-    $('#minimal-datepicker').nepaliDatepicker({
-        theme: 'light',
-        language: 'nepali',
-        dateFormat: 'MM/DD/YYYY',
-        showToday: false,
-        showClear: false,
-        onSelect: function(date, formatted) {
-            console.log('Minimal datepicker selected:', date, formatted);
-        }
-    });
-
-    // Dark theme datepicker
-    $('#dark-datepicker').nepaliDatepicker({
-        theme: 'dark',
-        language: 'nepali',
-        dateFormat: 'YYYY-MM-DD',
-        onSelect: function(date, formatted) {
-            console.log('Dark datepicker selected:', date, formatted);
-        }
-    });
-
-    // Range datepicker
-    $('#range-datepicker').nepaliDatepicker({
-        theme: 'blue',
-        language: 'nepali',
-        dateFormat: 'DD-MM-YYYY',
-        onSelect: function(date, formatted) {
-            console.log('Range datepicker selected:', date, formatted);
-        }
-    });
-
-    // Time picker datepicker
-    $('#time-datepicker').nepaliDatepicker({
-        theme: 'green',
-        language: 'english',
-        dateFormat: 'YYYY-MM-DD',
-        onSelect: function(date, formatted) {
-            console.log('Time datepicker selected:', date, formatted);
-        }
-    });
-
-    // Read-only datepicker
-    $('#readonly-datepicker').nepaliDatepicker({
-        theme: 'light',
-        language: 'nepali',
-        dateFormat: 'YYYY-MM-DD',
-        onSelect: function(date, formatted) {
-            console.log('Readonly datepicker selected:', date, formatted);
-        }
-    });
-
-    // Disabled dates datepicker
-    $('#disabled-datepicker').nepaliDatepicker({
-        theme: 'light',
-        language: 'nepali',
-        dateFormat: 'DD-MM-YYYY',
-        onSelect: function(date, formatted) {
-            console.log('Disabled dates datepicker selected:', date, formatted);
-        }
-    });
-
-    // Modal datepicker
-    $('#modal-datepicker').nepaliDatepicker({
-        theme: 'light',
-        language: 'nepali',
-        dateFormat: 'YYYY-MM-DD',
-        onSelect: function(date, formatted) {
-            console.log('Modal datepicker selected:', date, formatted);
-            // Auto-close modal after selection
-            setTimeout(() => {
-                closeModal();
-            }, 500);
-        }
-    });
-}
-
-// Setup configuration panel
-function setupConfigurationPanel() {
-    const themeSelector = document.getElementById('theme-selector');
-    const languageSelector = document.getElementById('language-selector');
-    const formatSelector = document.getElementById('format-selector');
-
-    if (themeSelector) {
-        themeSelector.addEventListener('change', function() {
-            const theme = this.value;
-            updateAllDatepickers({ theme: theme });
-        });
-    }
-
-    if (languageSelector) {
-        languageSelector.addEventListener('change', function() {
-            const language = this.value;
-            updateAllDatepickers({ language: language });
-        });
-    }
-
-    if (formatSelector) {
-        formatSelector.addEventListener('change', function() {
-            const dateFormat = this.value;
-            updateAllDatepickers({ dateFormat: dateFormat });
-        });
-    }
-}
-
-// Update all datepickers with new options
-function updateAllDatepickers(options) {
-    // Get all datepicker inputs and update their options
-    $('[id$="-datepicker"]').each(function() {
+      theme: 'light',
+      language: 'nepali',
+      dateFormat: 'YYYY-MM-DD',
+      onSelect: (bs, formatted) => {
+        const ad = adtobs(bs);
+        const adStr = fmtAD(ad);
+        console.log('Selected (BS):', formatted, '→ (AD):', adStr);
+        $('#basic-english').text(adStr);
+      },
+      onOpen: function () {
         const $input = $(this);
-        const currentOptions = $input.data('nepaliDatepicker') || {};
-        const newOptions = $.extend({}, currentOptions, options);
-        
-        // Destroy and recreate with new options
-        $input.nepaliDatepicker('destroy');
-        $input.nepaliDatepicker(newOptions);
-    });
-}
-
-// Modal functions
-function openModal() {
-    const modal = document.getElementById('datepicker-modal');
-    if (modal) {
-        modal.style.display = 'block';
-        document.body.style.overflow = 'hidden';
-        
-        // Focus on the datepicker input
-        setTimeout(() => {
-            const input = document.getElementById('modal-datepicker');
-            if (input) {
-                input.focus();
-            }
-        }, 100);
-    }
-}
-
-function closeModal() {
-    const modal = document.getElementById('datepicker-modal');
-    if (modal) {
-        modal.style.display = 'none';
-        document.body.style.overflow = 'auto';
-    }
-}
-
-// Setup modal event listeners
-function setupModal() {
-    const modal = document.getElementById('datepicker-modal');
-    const closeBtn = modal?.querySelector('.close');
-    
-    if (closeBtn) {
-        closeBtn.addEventListener('click', closeModal);
-    }
-    
-    // Close modal when clicking outside
-    if (modal) {
-        modal.addEventListener('click', function(event) {
-            if (event.target === modal) {
-                closeModal();
-            }
+        // Delay one frame so panel exists, then position + bind global handlers
+        requestAnimationFrame(() => {
+          positionPickerBelow($input);
+          bindOutsideClose($input);
+          bindRepositionOnMove($input);
         });
-    }
-    
-    // Close modal with Escape key
-    document.addEventListener('keydown', function(event) {
-        if (event.key === 'Escape') {
-            closeModal();
-        }
+      },
+      onClose: function () {
+        const $input = $(this);
+        unbindOutsideClose($input);
+        unbindRepositionOnMove($input);
+      }
     });
-}
-
-// Utility functions
-function getCurrentNepaliDate() {
-    // Create a temporary input to get current date
-    const $tempInput = $('<input>');
-    $tempInput.nepaliDatepicker();
-    const datepicker = $tempInput.data('nepaliDatepicker');
-    const currentDate = datepicker.getDate();
-    $tempInput.nepaliDatepicker('destroy');
-    return currentDate;
-}
-
-function formatNepaliDate(date) {
-    if (!date) return '';
-    
-    const year = date.year;
-    const month = date.month.toString().padStart(2, '0');
-    const day = date.day.toString().padStart(2, '0');
-    
-    return `${year}-${month}-${day}`;
-}
-
-// Demo functions
-function showDatepickerInfo(instanceName) {
-    const $input = $(`#${instanceName}-datepicker`);
-    if ($input.length) {
-        const datepicker = $input.data('nepaliDatepicker');
-        if (datepicker) {
-            const selectedDate = datepicker.getDate();
-            const info = {
-                instance: instanceName,
-                selectedDate: selectedDate,
-                formattedDate: selectedDate ? formatNepaliDate(selectedDate) : 'No date selected'
-            };
-            
-            console.log('Datepicker Info:', info);
-            alert(`Selected Date: ${info.formattedDate}\nInstance: ${instanceName}`);
-        }
-    }
-}
-
-// Export functions for global access
-window.openModal = openModal;
-window.closeModal = closeModal;
-window.showDatepickerInfo = showDatepickerInfo;
-window.resetAllDatepickers = resetAllDatepickers;
-window.loadDemoData = loadDemoData;
-
-
-// Load demo data after initialization
-setTimeout(loadDemoData, 1000);
-
-// Additional utility functions
-function resetAllDatepickers() {
-    $('[id$="-datepicker"]').each(function() {
-        const datepicker = $(this).data('nepaliDatepicker');
-        if (datepicker && typeof datepicker.clear === 'function') {
-            datepicker.clear();
-        }
-    });
-    console.log('All datepickers reset');
-}
-
-// Enhanced demo data loading
-function loadDemoData() {
-    // Set some example dates
-    const exampleDate = { year: 2080, month: 6, day: 15 };
-    
-    // Set date for readonly datepicker
-    const readonlyDatepicker = $('#readonly-datepicker').data('nepaliDatepicker');
-    if (readonlyDatepicker) {
-        readonlyDatepicker.setDate(exampleDate);
-    }
-    
-    // Set today's date for basic datepicker
-    const basicDatepicker = $('#basic-datepicker').data('nepaliDatepicker');
-    if (basicDatepicker) {
-        const today = getCurrentNepaliDate();
-        basicDatepicker.setDate(today);
-    }
-    
-    console.log('Demo data loaded');
-}
-
-// Add keyboard shortcuts
-$(document).on('keydown', function(event) {
-    // Ctrl/Cmd + D to open modal
-    if ((event.ctrlKey || event.metaKey) && event.key === 'd') {
-        event.preventDefault();
-        openModal();
-    }
-    
-    // Ctrl/Cmd + R to reset all datepickers
-    if ((event.ctrlKey || event.metaKey) && event.key === 'r') {
-        event.preventDefault();
-        resetAllDatepickers();
-    }
-});
-
-// Add touch support for mobile devices
-function addTouchSupport() {
-    document.addEventListener('touchstart', function(event) {
-        // Handle touch events for better mobile experience
-        const target = event.target;
-        if (target.classList.contains('day') || target.classList.contains('nav-btn')) {
-            target.style.transform = 'scale(0.95)';
-        }
-    });
-    
-    document.addEventListener('touchend', function(event) {
-        const target = event.target;
-        if (target.classList.contains('day') || target.classList.contains('nav-btn')) {
-            setTimeout(() => {
-                target.style.transform = '';
-            }, 150);
-        }
-    });
-}
-
-// Initialize touch support
-addTouchSupport();
-
-// Performance monitoring
-function logPerformance() {
-    if (window.performance && window.performance.timing) {
-        const loadTime = window.performance.timing.loadEventEnd - window.performance.timing.navigationStart;
-        console.log(`Page loaded in ${loadTime}ms`);
-    }
-}
-
-// Log performance after page load
-window.addEventListener('load', logPerformance);
-
-console.log('Custom Nepali Datepicker Demo initialized successfully!');
-console.log('Using jQuery version');
-console.log('Keyboard shortcuts:');
-console.log('- Ctrl/Cmd + D: Open modal');
-console.log('- Ctrl/Cmd + R: Reset all datepickers');
-console.log('- Escape: Close modal or datepicker');
+  
+    // Example of setting today's BS correctly (no 1-day off)
+    const t = todayBS();
+    const api = $('#basic-datepicker').data('nepaliDatepicker');
+    if (api && typeof api.setDate === 'function') api.setDate(t);
+  
+    // If you have other inputs, initialize them similarly
+    // … (modern/readonly/etc.) — include onOpen/onClose same as above.
+  }
+  
