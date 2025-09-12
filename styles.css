@@ -356,6 +356,19 @@ input {
     pointer-events: none;
 }
 
+.clickable-year {
+    cursor: pointer;
+    transition: all 0.2s ease;
+    padding: 2px 4px;
+    border-radius: 3px;
+    pointer-events: auto;
+}
+
+.clickable-year:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.05);
+}
+
 .month {
     font-size: 12px;
     font-weight: 600;
@@ -629,6 +642,18 @@ input {
     justify-content: center;
     font-weight: 600;
     font-size: 14px;
+}
+
+.clickable-year-display {
+    cursor: pointer;
+    transition: all 0.2s ease;
+    padding: 4px 8px;
+    border-radius: 4px;
+}
+
+.clickable-year-display:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.05);
 }
 
 
