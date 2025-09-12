@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Custom Nepali Datepicker Demo</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>Custom Nepali Datepicker</h1>
+            <p>A modern, customizable datepicker for Nepali dates with multiple themes and configurations</p>
+        </div>
+
+        <!-- Configuration Panel -->
+        <div class="demo-section">
+            <h2>Configuration Panel</h2>
+            <div class="config-panel">
+                <div class="config-group">
+                    <label for="theme-selector">Theme:</label>
+                    <select id="theme-selector">
+                        <option value="light">Light</option>
+                        <option value="dark">Dark</option>
+                        <option value="blue">Blue</option>
+                        <option value="green">Green</option>
+                    </select>
+                </div>
+                <div class="config-group">
+                    <label for="language-selector">Language:</label>
+                    <select id="language-selector">
+                        <option value="nepali">Nepali</option>
+                        <option value="english">English</option>
+                    </select>
+                </div>
+                <div class="config-group">
+                    <label for="format-selector">Date Format:</label>
+                    <select id="format-selector">
+                        <option value="YYYY-MM-DD">YYYY-MM-DD</option>
+                        <option value="DD-MM-YYYY">DD-MM-YYYY</option>
+                        <option value="MM/DD/YYYY">MM/DD/YYYY</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Basic Examples -->
+        <div class="demo-section">
+            <h2>Basic Examples</h2>
+            <div class="example-grid">
+                <div class="example-card">
+                    <h3>Basic Datepicker</h3>
+                    <p>Simple datepicker with default settings</p>
+                    <input type="text" id="basic-datepicker" placeholder="Select Date">
+                    <button class="btn btn-primary" onclick="showDatepickerInfo('basic')">Show Info</button>
+                </div>
+
+                <div class="example-card">
+                    <h3>Modern Style</h3>
+                    <p>Clean, modern design with custom styling</p>
+                    <input type="text" id="modern-datepicker" placeholder="Select Date">
+                    <button class="btn btn-primary" onclick="showDatepickerInfo('modern')">Show Info</button>
+                </div>
+
+                <div class="example-card">
+                    <h3>Minimal Style</h3>
+                    <p>Minimal design with reduced options</p>
+                    <input type="text" id="minimal-datepicker" placeholder="Select Date">
+                    <button class="btn btn-primary" onclick="showDatepickerInfo('minimal')">Show Info</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Theme Examples -->
+        <div class="demo-section">
+            <h2>Theme Examples</h2>
+            <div class="example-grid">
+                <div class="example-card">
+                    <h3>Dark Theme</h3>
+                    <p>Dark theme for better visibility in low light</p>
+                    <input type="text" id="dark-datepicker" placeholder="Select Date">
+                    <button class="btn btn-primary" onclick="showDatepickerInfo('dark')">Show Info</button>
+                </div>
+
+                <div class="example-card">
+                    <h3>Blue Theme</h3>
+                    <p>Blue color scheme with professional look</p>
+                    <input type="text" id="range-datepicker" placeholder="Select Date">
+                    <button class="btn btn-primary" onclick="showDatepickerInfo('range')">Show Info</button>
+                </div>
+
+                <div class="example-card">
+                    <h3>Green Theme</h3>
+                    <p>Green color scheme with time picker</p>
+                    <input type="text" id="time-datepicker" placeholder="Select Date & Time">
+                    <button class="btn btn-primary" onclick="showDatepickerInfo('time')">Show Info</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Advanced Examples -->
+        <div class="demo-section">
+            <h2>Advanced Examples</h2>
+            <div class="example-grid">
+                <div class="example-card">
+                    <h3>Read Only</h3>
+                    <p>Datepicker with pre-selected date (read-only)</p>
+                    <input type="text" id="readonly-datepicker" placeholder="Read Only Date">
+                    <button class="btn btn-primary" onclick="showDatepickerInfo('readonly')">Show Info</button>
+                </div>
+
+                <div class="example-card">
+                    <h3>Disabled Dates</h3>
+                    <p>Datepicker with specific disabled dates</p>
+                    <input type="text" id="disabled-datepicker" placeholder="Select Date">
+                    <button class="btn btn-primary" onclick="showDatepickerInfo('disabled')">Show Info</button>
+                </div>
+
+                <div class="example-card">
+                    <h3>Modal Datepicker</h3>
+                    <p>Datepicker that opens in a modal dialog with English date display</p>
+                    <input type="text" id="modal-datepicker" placeholder="Click to open modal datepicker">
+                    <div id="modal-result" class="result-display"></div>
+                    <button class="btn btn-primary" onclick="openModal()">
+                        <i class="fas fa-calendar"></i> Open Modal Datepicker
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Demo Actions -->
+        <div class="demo-section">
+            <h2>Demo Actions</h2>
+            <div class="text-center">
+                <button class="btn btn-primary" onclick="loadDemoData()">
+                    <i class="fas fa-download"></i> Load Demo Data
+                </button>
+                <button class="btn btn-primary" onclick="resetAllDatepickers()">
+                    <i class="fas fa-refresh"></i> Reset All
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div id="datepicker-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Select Date</h3>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <input type="text" id="modal-datepicker" placeholder="Select Date">
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="jquery-nepali-datepicker.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
