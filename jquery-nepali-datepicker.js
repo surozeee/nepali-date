@@ -489,6 +489,7 @@
                 html += '<span class="month">' + monthNames[settings.language][currentDate.month - 1] + '</span>';
                 html += ' <span class="year">' + convertToNepaliNumbers(currentDate.year) + '</span>';
                 html += '</div>';
+                html += '<div class="clickable-month-year-trigger"></div>';
                 // Add English date in header on new line
                 var englishDate = getEnglishDate(currentDate);
                 var nextMonth = englishDate.month === 12 ? 1 : englishDate.month + 1;
@@ -642,7 +643,7 @@
                 html += '<div class="datepicker-header">';
                 html += '<button type="button" class="nav-btn back-to-month" title="Back to Month"><i class="fa fa-arrow-left"></i></button>';
                 html += '<div class="year-display">';
-                html += '<span>' + convertToNepaliNumbers(currentDate.year) + '</span>';
+                html += '<span>' + currentDate.year + '</span>';
                 html += '</div>';
                 html += '<button type="button" class="nav-btn today-btn" title="Go to Today"><i class="fa fa-calendar-check"></i></button>';
             html += '</div>';
@@ -805,7 +806,12 @@
                 }
             });
             
-            // Month and year click events removed as requested
+            // Month and year click events - show month list view
+            $datepicker.find('.clickable-month-year-trigger').on('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                showMonthList();
+            });
             
             
             
@@ -836,7 +842,7 @@
                 }
             });
             
-            // Month selection (in month list view) - close after selection like official library - using event delegation
+            // Month selection (in month list view) - show day datepicker for selected month - using event delegation
             $datepicker.on('click', '.month-item', function(e) {
                 e.preventDefault();
                 e.stopPropagation();
@@ -844,25 +850,19 @@
                 currentDate.month = month;
                 currentView = 'month';
                 
-                // Close datepicker after month selection like official library
-                hideDatepicker();
+                // Show day datepicker for the selected month instead of closing
+                renderDatepicker();
             });
             
-            
-            
-            
-            
             // Day selection - show month selection like official library
-            $datepicker.find('.day:not(.other-month)').on('click', function(e) {
+            $datepicker.on('click', '.day:not(.other-month)', function(e) {
                 e.preventDefault();
                 e.stopPropagation();
                 var day = parseInt($(this).data('day'));
                 selectedDate = {...currentDate, day: day};
                 $input.val(formatDate(selectedDate));
-                
-                // Show month selection instead of closing
-                showMonthList();
-                
+                console.log('date', selectedDate);
+                hideDatepicker();
                 if (settings.onSelect) {
                     settings.onSelect(selectedDate, formatDate(selectedDate));
                 }
