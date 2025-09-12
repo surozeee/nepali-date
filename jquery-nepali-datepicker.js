@@ -235,15 +235,65 @@
       return total;
     }
   
-    // AD -> BS (UTC-safe, using local Y/M/D to avoid timezone off-by-one)
-    function adToBS(ad){
-      var t1 = (ad instanceof Date)
-        ? Date.UTC(ad.getFullYear(), ad.getMonth(), ad.getDate()) // local parts
-        : Date.UTC(ad.year, ad.month-1, ad.day||1);
-      var t0 = Date.UTC(REF_AD.getUTCFullYear(), REF_AD.getUTCMonth(), REF_AD.getUTCDate());
-      var diff = Math.round((t1 - t0)/DAY_MS);
-      return addDaysBS({year:REF_BS.year,month:REF_BS.month,day:REF_BS.day}, diff);
-    }
+    function adToBS(input, outAsString) {
+        // normalize -> {year,month,day} using LOCAL parts
+        var y, m, d;
+        if (input instanceof Date) {
+          y = input.getFullYear(); m = input.getMonth() + 1; d = input.getDate();
+        } else if (typeof input === 'string') {
+          var mm = /^(\d{4})-(\d{1,2})-(\d{1,2})$/.exec(input.trim());
+          if (!mm) throw new Error('AD2BS: invalid AD string (expected YYYY-MM-DD)');
+          y = +mm[1]; m = +mm[2]; d = +mm[3];
+        } else if (input && typeof input === 'object') {
+          y = +input.year; m = +input.month; d = +(input.day || 1);
+        } else {
+          throw new Error('AD2BS: invalid input');
+        }
+      
+        // refs: AD 1944-01-01 <-> BS 2000-09-17
+        var REF_AD = { year: 1944, month: 1, day: 1 };
+        var REF_BS = { year: 2000, month: 9, day: 17 };
+      
+        var DAY_MS = 24 * 60 * 60 * 1000;
+        var t1 = Date.UTC(y, m - 1, d);
+        var t0 = Date.UTC(REF_AD.year, REF_AD.month - 1, REF_AD.day);
+        // round to avoid FP off-by-one
+        var diffDays = Math.round((t1 - t0) / DAY_MS);
+      
+        var by = REF_BS.year, bm = REF_BS.month, bd = REF_BS.day + diffDays;
+      
+        if (diffDays >= 0) {
+          while (true) {
+            var dm = GetDaysInMonth(by, bm);
+            if (bd <= dm) break;
+            bd -= dm; bm++; if (bm > 12) { bm = 1; by++; }
+          }
+        } else {
+          while (bd < 1) {
+            bm--; if (bm < 1) { bm = 12; by--; }
+            bd += GetDaysInMonth(by, bm);
+          }
+        }
+      
+        var out = { year: by, month: bm, day: bd };
+        if (outAsString === true || outAsString === 'string') {
+          var pad = function(n){ return (n < 10 ? '0' : '') + n; };
+          return out.year + '-' + pad(out.month) + '-' + pad(out.day);
+        }
+        return out;
+      }
+      
+      function GetDaysInMonth(year, month) {
+        year = Number(year); month = Number(month);
+        // use the local bsCalendarData first (this file's table)
+        var table = bsCalendarData || window.bsCalendarData || window.BS_MONTH_DAYS;
+        if (!table || !table[year] || month < 1 || month > 12) {
+          throw new Error('GetDaysInMonth: missing BS calendar data or invalid year/month');
+        }
+        return table[year][month - 1];
+      }
+      
+      
     // BS -> AD (UTC-safe; returns UTC components)
     function bsToAD(bs){
       bs = clampBS(bs);

@@ -102,7 +102,7 @@ function hasNepaliDate() {
     $('#basic-datepicker').nepaliDatepicker({
       theme: 'light',
       language: 'nepali',
-      dateFormat: 'YYYY-MM-DD',
+      dateFormat: 'YYYY/MM/DD',
       date: new Date(),
       onSelect: (bs, formatted) => {
         const ad = bs2ad(bs);
