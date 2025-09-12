@@ -3,6 +3,22 @@
  */
 
 // Global variables - now using jQuery
+// ---- BS → AD helper (plugin-only) ----
+function convertBS2AD(bs) {
+    if (window.jQuery && $.nepaliDate && typeof $.nepaliDate.bsToAd === 'function') {
+      // $.nepaliDate.bsToAd({year,month,day}) returns {year,month,day} in AD
+      return $.nepaliDate.bsToAd({ year: bs.year, month: bs.month, day: bs.day });
+    }
+    console.error('$.nepaliDate.bsToAd not found. Make sure jquery-nepali-datepicker.js exports it from inside the IIFE.');
+    return null;
+  }
+  
+  function formatAD(ad) {
+    if (!ad) return '';
+    const mm = String(ad.month).padStart(2, '0');
+    const dd = String(ad.day).padStart(2, '0');
+    return `${ad.year}-${mm}-${dd}`;
+  }
 
 // Initialize when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
@@ -18,8 +34,17 @@ function initializeDatepickers() {
         theme: 'light',
         language: 'nepali',
         dateFormat: 'YYYY-MM-DD',
-        onSelect: function(date, formatted) {
-            console.log('Basic datepicker selected:', date, formatted);
+        onSelect: function (bs, formattedBS) {
+            const ad = convertBS2AD(bs);
+            const adStr = formatAD(ad);
+            console.log('Selected BS:', formattedBS, '→ AD:', adStr);
+
+            // write to a span if present
+            const $out = $('#basic-english'); // e.g. <span id="basic-english"></span>
+            if ($out.length) $out.text(adStr);
+
+            // optional: fire a custom event from the input
+            $(this).trigger('englishDateChanged', [ad, adStr, bs, formattedBS]);
         }
     });
 
