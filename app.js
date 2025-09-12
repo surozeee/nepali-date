@@ -108,29 +108,13 @@ function hasNepaliDate() {
         const adStr = fmtAD(ad);
         console.log('Selected (BS):', formatted, '→ (AD):', adStr);
         $('#basic-english').text(adStr);
-      },
-      onOpen: function () {
-        const $input = $(this);
-        // Delay one frame so panel exists, then position + bind global handlers
-        requestAnimationFrame(() => {
-          positionPickerBelow($input);
-          bindOutsideClose($input);
-          bindRepositionOnMove($input);
-        });
-      },
-      onClose: function () {
-        const $input = $(this);
-        unbindOutsideClose($input);
-        unbindRepositionOnMove($input);
       }
     });
   
     // Example of setting today's BS correctly (no 1-day off)
-    const t = todayBS();
-    const api = $('#basic-datepicker').data('nepaliDatepicker');
-    if (api && typeof api.setDate === 'function') api.setDate(t);
-  
-    // If you have other inputs, initialize them similarly
-    // … (modern/readonly/etc.) — include onOpen/onClose same as above.
+    // const t = todayBS();
+    // const api = $('#basic-datepicker').data('nepaliDatepicker');
+    // if (api && typeof api.setDate === 'function') api.setDate(t);
+
   }
   
