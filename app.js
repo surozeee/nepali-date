@@ -165,8 +165,49 @@ function hasNepaliDate() {
       }
     });
 
+    // Additional themed datepickers for demonstration
+    $('#purple-datepicker').nepaliDatepicker({
+      theme: 'purple',
+      language: 'nepali',
+      dateFormat: 'YYYY-MM-DD',
+      showToday: false,
+      onSelect: (bs, formatted) => {
+        console.log('Purple datepicker selected:', formatted);
+      }
+    });
+
+    $('#orange-datepicker').nepaliDatepicker({
+      theme: 'orange',
+      language: 'nepali',
+      dateFormat: 'YYYY-MM-DD',
+      showToday: false,
+      onSelect: (bs, formatted) => {
+        console.log('Orange datepicker selected:', formatted);
+      }
+    });
+
+    $('#red-datepicker').nepaliDatepicker({
+      theme: 'red',
+      language: 'nepali',
+      dateFormat: 'YYYY-MM-DD',
+      showToday: false,
+      onSelect: (bs, formatted) => {
+        console.log('Red datepicker selected:', formatted);
+      }
+    });
+
+    $('#green-datepicker').nepaliDatepicker({
+      theme: 'green',
+      language: 'nepali',
+      dateFormat: 'YYYY-MM-DD',
+      showToday: false,
+      onSelect: (bs, formatted) => {
+        console.log('Green datepicker selected:', formatted);
+      }
+    });
+
     $('#readonly-datepicker').nepaliDatepicker({
-      theme: 'light',
+      theme: 'purple',
       language: 'nepali',
       dateFormat: 'YYYY-MM-DD',
       showToday: false,
@@ -186,9 +227,11 @@ function hasNepaliDate() {
     // }, 100);
 
     $('#disabled-datepicker').nepaliDatepicker({
-      theme: 'light',
+      theme: 'purple',
       language: 'nepali',
       dateFormat: 'YYYY-MM-DD',
+      minDate: '2082-05-05',
+      maxDate: '2082-05-28',
       showToday: false,
       onSelect: (bs, formatted) => {
         console.log('Disabled datepicker selected:', formatted);
@@ -228,34 +271,46 @@ function hasNepaliDate() {
       let selectedDateFormatted = '';
       
       // Map type to datepicker ID
-      switch(type) {
-        case 'basic':
-          datepickerId = 'basic-datepicker';
-          break;
-        case 'modern':
-          datepickerId = 'modern-datepicker';
-          break;
-        case 'minimal':
-          datepickerId = 'minimal-datepicker';
-          break;
-        case 'dark':
-          datepickerId = 'dark-datepicker';
-          break;
-        case 'range':
-          datepickerId = 'range-datepicker';
-          break;
-        case 'time':
-          datepickerId = 'time-datepicker';
-          break;
-        case 'readonly':
-          datepickerId = 'readonly-datepicker';
-          break;
-        case 'disabled':
-          datepickerId = 'disabled-datepicker';
-          break;
-        default:
-          datepickerId = 'basic-datepicker';
-      }
+       switch(type) {
+         case 'basic':
+           datepickerId = 'basic-datepicker';
+           break;
+         case 'modern':
+           datepickerId = 'modern-datepicker';
+           break;
+         case 'minimal':
+           datepickerId = 'minimal-datepicker';
+           break;
+         case 'dark':
+           datepickerId = 'dark-datepicker';
+           break;
+         case 'range':
+           datepickerId = 'range-datepicker';
+           break;
+         case 'time':
+           datepickerId = 'time-datepicker';
+           break;
+         case 'purple':
+           datepickerId = 'purple-datepicker';
+           break;
+         case 'orange':
+           datepickerId = 'orange-datepicker';
+           break;
+         case 'red':
+           datepickerId = 'red-datepicker';
+           break;
+         case 'green':
+           datepickerId = 'green-datepicker';
+           break;
+         case 'readonly':
+           datepickerId = 'readonly-datepicker';
+           break;
+         case 'disabled':
+           datepickerId = 'disabled-datepicker';
+           break;
+         default:
+           datepickerId = 'basic-datepicker';
+       }
       
       // Get selected date from datepicker
       const $datepicker = $('#' + datepickerId);
@@ -286,52 +341,72 @@ function hasNepaliDate() {
       let description = '';
       let icon = 'info';
       
-      switch(type) {
-        case 'basic':
-          title = 'Basic Datepicker';
-          description = 'Default light theme with Nepali language support. Perfect for standard date selection needs.';
-          icon = 'calendar';
-          break;
-        case 'modern':
-          title = 'Modern Datepicker';
-          description = 'Dark theme with English language. Clean and modern design for contemporary applications.';
-          icon = 'star';
-          break;
-        case 'minimal':
-          title = 'Minimal Datepicker';
-          description = 'Clean interface without today button. Ideal for minimal design requirements.';
-          icon = 'leaf';
-          break;
-        case 'dark':
-          title = 'Dark Theme Datepicker';
-          description = 'Dark theme optimized for low light conditions. Better visibility and reduced eye strain.';
-          icon = 'moon';
-          break;
-        case 'range':
-          title = 'Professional Datepicker';
-          description = 'Blue theme with professional appearance. Suitable for business applications.';
-          icon = 'briefcase';
-          break;
-        case 'time':
-          title = 'Time Datepicker';
-          description = 'Green theme with time picker functionality. Includes both date and time selection.';
-          icon = 'clock';
-          break;
-        case 'readonly':
-          title = 'Read-only Datepicker';
-          description = 'Pre-selected date (2081-01-01) with read-only functionality. Display only mode.';
-          icon = 'lock';
-          break;
-        case 'disabled':
-          title = 'Disabled Datepicker';
-          description = 'Datepicker with disabled date functionality. Custom date restrictions available.';
-          icon = 'ban';
-          break;
-        default:
-          title = 'Datepicker Info';
-          description = 'Information not available for this datepicker type.';
-          icon = 'question';
-      }
+       switch(type) {
+         case 'basic':
+           title = 'Basic Datepicker';
+           description = 'Default light theme with Nepali language support. Perfect for standard date selection needs.';
+           icon = 'calendar';
+           break;
+         case 'modern':
+           title = 'Modern Datepicker';
+           description = 'Blue theme with modern design. Clean and professional appearance for contemporary applications.';
+           icon = 'star';
+           break;
+         case 'minimal':
+           title = 'Minimal Datepicker';
+           description = 'Clean interface without today button. Ideal for minimal design requirements.';
+           icon = 'leaf';
+           break;
+         case 'dark':
+           title = 'Dark Theme Datepicker';
+           description = 'Dark theme optimized for low light conditions. Better visibility and reduced eye strain.';
+           icon = 'moon';
+           break;
+         case 'range':
+           title = 'Professional Datepicker';
+           description = 'Blue theme with professional appearance. Suitable for business applications.';
+           icon = 'briefcase';
+           break;
+         case 'time':
+           title = 'Green Theme Datepicker';
+           description = 'Green theme with vibrant colors. Perfect for nature-themed applications and eco-friendly designs.';
+           icon = 'clock';
+           break;
+         case 'purple':
+           title = 'Purple Theme Datepicker';
+           description = 'Purple theme with elegant gradients. Great for creative applications and artistic interfaces.';
+           icon = 'palette';
+           break;
+         case 'orange':
+           title = 'Orange Theme Datepicker';
+           description = 'Orange theme with warm colors. Ideal for energetic applications and attention-grabbing designs.';
+           icon = 'sun';
+           break;
+         case 'red':
+           title = 'Red Theme Datepicker';
+           description = 'Red theme with vibrant colors. Perfect for attention-grabbing designs and energetic applications.';
+           icon = 'heart';
+           break;
+         case 'green':
+           title = 'Green Theme Datepicker';
+           description = 'Green theme with calming colors. Great for nature-themed applications and eco-friendly designs.';
+           icon = 'droplet';
+           break;
+         case 'readonly':
+           title = 'Read-only Datepicker';
+           description = 'Pre-selected date (2081-01-01) with read-only functionality. Display only mode.';
+           icon = 'lock';
+           break;
+         case 'disabled':
+           title = 'Disabled Datepicker';
+           description = 'Datepicker with disabled date functionality. Custom date restrictions available.';
+           icon = 'ban';
+           break;
+         default:
+           title = 'Datepicker Info';
+           description = 'Information not available for this datepicker type.';
+           icon = 'question';
+       }
       
       // Create HTML content with selected dates
       const htmlContent = `
@@ -360,16 +435,20 @@ function hasNepaliDate() {
     }
 
     // ---------- Additional Demo Functions ----------
-    function loadDemoData() {
-      const demoDates = [
-        { id: 'basic-datepicker', date: { year: 2081, month: 6, day: 15 } },
-        { id: 'modern-datepicker', date: { year: 2081, month: 8, day: 22 } },
-        { id: 'minimal-datepicker', date: { year: 2081, month: 10, day: 5 } },
-        { id: 'dark-datepicker', date: { year: 2081, month: 12, day: 18 } },
-        { id: 'range-datepicker', date: { year: 2082, month: 2, day: 3 } },
-        { id: 'time-datepicker', date: { year: 2082, month: 4, day: 12 } },
-        { id: 'disabled-datepicker', date: { year: 2081, month: 3, day: 25 } }
-      ];
+     function loadDemoData() {
+       const demoDates = [
+         { id: 'basic-datepicker', date: { year: 2081, month: 6, day: 15 } },
+         { id: 'modern-datepicker', date: { year: 2081, month: 8, day: 22 } },
+         { id: 'minimal-datepicker', date: { year: 2081, month: 10, day: 5 } },
+         { id: 'dark-datepicker', date: { year: 2081, month: 12, day: 18 } },
+         { id: 'range-datepicker', date: { year: 2082, month: 2, day: 3 } },
+         { id: 'time-datepicker', date: { year: 2082, month: 4, day: 12 } },
+         { id: 'purple-datepicker', date: { year: 2081, month: 7, day: 8 } },
+         { id: 'orange-datepicker', date: { year: 2081, month: 9, day: 14 } },
+         { id: 'red-datepicker', date: { year: 2081, month: 11, day: 20 } },
+         { id: 'green-datepicker', date: { year: 2082, month: 1, day: 26 } },
+         { id: 'disabled-datepicker', date: { year: 2081, month: 3, day: 25 } }
+       ];
 
       demoDates.forEach(({ id, date }) => {
         const $input = $('#' + id);
@@ -390,12 +469,13 @@ function hasNepaliDate() {
       });
     }
 
-    function resetAllDatepickers() {
-      const datepickers = [
-        'basic-datepicker', 'modern-datepicker', 'minimal-datepicker',
-        'dark-datepicker', 'range-datepicker', 'time-datepicker',
-        'disabled-datepicker', 'modal-datepicker'
-      ];
+     function resetAllDatepickers() {
+       const datepickers = [
+         'basic-datepicker', 'modern-datepicker', 'minimal-datepicker',
+         'dark-datepicker', 'range-datepicker', 'time-datepicker',
+         'purple-datepicker', 'orange-datepicker', 'red-datepicker', 'green-datepicker',
+         'disabled-datepicker', 'modal-datepicker'
+       ];
 
       datepickers.forEach(id => {
         const $input = $('#' + id);
@@ -469,12 +549,13 @@ function hasNepaliDate() {
       });
     }
 
-    function updateAllDatepickers(property, value) {
-      const datepickers = [
-        'basic-datepicker', 'modern-datepicker', 'minimal-datepicker',
-        'dark-datepicker', 'range-datepicker', 'time-datepicker',
-        'readonly-datepicker', 'disabled-datepicker', 'modal-datepicker'
-      ];
+     function updateAllDatepickers(property, value) {
+       const datepickers = [
+         'basic-datepicker', 'modern-datepicker', 'minimal-datepicker',
+         'dark-datepicker', 'range-datepicker', 'time-datepicker',
+         'purple-datepicker', 'orange-datepicker', 'red-datepicker', 'green-datepicker',
+         'readonly-datepicker', 'disabled-datepicker', 'modal-datepicker'
+       ];
 
       datepickers.forEach(id => {
         const $input = $('#' + id);
@@ -505,28 +586,40 @@ function hasNepaliDate() {
             // Apply the new property
             config[property] = value;
             
-            // Special configurations for different datepickers
-            switch(id) {
-              case 'modern-datepicker':
-                config.theme = 'blue';
-                break;
-              case 'dark-datepicker':
-                config.theme = 'dark';
-                break;
-              case 'range-datepicker':
-                config.theme = 'blue';
-                break;
-              case 'time-datepicker':
-                config.theme = 'green';
-                break;
-              case 'readonly-datepicker':
-                config.autoClose = false;
-                break;
-              case 'modal-datepicker':
-                config.modal = false;
-                config.autoClose = false;
-                break;
-            }
+             // Special configurations for different datepickers
+             switch(id) {
+               case 'modern-datepicker':
+                 config.theme = 'blue';
+                 break;
+               case 'dark-datepicker':
+                 config.theme = 'dark';
+                 break;
+               case 'range-datepicker':
+                 config.theme = 'blue';
+                 break;
+               case 'time-datepicker':
+                 config.theme = 'green';
+                 break;
+               case 'purple-datepicker':
+                 config.theme = 'purple';
+                 break;
+               case 'orange-datepicker':
+                 config.theme = 'orange';
+                 break;
+               case 'red-datepicker':
+                 config.theme = 'red';
+                 break;
+               case 'green-datepicker':
+                 config.theme = 'green';
+                 break;
+               case 'readonly-datepicker':
+                 config.autoClose = false;
+                 break;
+               case 'modal-datepicker':
+                 config.modal = false;
+                 config.autoClose = false;
+                 break;
+             }
             
             $input.nepaliDatepicker(config);
             
@@ -544,26 +637,99 @@ function hasNepaliDate() {
       });
     }
 
-    // ---------- Event Handlers ----------
-    function initEventHandlers() {
-      // Modal close handlers
-      $('.close').on('click', closeModal);
-      
-      // Close modal when clicking outside
-      $(window).on('click', function(event) {
-        const modal = document.getElementById('datepicker-modal');
-        if (event.target === modal) {
-          closeModal();
-        }
-      });
+     // ---------- Theme Switching Functions ----------
+     function switchTheme(themeName) {
+       const datepickers = [
+         'basic-datepicker', 'modern-datepicker', 'minimal-datepicker',
+         'dark-datepicker', 'range-datepicker', 'time-datepicker',
+         'purple-datepicker', 'orange-datepicker', 'red-datepicker', 'green-datepicker',
+         'readonly-datepicker', 'disabled-datepicker', 'modal-datepicker'
+       ];
 
-      // Keyboard support for modal
-      $(document).on('keydown', function(event) {
-        if (event.key === 'Escape') {
-          closeModal();
-        }
-      });
-    }
+       datepickers.forEach(id => {
+         const $input = $('#' + id);
+         if ($input.length) {
+           const api = $input.data('nepaliDatepicker');
+           if (api && typeof api.destroy === 'function') {
+             // Get current selected date before destroying
+             const currentDate = api.getDate();
+             
+             // Destroy and recreate with new theme
+             api.destroy();
+             
+             // Reinitialize with new theme
+             const config = {
+               theme: themeName,
+               language: 'nepali',
+               dateFormat: 'YYYY-MM-DD',
+               showToday: false,
+               autoClose: true,
+               onSelect: function(bs, formatted) {
+                 console.log(`${id} selected:`, formatted);
+                 if (id === 'modal-datepicker') {
+                   $('#modal-result').text(`Selected: ${formatted}`);
+                 }
+               }
+             };
+             
+             // Special configurations for different datepickers
+             switch(id) {
+               case 'readonly-datepicker':
+                 config.autoClose = false;
+                 break;
+               case 'modal-datepicker':
+                 config.modal = false;
+                 config.autoClose = false;
+                 break;
+             }
+             
+             $input.nepaliDatepicker(config);
+             
+             // Restore selected date if it existed
+             if (currentDate) {
+               setTimeout(() => {
+                 const newApi = $input.data('nepaliDatepicker');
+                 if (newApi && typeof newApi.setDate === 'function') {
+                   newApi.setDate(currentDate);
+                 }
+               }, 50);
+             }
+           }
+         }
+       });
+
+       // Show success message
+       Swal.fire({
+         title: 'Theme Applied!',
+         text: `All datepickers now use the ${themeName} theme.`,
+         icon: 'success',
+         confirmButtonText: 'Great!',
+         confirmButtonColor: '#28a745',
+         timer: 2000,
+         timerProgressBar: true
+       });
+     }
+
+     // ---------- Event Handlers ----------
+     function initEventHandlers() {
+       // Modal close handlers
+       $('.close').on('click', closeModal);
+       
+       // Close modal when clicking outside
+       $(window).on('click', function(event) {
+         const modal = document.getElementById('datepicker-modal');
+         if (event.target === modal) {
+           closeModal();
+         }
+       });
+
+       // Keyboard support for modal
+       $(document).on('keydown', function(event) {
+         if (event.key === 'Escape') {
+           closeModal();
+         }
+       });
+     }
 
     // Initialize everything when document is ready
     $(document).ready(function() {
@@ -572,11 +738,12 @@ function hasNepaliDate() {
       console.log('Nepali Datepicker Demo initialized successfully!');
     });
 
-   // make it accessible to inline onclick=""
-   window.showDatepickerInfo = showDatepickerInfo;
-   window.loadDemoData = loadDemoData;
-   window.resetAllDatepickers = resetAllDatepickers;
-   window.openModal = openModal;
+    // make it accessible to inline onclick=""
+    window.showDatepickerInfo = showDatepickerInfo;
+    window.loadDemoData = loadDemoData;
+    window.resetAllDatepickers = resetAllDatepickers;
+    window.openModal = openModal;
+    window.switchTheme = switchTheme;
   })(jQuery);
 
   

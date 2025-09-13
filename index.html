@@ -26,6 +26,9 @@
                         <option value="light">Light</option>
                         <option value="dark">Dark</option>
                         <option value="blue">Blue</option>
+                        <option value="purple">Purple</option>
+                        <option value="orange">Orange</option>
+                        <option value="red">Red</option>
                         <option value="green">Green</option>
                     </select>
                 </div>
@@ -44,6 +47,37 @@
                         <option value="MM/DD/YYYY">MM/DD/YYYY</option>
                     </select>
                 </div>
+            </div>
+        </div>
+
+        <!-- Quick Theme Switching -->
+        <div class="demo-section">
+            <h2>Quick Theme Switching</h2>
+            <div class="theme-buttons">
+                <button class="theme-btn light" onclick="switchTheme('light')" title="Light Theme">
+                    <i class="fas fa-sun"></i> Light
+                </button>
+                <button class="theme-btn dark" onclick="switchTheme('dark')" title="Dark Theme">
+                    <i class="fas fa-moon"></i> Dark
+                </button>
+                <button class="theme-btn blue" onclick="switchTheme('blue')" title="Blue Theme">
+                    <i class="fas fa-tint"></i> Blue
+                </button>
+                <button class="theme-btn green" onclick="switchTheme('green')" title="Green Theme">
+                    <i class="fas fa-leaf"></i> Green
+                </button>
+                <button class="theme-btn purple" onclick="switchTheme('purple')" title="Purple Theme">
+                    <i class="fas fa-palette"></i> Purple
+                </button>
+                <button class="theme-btn orange" onclick="switchTheme('orange')" title="Orange Theme">
+                    <i class="fas fa-fire"></i> Orange
+                </button>
+                <button class="theme-btn red" onclick="switchTheme('red')" title="Red Theme">
+                    <i class="fas fa-heart"></i> Red
+                </button>
+                <button class="theme-btn green" onclick="switchTheme('green')" title="Green Theme">
+                    <i class="fas fa-leaf"></i> Green
+                </button>
             </div>
         </div>
 
@@ -97,6 +131,34 @@
                     <p>Green color scheme with time picker</p>
                     <input type="text" id="time-datepicker" placeholder="Select Date & Time">
                     <button class="btn btn-primary" onclick="showDatepickerInfo('time')">Show Info</button>
+                </div>
+
+                <div class="example-card">
+                    <h3>Purple Theme</h3>
+                    <p>Purple color scheme with elegant gradients</p>
+                    <input type="text" id="purple-datepicker" placeholder="Select Date">
+                    <button class="btn btn-primary" onclick="showDatepickerInfo('purple')">Show Info</button>
+                </div>
+
+                <div class="example-card">
+                    <h3>Orange Theme</h3>
+                    <p>Orange color scheme with warm colors</p>
+                    <input type="text" id="orange-datepicker" placeholder="Select Date">
+                    <button class="btn btn-primary" onclick="showDatepickerInfo('orange')">Show Info</button>
+                </div>
+
+                <div class="example-card">
+                    <h3>Red Theme</h3>
+                    <p>Red color scheme with vibrant colors</p>
+                    <input type="text" id="red-datepicker" placeholder="Select Date">
+                    <button class="btn btn-primary" onclick="showDatepickerInfo('red')">Show Info</button>
+                </div>
+
+                <div class="example-card">
+                    <h3>Green Theme</h3>
+                    <p>Green color scheme with calming colors</p>
+                    <input type="text" id="green-datepicker" placeholder="Select Date">
+                    <button class="btn btn-primary" onclick="showDatepickerInfo('green')">Show Info</button>
                 </div>
             </div>
         </div>

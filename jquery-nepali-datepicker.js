@@ -746,6 +746,9 @@
               $input.val(fmt(settings, state.selected));
               if (settings.autoClose) close();
               if (settings.onSelect) settings.onSelect.call($input[0], state.selected, fmt(settings, state.selected));
+
+
+              // now close (works for inline & modal)
               break;
             case 'today':
               var t = getTodayBS(settings);

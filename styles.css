@@ -184,7 +184,7 @@ input {
 }
 
 .nepali-datepicker {
-    z-index: 10000 !important;
+    z-index: 10000 ! important;
 }
 
 /* Modal content wrapper */
@@ -714,6 +714,738 @@ input {
 
 .custom-nepali-datepicker.green .day.selected {
     background: #38a169;
+}
+
+/* ===== ENHANCED THEME SYSTEM ===== */
+
+/* Light Theme - Enhanced */
+.nepali-datepicker.light {
+    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+    border: 2px solid #e2e8f0;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1), 0 4px 6px rgba(0, 0, 0, 0.05);
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.nepali-datepicker.light .datepicker-header {
+    background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+    border-bottom: 1px solid #e2e8f0;
+    color: #2d3748;
+    padding: 16px;
+}
+
+.nepali-datepicker.light .datepicker-header .month-year {
+    color: #2d3748;
+    font-weight: 600;
+}
+
+.nepali-datepicker.light .datepicker-header .nav-btn {
+    color: #4a5568;
+    background: rgba(255, 255, 255, 0.8);
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+.nepali-datepicker.light .datepicker-header .nav-btn:hover {
+    background: #ffffff;
+    color: #2d3748;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transform: translateY(-1px);
+}
+
+.nepali-datepicker.light .day {
+    color: #4a5568;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    margin: 2px;
+}
+
+.nepali-datepicker.light .day:hover {
+    background: linear-gradient(135deg, #edf2f7 0%, #e2e8f0 100%);
+    color: #2d3748;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.nepali-datepicker.light .day.today {
+    background: linear-gradient(135deg, #3182ce 0%, #2c5aa0 100%);
+    color: #ffffff;
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(49, 130, 206, 0.3);
+}
+
+.nepali-datepicker.light .day.selected {
+    background: linear-gradient(135deg, #3182ce 0%, #2c5aa0 100%);
+    color: #ffffff;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(49, 130, 206, 0.4);
+    transform: scale(1.05);
+}
+
+.nepali-datepicker.light .day.other-month {
+    color: #a0aec0;
+    opacity: 0.6;
+}
+
+.nepali-datepicker.light .day.disabled {
+    color: #cbd5e0;
+    background: #f7fafc;
+    cursor: not-allowed;
+}
+
+/* Dark Theme - Enhanced */
+.nepali-datepicker.dark {
+    background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%);
+    border: 2px solid #4a5568;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3), 0 4px 6px rgba(0, 0, 0, 0.2);
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.nepali-datepicker.dark .datepicker-header {
+    background: linear-gradient(135deg, #4a5568 0%, #2d3748 100%);
+    border-bottom: 1px solid #4a5568;
+    color: #e2e8f0;
+    padding: 16px;
+}
+
+.nepali-datepicker.dark .datepicker-header .month-year {
+    color: #e2e8f0;
+    font-weight: 600;
+}
+
+.nepali-datepicker.dark .datepicker-header .nav-btn {
+    color: #e2e8f0;
+    background: rgba(74, 85, 104, 0.8);
+    border: 1px solid #4a5568;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+.nepali-datepicker.dark .datepicker-header .nav-btn:hover {
+    background: #4a5568;
+    color: #ffffff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    transform: translateY(-1px);
+}
+
+.nepali-datepicker.dark .day {
+    color: #e2e8f0;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    margin: 2px;
+}
+
+.nepali-datepicker.dark .day:hover {
+    background: linear-gradient(135deg, #4a5568 0%, #718096 100%);
+    color: #ffffff;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.nepali-datepicker.dark .day.today {
+    background: linear-gradient(135deg, #63b3ed 0%, #4299e1 100%);
+    color: #1a202c;
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(99, 179, 237, 0.4);
+}
+
+.nepali-datepicker.dark .day.selected {
+    background: linear-gradient(135deg, #63b3ed 0%, #4299e1 100%);
+    color: #1a202c;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(99, 179, 237, 0.5);
+    transform: scale(1.05);
+}
+
+.nepali-datepicker.dark .day.other-month {
+    color: #718096;
+    opacity: 0.6;
+}
+
+.nepali-datepicker.dark .day.disabled {
+    color: #4a5568;
+    background: #2d3748;
+    cursor: not-allowed;
+}
+
+/* Blue Theme - Enhanced */
+.nepali-datepicker.blue {
+    background: linear-gradient(135deg, #ffffff 0%, #f0f8ff 100%);
+    border: 2px solid #3182ce;
+    box-shadow: 0 10px 25px rgba(49, 130, 206, 0.15), 0 4px 6px rgba(49, 130, 206, 0.1);
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.nepali-datepicker.blue .datepicker-header {
+    background: linear-gradient(135deg, #3182ce 0%, #2c5aa0 100%);
+    border-bottom: 1px solid #2c5aa0;
+    color: #ffffff;
+    padding: 16px;
+}
+
+.nepali-datepicker.blue .datepicker-header .month-year {
+    color: #ffffff;
+    font-weight: 600;
+}
+
+.nepali-datepicker.blue .datepicker-header .nav-btn {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+.nepali-datepicker.blue .datepicker-header .nav-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    color: #ffffff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    transform: translateY(-1px);
+}
+
+.nepali-datepicker.blue .day {
+    color: #2d3748;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    margin: 2px;
+}
+
+.nepali-datepicker.blue .day:hover {
+    background: linear-gradient(135deg, #bee3f8 0%, #90cdf4 100%);
+    color: #2c5aa0;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(49, 130, 206, 0.2);
+}
+
+.nepali-datepicker.blue .day.today {
+    background: linear-gradient(135deg, #3182ce 0%, #2c5aa0 100%);
+    color: #ffffff;
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(49, 130, 206, 0.4);
+}
+
+.nepali-datepicker.blue .day.selected {
+    background: linear-gradient(135deg, #2c5aa0 0%, #2a4d7c 100%);
+    color: #ffffff;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(44, 90, 160, 0.5);
+    transform: scale(1.05);
+}
+
+.nepali-datepicker.blue .day.other-month {
+    color: #a0aec0;
+    opacity: 0.6;
+}
+
+.nepali-datepicker.blue .day.disabled {
+    color: #cbd5e0;
+    background: #f7fafc;
+    cursor: not-allowed;
+}
+
+/* Green Theme - Enhanced */
+.nepali-datepicker.green {
+    background: linear-gradient(135deg, #ffffff 0%, #f0fff4 100%);
+    border: 2px solid #38a169;
+    box-shadow: 0 10px 25px rgba(56, 161, 105, 0.15), 0 4px 6px rgba(56, 161, 105, 0.1);
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.nepali-datepicker.green .datepicker-header {
+    background: linear-gradient(135deg, #38a169 0%, #2f855a 100%);
+    border-bottom: 1px solid #2f855a;
+    color: #ffffff;
+    padding: 16px;
+}
+
+.nepali-datepicker.green .datepicker-header .month-year {
+    color: #ffffff;
+    font-weight: 600;
+}
+
+.nepali-datepicker.green .datepicker-header .nav-btn {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+.nepali-datepicker.green .datepicker-header .nav-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    color: #ffffff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    transform: translateY(-1px);
+}
+
+.nepali-datepicker.green .day {
+    color: #2d3748;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    margin: 2px;
+}
+
+.nepali-datepicker.green .day:hover {
+    background: linear-gradient(135deg, #c6f6d5 0%, #9ae6b4 100%);
+    color: #2f855a;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(56, 161, 105, 0.2);
+}
+
+.nepali-datepicker.green .day.today {
+    background: linear-gradient(135deg, #38a169 0%, #2f855a 100%);
+    color: #ffffff;
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(56, 161, 105, 0.4);
+}
+
+.nepali-datepicker.green .day.selected {
+    background: linear-gradient(135deg, #2f855a 0%, #276749 100%);
+    color: #ffffff;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(47, 133, 90, 0.5);
+    transform: scale(1.05);
+}
+
+.nepali-datepicker.green .day.other-month {
+    color: #a0aec0;
+    opacity: 0.6;
+}
+
+.nepali-datepicker.green .day.disabled {
+    color: #cbd5e0;
+    background: #f7fafc;
+    cursor: not-allowed;
+}
+
+/* Purple Theme - New */
+.nepali-datepicker.purple {
+    background: linear-gradient(135deg, #ffffff 0%, #faf5ff 100%);
+    border: 2px solid #805ad5;
+    box-shadow: 0 10px 25px rgba(128, 90, 213, 0.15), 0 4px 6px rgba(128, 90, 213, 0.1);
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.nepali-datepicker.purple .datepicker-header {
+    background: linear-gradient(135deg, #805ad5 0%, #6b46c1 100%);
+    border-bottom: 1px solid #6b46c1;
+    color: #ffffff;
+    padding: 16px;
+}
+
+.nepali-datepicker.purple .datepicker-header .month-year {
+    color: #ffffff;
+    font-weight: 600;
+}
+
+.nepali-datepicker.purple .datepicker-header .nav-btn {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+.nepali-datepicker.purple .datepicker-header .nav-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    color: #ffffff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    transform: translateY(-1px);
+}
+
+.nepali-datepicker.purple .day {
+    color: #2d3748;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    margin: 2px;
+}
+
+.nepali-datepicker.purple .day:hover {
+    background: linear-gradient(135deg, #e9d5ff 0%, #d6bcfa 100%);
+    color: #6b46c1;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(128, 90, 213, 0.2);
+}
+
+.nepali-datepicker.purple .day.today {
+    background: linear-gradient(135deg, #805ad5 0%, #6b46c1 100%);
+    color: #ffffff;
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(128, 90, 213, 0.4);
+}
+
+.nepali-datepicker.purple .day.selected {
+    background: linear-gradient(135deg, #6b46c1 0%, #553c9a 100%);
+    color: #ffffff;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(107, 70, 193, 0.5);
+    transform: scale(1.05);
+}
+
+.nepali-datepicker.purple .day.other-month {
+    color: #a0aec0;
+    opacity: 0.6;
+}
+
+.nepali-datepicker.purple .day.disabled {
+    color: #cbd5e0;
+    background: #f7fafc;
+    cursor: not-allowed;
+}
+
+/* Orange Theme - New */
+.nepali-datepicker.orange {
+    background: linear-gradient(135deg, #ffffff 0%, #fffaf0 100%);
+    border: 2px solid #ed8936;
+    box-shadow: 0 10px 25px rgba(237, 137, 54, 0.15), 0 4px 6px rgba(237, 137, 54, 0.1);
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.nepali-datepicker.orange .datepicker-header {
+    background: linear-gradient(135deg, #ed8936 0%, #dd6b20 100%);
+    border-bottom: 1px solid #dd6b20;
+    color: #ffffff;
+    padding: 16px;
+}
+
+.nepali-datepicker.orange .datepicker-header .month-year {
+    color: #ffffff;
+    font-weight: 600;
+}
+
+.nepali-datepicker.orange .datepicker-header .nav-btn {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+.nepali-datepicker.orange .datepicker-header .nav-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    color: #ffffff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    transform: translateY(-1px);
+}
+
+.nepali-datepicker.orange .day {
+    color: #2d3748;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    margin: 2px;
+}
+
+.nepali-datepicker.orange .day:hover {
+    background: linear-gradient(135deg, #fed7aa 0%, #fdba74 100%);
+    color: #dd6b20;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(237, 137, 54, 0.2);
+}
+
+.nepali-datepicker.orange .day.today {
+    background: linear-gradient(135deg, #ed8936 0%, #dd6b20 100%);
+    color: #ffffff;
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(237, 137, 54, 0.4);
+}
+
+.nepali-datepicker.orange .day.selected {
+    background: linear-gradient(135deg, #dd6b20 0%, #c05621 100%);
+    color: #ffffff;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(221, 107, 32, 0.5);
+    transform: scale(1.05);
+}
+
+.nepali-datepicker.orange .day.other-month {
+    color: #a0aec0;
+    opacity: 0.6;
+}
+
+.nepali-datepicker.orange .day.disabled {
+    color: #cbd5e0;
+    background: #f7fafc;
+    cursor: not-allowed;
+}
+
+/* Red Theme - New */
+.nepali-datepicker.red {
+    background: linear-gradient(135deg, #ffffff 0%, #fff5f5 100%);
+    border: 2px solid #e53e3e;
+    box-shadow: 0 10px 25px rgba(229, 62, 62, 0.15), 0 4px 6px rgba(229, 62, 62, 0.1);
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.nepali-datepicker.red .datepicker-header {
+    background: linear-gradient(135deg, #e53e3e 0%, #c53030 100%);
+    border-bottom: 1px solid #c53030;
+    color: #ffffff;
+    padding: 16px;
+}
+
+.nepali-datepicker.red .datepicker-header .month-year {
+    color: #ffffff;
+    font-weight: 600;
+}
+
+.nepali-datepicker.red .datepicker-header .nav-btn {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+.nepali-datepicker.red .datepicker-header .nav-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    color: #ffffff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    transform: translateY(-1px);
+}
+
+.nepali-datepicker.red .day {
+    color: #2d3748;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    margin: 2px;
+}
+
+.nepali-datepicker.red .day:hover {
+    background: linear-gradient(135deg, #fed7d7 0%, #feb2b2 100%);
+    color: #c53030;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(229, 62, 62, 0.2);
+}
+
+.nepali-datepicker.red .day.today {
+    background: linear-gradient(135deg, #e53e3e 0%, #c53030 100%);
+    color: #ffffff;
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(229, 62, 62, 0.4);
+}
+
+.nepali-datepicker.red .day.selected {
+    background: linear-gradient(135deg, #c53030 0%, #9c2626 100%);
+    color: #ffffff;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(197, 48, 48, 0.5);
+    transform: scale(1.05);
+}
+
+.nepali-datepicker.red .day.other-month {
+    color: #a0aec0;
+    opacity: 0.6;
+}
+
+.nepali-datepicker.red .day.disabled {
+    color: #cbd5e0;
+    background: #f7fafc;
+    cursor: not-allowed;
+}
+
+/* Green Theme - New */
+.nepali-datepicker.green {
+    background: linear-gradient(135deg, #ffffff 0%, #f0fdfa 100%);
+    border: 2px solid #319795;
+    box-shadow: 0 10px 25px rgba(49, 151, 149, 0.15), 0 4px 6px rgba(49, 151, 149, 0.1);
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.nepali-datepicker.green .datepicker-header {
+    background: linear-gradient(135deg, #319795 0%, #2c7a7b 100%);
+    border-bottom: 1px solid #2c7a7b;
+    color: #ffffff;
+    padding: 16px;
+}
+
+.nepali-datepicker.green .datepicker-header .month-year {
+    color: #ffffff;
+    font-weight: 600;
+}
+
+.nepali-datepicker.green .datepicker-header .nav-btn {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+.nepali-datepicker.green .datepicker-header .nav-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    color: #ffffff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    transform: translateY(-1px);
+}
+
+.nepali-datepicker.green .day {
+    color: #2d3748;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    margin: 2px;
+}
+
+.nepali-datepicker.green .day:hover {
+    background: linear-gradient(135deg, #b2f5ea 0%, #81e6d9 100%);
+    color: #2c7a7b;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(49, 151, 149, 0.2);
+}
+
+.nepali-datepicker.green .day.today {
+    background: linear-gradient(135deg, #319795 0%, #2c7a7b 100%);
+    color: #ffffff;
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(49, 151, 149, 0.4);
+}
+
+.nepali-datepicker.green .day.selected {
+    background: linear-gradient(135deg, #2c7a7b 0%, #285e61 100%);
+    color: #ffffff;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(44, 122, 123, 0.5);
+    transform: scale(1.05);
+}
+
+.nepali-datepicker.green .day.other-month {
+    color: #a0aec0;
+    opacity: 0.6;
+}
+
+.nepali-datepicker.green .day.disabled {
+    color: #cbd5e0;
+    background: #f7fafc;
+    cursor: not-allowed;
+}
+
+/* Theme Switching Buttons */
+.theme-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    justify-content: center;
+    margin: 20px 0;
+}
+
+.theme-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    min-width: 100px;
+    justify-content: center;
+}
+
+.theme-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.theme-btn.light {
+    background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+    color: #2d3748;
+    border: 1px solid #e2e8f0;
+}
+
+.theme-btn.light:hover {
+    background: linear-gradient(135deg, #edf2f7 0%, #e2e8f0 100%);
+    color: #1a202c;
+}
+
+.theme-btn.dark {
+    background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%);
+    color: #e2e8f0;
+    border: 1px solid #4a5568;
+}
+
+.theme-btn.dark:hover {
+    background: linear-gradient(135deg, #4a5568 0%, #2d3748 100%);
+    color: #ffffff;
+}
+
+.theme-btn.blue {
+    background: linear-gradient(135deg, #3182ce 0%, #2c5aa0 100%);
+    color: #ffffff;
+    border: 1px solid #2c5aa0;
+}
+
+.theme-btn.blue:hover {
+    background: linear-gradient(135deg, #2c5aa0 0%, #2a4d7c 100%);
+    color: #ffffff;
+}
+
+.theme-btn.green {
+    background: linear-gradient(135deg, #38a169 0%, #2f855a 100%);
+    color: #ffffff;
+    border: 1px solid #2f855a;
+}
+
+.theme-btn.green:hover {
+    background: linear-gradient(135deg, #2f855a 0%, #276749 100%);
+    color: #ffffff;
+}
+
+.theme-btn.purple {
+    background: linear-gradient(135deg, #805ad5 0%, #6b46c1 100%);
+    color: #ffffff;
+    border: 1px solid #6b46c1;
+}
+
+.theme-btn.purple:hover {
+    background: linear-gradient(135deg, #6b46c1 0%, #553c9a 100%);
+    color: #ffffff;
+}
+
+.theme-btn.orange {
+    background: linear-gradient(135deg, #ed8936 0%, #dd6b20 100%);
+    color: #ffffff;
+    border: 1px solid #dd6b20;
+}
+
+.theme-btn.orange:hover {
+    background: linear-gradient(135deg, #dd6b20 0%, #c05621 100%);
+    color: #ffffff;
+}
+
+.theme-btn.red {
+    background: linear-gradient(135deg, #e53e3e 0%, #c53030 100%);
+    color: #ffffff;
+    border: 1px solid #c53030;
+}
+
+.theme-btn.red:hover {
+    background: linear-gradient(135deg, #c53030 0%, #9c2626 100%);
+    color: #ffffff;
+}
+
+.theme-btn.green {
+    background: linear-gradient(135deg, #319795 0%, #2c7a7b 100%);
+    color: #ffffff;
+    border: 1px solid #2c7a7b;
+}
+
+.theme-btn.green:hover {
+    background: linear-gradient(135deg, #2c7a7b 0%, #285e61 100%);
+    color: #ffffff;
+}
+
+.theme-btn i {
+    font-size: 16px;
 }
 
 /* Responsive design */
