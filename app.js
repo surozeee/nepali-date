@@ -121,5 +121,148 @@ function hasNepaliDate() {
         $('#basic-english').text(adStr);
       }
     });
+
+    // ---------- Demo Functions ----------
+    function showDatepickerInfo(type) {
+      // Get the datepicker element and its selected date
+      let datepickerId = '';
+      let selectedDate = null;
+      let selectedDateFormatted = '';
+      
+      // Map type to datepicker ID
+      switch(type) {
+        case 'basic':
+          datepickerId = 'basic-datepicker';
+          break;
+        case 'modern':
+          datepickerId = 'modern-datepicker';
+          break;
+        case 'minimal':
+          datepickerId = 'minimal-datepicker';
+          break;
+        case 'dark':
+          datepickerId = 'dark-datepicker';
+          break;
+        case 'range':
+          datepickerId = 'range-datepicker';
+          break;
+        case 'time':
+          datepickerId = 'time-datepicker';
+          break;
+        case 'readonly':
+          datepickerId = 'readonly-datepicker';
+          break;
+        case 'disabled':
+          datepickerId = 'disabled-datepicker';
+          break;
+        default:
+          datepickerId = 'basic-datepicker';
+      }
+      
+      // Get selected date from datepicker
+      const $datepicker = $('#' + datepickerId);
+      if ($datepicker.length) {
+        const api = $datepicker.data('nepaliDatepicker');
+        if (api && typeof api.getDate === 'function') {
+          selectedDate = api.getDate();
+          selectedDateFormatted = $datepicker.val();
+        }
+      }
+      
+      // Convert selected date to both formats
+      let nepaliDate = 'No date selected';
+      let englishDate = 'No date selected';
+      
+      if (selectedDate) {
+        // Format Nepali date
+        nepaliDate = `${selectedDate.year}-${String(selectedDate.month).padStart(2, '0')}-${String(selectedDate.day).padStart(2, '0')}`;
+        
+        // Convert to English date
+        const englishDateObj = bs2ad(selectedDate);
+        if (englishDateObj) {
+          englishDate = `${englishDateObj.year}-${String(englishDateObj.month).padStart(2, '0')}-${String(englishDateObj.day).padStart(2, '0')}`;
+        }
+      }
+      
+      let title = '';
+      let description = '';
+      let icon = 'info';
+      
+      switch(type) {
+        case 'basic':
+          title = 'Basic Datepicker';
+          description = 'Default light theme with Nepali language support. Perfect for standard date selection needs.';
+          icon = 'calendar';
+          break;
+        case 'modern':
+          title = 'Modern Datepicker';
+          description = 'Dark theme with English language. Clean and modern design for contemporary applications.';
+          icon = 'star';
+          break;
+        case 'minimal':
+          title = 'Minimal Datepicker';
+          description = 'Clean interface without today button. Ideal for minimal design requirements.';
+          icon = 'leaf';
+          break;
+        case 'dark':
+          title = 'Dark Theme Datepicker';
+          description = 'Dark theme optimized for low light conditions. Better visibility and reduced eye strain.';
+          icon = 'moon';
+          break;
+        case 'range':
+          title = 'Professional Datepicker';
+          description = 'Blue theme with professional appearance. Suitable for business applications.';
+          icon = 'briefcase';
+          break;
+        case 'time':
+          title = 'Time Datepicker';
+          description = 'Green theme with time picker functionality. Includes both date and time selection.';
+          icon = 'clock';
+          break;
+        case 'readonly':
+          title = 'Read-only Datepicker';
+          description = 'Pre-selected date (2081-01-01) with read-only functionality. Display only mode.';
+          icon = 'lock';
+          break;
+        case 'disabled':
+          title = 'Disabled Datepicker';
+          description = 'Datepicker with disabled date functionality. Custom date restrictions available.';
+          icon = 'ban';
+          break;
+        default:
+          title = 'Datepicker Info';
+          description = 'Information not available for this datepicker type.';
+          icon = 'question';
+      }
+      
+      // Create HTML content with selected dates
+      const htmlContent = `
+        <div style="text-align: left; margin: 20px 0;">
+          <p style="margin-bottom: 15px; font-size: 16px;">${description}</p>
+          <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; border-left: 4px solid #007bff;">
+            <h4 style="margin: 0 0 10px 0; color: #333;">Selected Date Information:</h4>
+            <p style="margin: 5px 0;"><strong>Nepali Date (BS):</strong> <span style="color: #e74c3c;">${nepaliDate}</span></p>
+            <p style="margin: 5px 0;"><strong>English Date (AD):</strong> <span style="color: #27ae60;">${englishDate}</span></p>
+            ${selectedDateFormatted ? `<p style="margin: 5px 0;"><strong>Formatted:</strong> <span style="color: #6c757d;">${selectedDateFormatted}</span></p>` : ''}
+          </div>
+        </div>
+      `;
+      
+      Swal.fire({
+        title: title,
+        html: htmlContent,
+        icon: icon,
+        confirmButtonText: 'Got it!',
+        confirmButtonColor: '#007bff',
+        width: '500px',
+        customClass: {
+          popup: 'swal-wide'
+        }
+      });
+    }
+   // make it accessible to inline onclick=""
+   window.showDatepickerInfo = showDatepickerInfo;
   })(jQuery);
+
+  
   
