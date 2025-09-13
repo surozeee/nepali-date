@@ -92,12 +92,7 @@ function hasNepaliDate() {
     $input.removeData('_repositionCb');
   }
   
-  // ---------- Datepicker init ----------
-  document.addEventListener('DOMContentLoaded', () => {
-    initPickers();
-  });
-  
-  function initPickers() {
+  (function ($) {
     // Basic picker — on select, emit AD version
     $('#basic-datepicker').nepaliDatepicker({
       theme: 'light',
@@ -111,5 +106,5 @@ function hasNepaliDate() {
         $('#basic-english').text(adStr);
       }
     });
-  }
+  })(jQuery);
   
