@@ -1409,3 +1409,8 @@ input {
 
 .shadow { box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); }
 .shadow-lg { box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1); }
+/* White text when the 'today' cell is on Saturday */
+.nepali-datepicker .day.today:nth-child(7n) .nepali-date,
+.nepali-datepicker .day.today:nth-child(7n) .english-date-subscript {
+  color: #fff !important;
+}

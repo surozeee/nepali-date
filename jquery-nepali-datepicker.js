@@ -310,10 +310,28 @@
     var ACTIVE = null;        // HTMLElement of the open dp
     var ACTIVE_INPUT = null;  // Input element for the open dp
   
-    function getTodayBS(){
-      var now = new Date(); // local today; use local parts to avoid offset
-      return adToBS({ year: now.getFullYear(), month: now.getMonth()+1, day: now.getDate() });
+    // function getTodayBS(){
+    //   var now = new Date(); // local today; use local parts to avoid offset
+    //   return adToBS({ year: now.getFullYear(), month: now.getMonth()+1, day: now.getDate()+1 });
+    // }
+    // helper: "today" in AD using a fixed offset (if provided)
+    function getTodayADParts(settings){
+      var now = new Date();
+      if (settings && typeof settings.tzOffset === 'number') {
+        // Convert "now" to UTC ms, then apply target offset
+        var utcMs = now.getTime() + now.getTimezoneOffset()*60000;
+        var z = new Date(utcMs + settings.tzOffset*60000);
+        return { year: z.getUTCFullYear(), month: z.getUTCMonth()+1, day: z.getUTCDate() };
+      }
+      // Fallback: device local
+      return { year: now.getFullYear(), month: now.getMonth()+1, day: now.getDate()+1 };
     }
+
+    function getTodayBS(settings){
+      var ad = getTodayADParts(settings);
+      return adToBS(ad);
+    }
+
     function getDaysInMonth(bs){ return dim(bs); }
     function firstWeekday(bs){
       var a = bsToAD({year:bs.year,month:bs.month,day:1});
