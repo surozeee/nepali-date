@@ -526,7 +526,7 @@
             for (var p=first-1; p>=0; p--) {
               var pd = pmDim - p;
               var eP = bsToAD({year:py,month:pm,day:pd});
-              html += '<div class="day other-month" aria-disabled="true"><div class="nepali-date">'+ toNepNum(String(pd).padStart(2,'0')) +'</div><div class="english-date-subscript">'+ eP.day +'</div></div>';
+              html += '<div class="day other-month" aria-disabled="true"><div class="nepali-date">'+ toNepNum(String(pd)) +'</div><div class="english-date-subscript">'+ eP.day +'</div></div>';
             }
   
             // current month
@@ -536,7 +536,7 @@
               var cls = 'day' + (isT?' today':'') + (isS?' selected':'');
               var eD = bsToAD({year:cur.year,month:cur.month,day:d});
               html += '<div class="'+cls+'" data-action="select-day" data-day="'+d+'" aria-label="Select '+d+'" role="button" tabindex="0">';
-              html +=   '<div class="nepali-date">'+ toNepNum(String(d).padStart(2,'0')) +'</div><div class="english-date-subscript">'+ eD.day +'</div>';
+              html +=   '<div class="nepali-date">'+ toNepNum(String(d)) +'</div><div class="english-date-subscript">'+ eD.day +'</div>';
               html += '</div>';
             }
   
@@ -547,7 +547,7 @@
             var ny = cur.month===12?cur.year+1:cur.year;
             for (var n=1; n<=remain; n++) {
               var eN = bsToAD({year:ny,month:nm,day:n});
-              html += '<div class="day other-month" aria-disabled="true"><div class="nepali-date">'+ toNepNum(String(n).padStart(2,'0')) +'</div><div class="english-date-subscript">'+ eN.day +'</div></div>';
+              html += '<div class="day other-month" aria-disabled="true"><div class="nepali-date">'+ toNepNum(String(n)) +'</div><div class="english-date-subscript">'+ eN.day +'</div></div>';
             }
   
             html +=   '</div>'; // .days
