@@ -47,7 +47,7 @@ function hasNepaliDate() {
   
   // ---------- Smart positioning + outside close (no plugin edits) ----------
   function getOpenPickerEl() {
-    // The plugin appends the panel to <body>; when open it’s the visible one.
+    // The plugin appends the panel to <body>; when open it's the visible one.
     const $dp = $('.nepali-datepicker:visible').last();
     return $dp.length ? $dp : null;
   }
@@ -109,8 +109,8 @@ function hasNepaliDate() {
     });
 
     $('#modern-datepicker').nepaliDatepicker({
-      theme: 'dark',
-      language: 'english',
+      theme: 'blue',
+      language: 'nepali',
       dateFormat: 'YYYY-MM-DD',
       showToday: false,
       date: new Date(),
@@ -119,7 +119,89 @@ function hasNepaliDate() {
         const ad = bs2ad(bs);
         const adStr = fmtAD(ad);
         console.log('Selected (BS):', formatted, '→ (AD):', adStr);
-        $('#basic-english').text(adStr);
+      }
+    });
+
+    $('#minimal-datepicker').nepaliDatepicker({
+      theme: 'light',
+      language: 'nepali',
+      dateFormat: 'YYYY-MM-DD',
+      showToday: false,
+      autoClose: true,
+      onSelect: (bs, formatted) => {
+        console.log('Minimal datepicker selected:', formatted);
+      }
+    });
+
+    $('#dark-datepicker').nepaliDatepicker({
+      theme: 'dark',
+      language: 'nepali',
+      dateFormat: 'YYYY-MM-DD',
+      showToday: false,
+      onSelect: (bs, formatted) => {
+        console.log('Dark datepicker selected:', formatted);
+      }
+    });
+
+    $('#range-datepicker').nepaliDatepicker({
+      theme: 'blue',
+      language: 'nepali',
+      dateFormat: 'YYYY-MM-DD',
+      showToday: false,
+      onSelect: (bs, formatted) => {
+        console.log('Range datepicker selected:', formatted);
+      }
+    });
+
+    $('#time-datepicker').nepaliDatepicker({
+      theme: 'green',
+      language: 'nepali',
+      dateFormat: 'YYYY-MM-DD',
+      showToday: false,
+      onSelect: (bs, formatted) => {
+        console.log('Time datepicker selected:', formatted);
+      }
+    });
+
+    $('#readonly-datepicker').nepaliDatepicker({
+      theme: 'light',
+      language: 'nepali',
+      dateFormat: 'YYYY-MM-DD',
+      showToday: false,
+      autoClose: false,
+      onSelect: (bs, formatted) => {
+        console.log('Readonly datepicker selected:', formatted);
+      }
+    });
+
+    // Set default date for readonly datepicker
+    setTimeout(() => {
+      const readonlyApi = $('#readonly-datepicker').data('nepaliDatepicker');
+      if (readonlyApi) {
+        readonlyApi.setDate({ year: 2081, month: 1, day: 1 });
+      }
+    }, 100);
+
+    $('#disabled-datepicker').nepaliDatepicker({
+      theme: 'light',
+      language: 'nepali',
+      dateFormat: 'YYYY-MM-DD',
+      showToday: false,
+      onSelect: (bs, formatted) => {
+        console.log('Disabled datepicker selected:', formatted);
+      }
+    });
+
+    $('#modal-datepicker').nepaliDatepicker({
+      theme: 'light',
+      language: 'nepali',
+      dateFormat: 'YYYY-MM-DD',
+      showToday: false,
+      modal: false, // Already in a modal
+      autoClose: false,
+      onSelect: (bs, formatted) => {
+        $('#modal-result').text(`Selected: ${formatted}`);
+        console.log('Modal datepicker selected:', formatted);
       }
     });
 
@@ -261,9 +343,225 @@ function hasNepaliDate() {
         }
       });
     }
+
+    // ---------- Additional Demo Functions ----------
+    function loadDemoData() {
+      const demoDates = [
+        { id: 'basic-datepicker', date: { year: 2081, month: 6, day: 15 } },
+        { id: 'modern-datepicker', date: { year: 2081, month: 8, day: 22 } },
+        { id: 'minimal-datepicker', date: { year: 2081, month: 10, day: 5 } },
+        { id: 'dark-datepicker', date: { year: 2081, month: 12, day: 18 } },
+        { id: 'range-datepicker', date: { year: 2082, month: 2, day: 3 } },
+        { id: 'time-datepicker', date: { year: 2082, month: 4, day: 12 } },
+        { id: 'disabled-datepicker', date: { year: 2081, month: 3, day: 25 } }
+      ];
+
+      demoDates.forEach(({ id, date }) => {
+        const $input = $('#' + id);
+        if ($input.length) {
+          const api = $input.data('nepaliDatepicker');
+          if (api && typeof api.setDate === 'function') {
+            api.setDate(date);
+          }
+        }
+      });
+
+      Swal.fire({
+        title: 'Demo Data Loaded!',
+        text: 'Sample dates have been loaded into all datepickers.',
+        icon: 'success',
+        confirmButtonText: 'Great!',
+        confirmButtonColor: '#28a745'
+      });
+    }
+
+    function resetAllDatepickers() {
+      const datepickers = [
+        'basic-datepicker', 'modern-datepicker', 'minimal-datepicker',
+        'dark-datepicker', 'range-datepicker', 'time-datepicker',
+        'disabled-datepicker', 'modal-datepicker'
+      ];
+
+      datepickers.forEach(id => {
+        const $input = $('#' + id);
+        if ($input.length) {
+          const api = $input.data('nepaliDatepicker');
+          if (api && typeof api.clear === 'function') {
+            api.clear();
+          }
+        }
+      });
+
+      $('#modal-result').text('');
+      
+      Swal.fire({
+        title: 'All Reset!',
+        text: 'All datepickers have been cleared.',
+        icon: 'info',
+        confirmButtonText: 'OK',
+        confirmButtonColor: '#6c757d'
+      });
+    }
+
+    function openModal() {
+      const modal = document.getElementById('datepicker-modal');
+      if (modal) {
+        modal.style.display = 'block';
+        
+        // Initialize modal datepicker if not already done
+        const $modalInput = $('#modal-datepicker');
+        if ($modalInput.length && !$modalInput.data('nepaliDatepicker')) {
+          $modalInput.nepaliDatepicker({
+            theme: 'light',
+            language: 'nepali',
+            dateFormat: 'YYYY-MM-DD',
+            modal: false, // Already in a modal
+            showToday: false,
+            autoClose: false,
+            onSelect: function(bs, formatted) {
+              $('#modal-result').text(`Selected: ${formatted}`);
+            }
+          });
+        }
+      }
+    }
+
+    function closeModal() {
+      const modal = document.getElementById('datepicker-modal');
+      if (modal) {
+        modal.style.display = 'none';
+      }
+    }
+
+    // ---------- Configuration Panel Handlers ----------
+    function initConfigPanel() {
+      // Theme selector
+      $('#theme-selector').on('change', function() {
+        const newTheme = $(this).val();
+        updateAllDatepickers('theme', newTheme);
+      });
+
+      // Language selector
+      $('#language-selector').on('change', function() {
+        const newLanguage = $(this).val();
+        updateAllDatepickers('language', newLanguage);
+      });
+
+      // Format selector
+      $('#format-selector').on('change', function() {
+        const newFormat = $(this).val();
+        updateAllDatepickers('dateFormat', newFormat);
+      });
+    }
+
+    function updateAllDatepickers(property, value) {
+      const datepickers = [
+        'basic-datepicker', 'modern-datepicker', 'minimal-datepicker',
+        'dark-datepicker', 'range-datepicker', 'time-datepicker',
+        'readonly-datepicker', 'disabled-datepicker', 'modal-datepicker'
+      ];
+
+      datepickers.forEach(id => {
+        const $input = $('#' + id);
+        if ($input.length) {
+          const api = $input.data('nepaliDatepicker');
+          if (api && typeof api.destroy === 'function') {
+            // Get current selected date before destroying
+            const currentDate = api.getDate();
+            
+            // Destroy and recreate with new settings
+            api.destroy();
+            
+            // Reinitialize with new property
+            const config = {
+              theme: 'light',
+              language: 'nepali',
+              dateFormat: 'YYYY-MM-DD',
+              showToday: false,
+              autoClose: true,
+              onSelect: function(bs, formatted) {
+                console.log(`${id} selected:`, formatted);
+                if (id === 'modal-datepicker') {
+                  $('#modal-result').text(`Selected: ${formatted}`);
+                }
+              }
+            };
+            
+            // Apply the new property
+            config[property] = value;
+            
+            // Special configurations for different datepickers
+            switch(id) {
+              case 'modern-datepicker':
+                config.theme = 'blue';
+                break;
+              case 'dark-datepicker':
+                config.theme = 'dark';
+                break;
+              case 'range-datepicker':
+                config.theme = 'blue';
+                break;
+              case 'time-datepicker':
+                config.theme = 'green';
+                break;
+              case 'readonly-datepicker':
+                config.autoClose = false;
+                break;
+              case 'modal-datepicker':
+                config.modal = false;
+                config.autoClose = false;
+                break;
+            }
+            
+            $input.nepaliDatepicker(config);
+            
+            // Restore selected date if it existed
+            if (currentDate) {
+              setTimeout(() => {
+                const newApi = $input.data('nepaliDatepicker');
+                if (newApi && typeof newApi.setDate === 'function') {
+                  newApi.setDate(currentDate);
+                }
+              }, 50);
+            }
+          }
+        }
+      });
+    }
+
+    // ---------- Event Handlers ----------
+    function initEventHandlers() {
+      // Modal close handlers
+      $('.close').on('click', closeModal);
+      
+      // Close modal when clicking outside
+      $(window).on('click', function(event) {
+        const modal = document.getElementById('datepicker-modal');
+        if (event.target === modal) {
+          closeModal();
+        }
+      });
+
+      // Keyboard support for modal
+      $(document).on('keydown', function(event) {
+        if (event.key === 'Escape') {
+          closeModal();
+        }
+      });
+    }
+
+    // Initialize everything when document is ready
+    $(document).ready(function() {
+      initConfigPanel();
+      initEventHandlers();
+      console.log('Nepali Datepicker Demo initialized successfully!');
+    });
+
    // make it accessible to inline onclick=""
    window.showDatepickerInfo = showDatepickerInfo;
+   window.loadDemoData = loadDemoData;
+   window.resetAllDatepickers = resetAllDatepickers;
+   window.openModal = openModal;
   })(jQuery);
 
-  
   

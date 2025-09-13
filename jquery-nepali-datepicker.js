@@ -15,7 +15,7 @@
       language: 'nepali',             // 'nepali' | 'english' (digits/month names)
       dateFormat: 'YYYY-MM-DD',       // output format in the input
       placeholder: 'Select Date',
-      showToday: false,
+      showToday: true,
       autoClose: true,
       modal: false,                   // true => overlay modal
       onSelect: null,                 // function(bsObj, formatted){...}
