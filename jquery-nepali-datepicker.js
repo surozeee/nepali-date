@@ -284,6 +284,29 @@
     return table[year][month - 1];
   }
 
+  // Add this near: var INSTANCES = 0; var GLOBAL_BOUND = false; ...
+  var CURRENT_MODAL = null;
+
+  // Kill any previously-open modal (and its inner datepicker)
+  function destroyOpenModal() {
+    if (CURRENT_MODAL) {
+      $(CURRENT_MODAL).find('.nepali-datepicker').off('.ndp');
+      $(CURRENT_MODAL).remove();
+      CURRENT_MODAL = null;
+    } else {
+      // safety: remove any stray overlays if handle wasn’t set
+      $('.nepali-datepicker-modal-overlay').remove();
+    }
+  }
+
+  // Add near other globals
+  function closeActiveIfDifferent(el) {
+    if (ACTIVE && ACTIVE !== el) {
+      var closeFn = $(ACTIVE).data('__ndp_close__');
+      if (typeof closeFn === 'function') closeFn();
+    }
+  }
+
   // BS -> AD (UTC-safe; returns UTC components)
   function bsToAD(bs){
     bs = clampBS(bs);
@@ -457,15 +480,18 @@
 
       function open(){
         if (state.isOpen) return;
-
+      
+        // NEW: close any other open picker first (works for inline & modal)
+        closeActiveIfDifferent(state.$dp ? state.$dp[0] : null);
+      
         build();
         render();
-
+      
         state.isOpen = true;
         ACTIVE = state.$dp[0];
         ACTIVE_INPUT = $input[0];
         $input.attr('aria-expanded','true');
-
+      
         if (settings.modal && state.$overlay){
           state.$overlay.css('display','flex').addClass('ndp-enter');
           requestAnimationFrame(function(){ state.$overlay.removeClass('ndp-enter'); });

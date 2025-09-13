@@ -183,6 +183,10 @@ input {
     backdrop-filter: blur(4px);
 }
 
+.nepali-datepicker {
+    z-index: 10000 !important;
+}
+
 /* Modal content wrapper */
 .nepali-datepicker-modal-content {
     position: relative;

@@ -171,18 +171,19 @@ function hasNepaliDate() {
       dateFormat: 'YYYY-MM-DD',
       showToday: false,
       autoClose: false,
+      date: { year: 2081, month: 1, day: 1 },
       onSelect: (bs, formatted) => {
         console.log('Readonly datepicker selected:', formatted);
       }
     });
 
     // Set default date for readonly datepicker
-    setTimeout(() => {
-      const readonlyApi = $('#readonly-datepicker').data('nepaliDatepicker');
-      if (readonlyApi) {
-        readonlyApi.setDate({ year: 2081, month: 1, day: 1 });
-      }
-    }, 100);
+    // setTimeout(() => {
+    //   const readonlyApi = $('#readonly-datepicker').data('nepaliDatepicker');
+    //   if (readonlyApi) {
+    //     readonlyApi.setDate({ year: 2081, month: 1, day: 1 });
+    //   }
+    // }, 100);
 
     $('#disabled-datepicker').nepaliDatepicker({
       theme: 'light',
@@ -195,6 +196,18 @@ function hasNepaliDate() {
     });
 
     $('#modal-datepicker').nepaliDatepicker({
+      theme: 'light',
+      language: 'nepali',
+      dateFormat: 'YYYY-MM-DD',
+      showToday: false,
+      modal: false, // Already in a modal
+      autoClose: false,
+      onSelect: (bs, formatted) => {
+        $('#modal-result').text(`Selected: ${formatted}`);
+        console.log('Modal datepicker selected:', formatted);
+      }
+    });
+    $('#modal-datepicker-modal').nepaliDatepicker({
       theme: 'light',
       language: 'nepali',
       dateFormat: 'YYYY-MM-DD',
