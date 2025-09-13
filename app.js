@@ -98,6 +98,21 @@ function hasNepaliDate() {
       theme: 'light',
       language: 'nepali',
       dateFormat: 'YYYY/MM/DD',
+      showToday: false,
+      date: new Date(),
+      onSelect: (bs, formatted) => {
+        const ad = bs2ad(bs);
+        const adStr = fmtAD(ad);
+        console.log('Selected (BS):', formatted, '→ (AD):', adStr);
+        $('#basic-english').text(adStr);
+      }
+    });
+
+    $('#modern-datepicker').nepaliDatepicker({
+      theme: 'dark',
+      language: 'english',
+      dateFormat: 'YYYY-MM-DD',
+      showToday: false,
       date: new Date(),
       onSelect: (bs, formatted) => {
         const ad = bs2ad(bs);
