@@ -521,7 +521,6 @@ input {
     grid-template-columns: repeat(3, 1fr);
     grid-template-rows: repeat(4, 1fr);
     gap: 4px;
-    height: 180px; /* Match main calendar height exactly */
     width: calc(100% - 0px); /* Match header content width (subtract body padding) */
     margin: 0 auto; /* Center the grid within the body */
 }
