@@ -100,8 +100,6 @@ function hasNepaliDate() {
       dateFormat: 'YYYY/MM/DD',
       showToday: false,
       date: new Date(),
-      minDate: '2082-05-01',
-      maxDate: '2082-06-30',
       onSelect: (bs, formatted) => {
         const ad = bs2ad(bs);
         const adStr = fmtAD(ad);
@@ -116,7 +114,6 @@ function hasNepaliDate() {
       dateFormat: 'YYYY-MM-DD',
       showToday: false,
       date: new Date(),
-      tzOffset: 345,
       onSelect: (bs, formatted) => {
         const ad = bs2ad(bs);
         const adStr = fmtAD(ad);
@@ -211,6 +208,7 @@ function hasNepaliDate() {
       language: 'nepali',
       dateFormat: 'YYYY-MM-DD',
       showToday: false,
+      readOnly: true,
       autoClose: false,
       date: { year: 2081, month: 1, day: 1 },
       onSelect: (bs, formatted) => {

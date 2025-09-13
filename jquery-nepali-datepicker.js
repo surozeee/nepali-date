@@ -23,6 +23,7 @@
     onClose: null,
     // timezone minutes offset for "today" computation (Nepal = 345)
     tzOffset: 345,
+    readonly: false,
 
     // Constraints
     minDate: null,              // e.g. '2081-01-01' (BS) or {year,month,day}
@@ -565,39 +566,48 @@
       function render(){
         var cur = state.current;
         var html = '';
-
+      
+        // helper already in your file
+        function englishHeaderFor(bsYear, bsMonth){
+          var ad = bsToAD({year:bsYear, month:bsMonth, day:1});
+          var nextM = ad.month === 12 ? 1 : ad.month + 1;
+          var nextY = ad.month === 12 ? ad.year + 1 : ad.year;
+          return englishMonthNamesShort[ad.month-1]+' '+ad.year+' / '+englishMonthNamesShort[nextM-1]+' '+nextY;
+        }
+      
         if (state.view === 'month'){
           var canPrevY = isYearValid(cur.year - 1);
           var canNextY = isYearValid(cur.year + 1);
-
+      
           html += '<div class="datepicker-header">';
-          html += '<div class="nav-btn prev-year'+(canPrevY?'':' disabled')+'" data-action="prev-year" title="Previous Year" aria-label="Previous Year" role="button" tabindex="0">&#171;</div>';
-          html += '<div class="nav-btn prev-month" data-action="prev-month" title="Previous Month" aria-label="Previous Month" role="button" tabindex="0">&#8249;</div>';
-
+          html += '<div class="nav-btn prev-year' + (canPrevY && !settings.readOnly ? '' : ' disabled') + '" data-action="prev-year" title="Previous Year" aria-label="Previous Year" role="button" tabindex="0">&#171;</div>';
+          html += '<div class="nav-btn prev-month' + (!settings.readOnly ? '' : ' disabled') + '" data-action="prev-month" title="Previous Month" aria-label="Previous Month" role="button" tabindex="0">&#8249;</div>';
+      
           html += '<div class="month-year">';
           html +=   '<div class="nepali-date-display">';
           html +=     '<span class="month">'+ monthNames[settings.language][cur.month-1] +'</span> ';
           html +=     '<span class="year">'+ toNepNum(cur.year) +'</span>';
           html +=   '</div>';
-          html +=   '<div class="clickable-month-year-trigger" data-action="show-month-list" aria-label="Choose month/year" role="button" tabindex="0"></div>';
+          // trigger is disabled visually by CSS via pointer-events if readOnly; we still render for layout
+          html +=   '<div class="clickable-month-year-trigger' + (settings.readOnly ? ' disabled' : '') + '" data-action="show-month-list" aria-label="Choose month/year" role="button" tabindex="0"></div>';
           html +=   '<div class="english-date-header">'+ englishHeaderFor(cur.year, cur.month) +'</div>';
           html += '</div>';
-
-          html += '<div class="nav-btn next-month" data-action="next-month" title="Next Month" aria-label="Next Month" role="button" tabindex="0">&#8250;</div>';
-          html += '<div class="nav-btn next-year'+(canNextY?'':' disabled')+'" data-action="next-year" title="Next Year" aria-label="Next Year" role="button" tabindex="0">&#187;</div>';
+      
+          html += '<div class="nav-btn next-month' + (!settings.readOnly ? '' : ' disabled') + '" data-action="next-month" title="Next Month" aria-label="Next Month" role="button" tabindex="0">&#8250;</div>';
+          html += '<div class="nav-btn next-year' + (canNextY && !settings.readOnly ? '' : ' disabled') + '" data-action="next-year" title="Next Year" aria-label="Next Year" role="button" tabindex="0">&#187;</div>';
           html += '</div>';
-
+      
           html += '<div class="datepicker-body">';
           html +=   '<div class="weekdays">';
           for (var i=0;i<7;i++) html += '<div class="weekday">'+ dayNamesShort[settings.language][i] +'</div>';
           html +=   '</div>';
-
+      
           html +=   '<div class="days">';
           var first = firstWeekday(cur);
           var daysIn = getDaysInMonth(cur);
           var today  = getTodayBS(settings);
           var C = $input.data('__ndp_constraints__') || {minBS:null, maxBS:null, disabledSet:new Set()};
-
+      
           // prev month tail
           var pm = cur.month===1?12:cur.month-1;
           var py = cur.month===1?cur.year-1:cur.year;
@@ -607,21 +617,24 @@
             var eP = bsToAD({year:py,month:pm,day:pd});
             html += '<div class="day other-month" aria-disabled="true"><div class="nepali-date">'+ toNepNum(String(pd)) +'</div><div class="english-date-subscript">'+ eP.day +'</div></div>';
           }
-
+      
           // current month
           for (var d=1; d<=daysIn; d++) {
             var bsDate = {year:cur.year,month:cur.month,day:d};
             var isT = same(bsDate, today);
             var isS = state.selected && same(bsDate, state.selected);
-            var isDisabled = isOutOfRange(bsDate, C.minBS, C.maxBS) || C.disabledSet.has(keyBS(bsDate));
+      
+            // readOnly forces disabled
+            var isDisabled = settings.readOnly || isOutOfRange(bsDate, C.minBS, C.maxBS) || C.disabledSet.has(keyBS(bsDate));
+      
             var cls = 'day' + (isT?' today':'') + (isS?' selected':'') + (isDisabled?' disabled':'');
             var eD = bsToAD(bsDate);
             html += '<div class="'+cls+'" data-action="select-day" data-day="'+d+'" '+(isDisabled?'aria-disabled="true"':'')+' role="button" tabindex="0">';
             html +=   '<div class="nepali-date">'+ toNepNum(String(d)) +'</div><div class="english-date-subscript">'+ eD.day +'</div>';
             html += '</div>';
           }
-
-          // next month head to fill 35 cells
+      
+          // next month head fill to 35 cells
           var totalFilled = first + daysIn;
           var remain = 35 - totalFilled;
           var nm = cur.month===12?1:cur.month+1;
@@ -630,11 +643,10 @@
             var eN = bsToAD({year:ny,month:nm,day:n});
             html += '<div class="day other-month" aria-disabled="true"><div class="nepali-date">'+ toNepNum(String(n)) +'</div><div class="english-date-subscript">'+ eN.day +'</div></div>';
           }
-
+      
           html +=   '</div>'; // .days
           if (settings.showToday) {
-            // disable "Today" if it's constrained out
-            var tDis = isOutOfRange(today, C.minBS, C.maxBS) || C.disabledSet.has(keyBS(today));
+            var tDis = settings.readOnly || isOutOfRange(today, C.minBS, C.maxBS) || C.disabledSet.has(keyBS(today));
             html += '<div class="datepicker-footer"><div class="btn-today'+(tDis?' disabled':'')+'" '+(tDis?'aria-disabled="true"':'')+' data-action="today" aria-label="Select Today" role="button" tabindex="0">Today</div></div>';
           }
           html += '</div>'; // body
@@ -645,45 +657,47 @@
           var maxY = Math.max.apply(Math, years);
           var base = Math.floor(state.current.year/12)*12;
           var start = Math.max(minY, Math.min(maxY-11, base));
-
+      
           html += '<div class="datepicker-header">';
-          html += '<div class="nav-btn prev-decade'+(start-12>=minY?'':' disabled')+'" data-action="prev-decade" title="Previous 12 years" aria-label="Previous 12 years" role="button" tabindex="0">&#171;</div>';
+          html += '<div class="nav-btn prev-decade' + ((start-12>=minY) && !settings.readOnly ? '' : ' disabled') + '" data-action="prev-decade" title="Previous 12 years" aria-label="Previous 12 years" role="button" tabindex="0">&#171;</div>';
           html += '<div class="year-range"><span>'+ toNepNum(start) +' - '+ toNepNum(start+11) +'</span></div>';
-          html += '<div class="nav-btn next-decade'+(start+12<=maxY?'':' disabled')+'" data-action="next-decade" title="Next 12 years" aria-label="Next 12 years" role="button" tabindex="0">&#187;</div>';
+          html += '<div class="nav-btn next-decade' + ((start+12<=maxY) && !settings.readOnly ? '' : ' disabled') + '" data-action="next-decade" title="Next 12 years" aria-label="Next 12 years" role="button" tabindex="0">&#187;</div>';
           html += '</div>';
-
+      
           html += '<div class="datepicker-body year-view">';
           for (var y=start; y<start+12; y++) {
             var c = 'year-item';
             if (y === state.current.year) c += ' current';
             if (state.selected && y === state.selected.year) c += ' selected';
-            if (!isYearValid(y)) c += ' disabled';
-            html += '<div class="'+c+'" data-action="select-year" data-year="'+y+'" '+(!isYearValid(y)?'aria-disabled="true"':'')+' role="button" tabindex="0">'+ toNepNum(y) +'</div>';
+            if (!isYearValid(y) || settings.readOnly) c += ' disabled';
+            html += '<div class="'+c+'" data-action="select-year" data-year="'+y+'" '+((!isYearValid(y)||settings.readOnly)?'aria-disabled="true"':'')+' role="button" tabindex="0">'+ toNepNum(y) +'</div>';
           }
           html += '</div>';
         }
         else if (state.view === 'monthList'){
           var canPY = isYearValid(state.current.year-1);
           var canNY = isYearValid(state.current.year+1);
-
+      
           html += '<div class="datepicker-header">';
-          html += '<div class="nav-btn prev-year'+(canPY?'':' disabled')+'" data-action="prev-year" title="Previous Year" aria-label="Previous Year" role="button" tabindex="0">&#8249;</div>';
-          html += '<div class="year-display"><div class="clickable-year" data-action="show-year-range" aria-label="Choose year" role="button" tabindex="0">'+ toNepNum(state.current.year) +'</div></div>';
-          html += '<div class="nav-btn next-year'+(canNY?'':' disabled')+'" data-action="next-year" title="Next Year" aria-label="Next Year" role="button" tabindex="0">&#8250;</div>';
+          html += '<div class="nav-btn prev-year' + (canPY && !settings.readOnly ? '' : ' disabled') + '" data-action="prev-year" title="Previous Year" aria-label="Previous Year" role="button" tabindex="0">&#8249;</div>';
+          html += '<div class="year-display"><div class="clickable-year' + (settings.readOnly ? ' disabled' : '') + '" data-action="show-year-range" aria-label="Choose year" role="button" tabindex="0">'+ toNepNum(state.current.year) +'</div></div>';
+          html += '<div class="nav-btn next-year' + (canNY && !settings.readOnly ? '' : ' disabled') + '" data-action="next-year" title="Next Year" aria-label="Next Year" role="button" tabindex="0">&#8250;</div>';
           html += '</div>';
-
+      
           html += '<div class="datepicker-body month-list-view">';
           for (var m=1; m<=12; m++) {
             var cls2 = 'month-item' + (m===state.current.month?' current':'') + (state.selected && m===state.selected.month?' selected':'');
-            html += '<div class="'+cls2+'" data-action="select-month" data-month="'+m+'" role="button" tabindex="0">'+ monthNames[settings.language][m-1] +'</div>';
+            if (settings.readOnly) cls2 += ' disabled';
+            html += '<div class="'+cls2+'" data-action="select-month" data-month="'+m+'" '+(settings.readOnly?'aria-disabled="true"':'')+' role="button" tabindex="0">'+ monthNames[settings.language][m-1] +'</div>';
           }
           html += '</div>';
         }
-
+      
         state.$dp[0].innerHTML = html;
         state.$dp.data('__ndp_close__', close);
         state.$dp.data('__ndp_position__', positionThrottled);
       }
+      
 
       function bindOnce(){
         if (state.bound || !state.$dp) return;
