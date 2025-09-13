@@ -100,6 +100,8 @@ function hasNepaliDate() {
       dateFormat: 'YYYY/MM/DD',
       showToday: false,
       date: new Date(),
+      minDate: '2082-05-01',
+      maxDate: '2082-06-30',
       onSelect: (bs, formatted) => {
         const ad = bs2ad(bs);
         const adStr = fmtAD(ad);
