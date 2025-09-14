@@ -195,7 +195,7 @@ function closeModal() {
         document.body.style.overflow = 'auto';
     }
 }
-
+console.log('2082 Shrawan days =', GetDaysInMonth(2082, 4)); // 31
 // Setup modal event listeners
 function setupModal() {
     const modal = document.getElementById('datepicker-modal');

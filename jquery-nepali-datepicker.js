@@ -1,1210 +1,625 @@
-/**
- * jQuery Nepali Datepicker Plugin
- * A simple, lightweight datepicker for Nepali dates using jQuery
+/*!
+ * Nepali Datepicker (jQuery) — Java logic parity
+ * - Anchor: BS 2000-09-17 == AD 1944-01-01
+ * - Single month-length source with overrides
+ * - adToBS / bsToAD ported from Java version (forward/backward walk)
  */
-
-(function($) {
+(function ($) {
     'use strict';
-
-    // Default options
+  
+    /*** ---------------- Options ---------------- ***/
     var defaults = {
-        theme: 'light',
-        language: 'nepali',
-        dateFormat: 'YYYY-MM-DD',
-        placeholder: 'Select Date',
-        showToday: true,
-        showClear: true,
-        autoClose: true,
-        modal: false, // New option for modal mode
-        showEnglishDate: true, // Show mini English date picker
-        onSelect: null,
-        onOpen: null,
-        onClose: null
+      theme: 'light',
+      language: 'nepali',          // 'nepali' | 'english'
+      dateFormat: 'YYYY-MM-DD',
+      placeholder: 'Select Date',
+      showToday: true,
+      autoClose: true,
+      modal: false,
+      onSelect: null,
+      onOpen: null,
+      onClose: null,
+      readonly: false
     };
-
-    // Nepali month names
+  
+    /*** ---------------- Labels ---------------- ***/
     var monthNames = {
-        nepali: ['बैशाख', 'जेष्ठ', 'आषाढ', 'श्रावण', 'भाद्र', 'आश्विन', 'कार्तिक', 'मंसिर', 'पौष', 'माघ', 'फाल्गुन', 'चैत्र'],
-        english: ['Baisakh', 'Jestha', 'Ashadh', 'Shrawan', 'Bhadra', 'Ashwin', 'Kartik', 'Mangsir', 'Poush', 'Magh', 'Falgun', 'Chaitra']
+      nepali: ['बैशाख','जेष्ठ','आषाढ','श्रावण','भाद्र','आश्विन','कार्तिक','मंसिर','पौष','माघ','फाल्गुन','चैत्र'],
+      english:['Baisakh','Jestha','Ashadh','Shrawan','Bhadra','Ashwin','Kartik','Mangsir','Poush','Magh','Falgun','Chaitra']
     };
-
-    // Day names
-    var dayNames = {
-        nepali: ['आइतबार', 'सोमबार', 'मंगलबार', 'बुधबार', 'बिहिबार', 'शुक्रबार', 'शनिबार'],
-        english: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
-    };
-
     var dayNamesShort = {
-        nepali: ['आइत', 'सोम', 'मंगल', 'बुध', 'बिहि', 'शुक्र', 'शनि'],
-        english: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+      nepali: ['आइत','सोम','मंगल','बुध','बिहि','शुक्र','शनि'],
+      english:['Sun','Mon','Tue','Wed','Thu','Fri','Sat']
     };
-
-    // English month names
-    var englishMonthNames = ['January', 'February', 'March', 'April', 'May', 'June', 
-                            'July', 'August', 'September', 'October', 'November', 'December'];
-    
-    var englishMonthNamesShort = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-                                 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-
-    // BS Calendar data - Updated with comprehensive data from official library (1970-2047)
+    var englishMonthNamesShort = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  
+    /*** ---------------- BS Calendar (1970–2100) ---------------- ***/
+    // Use your full table. (Copied from your Java source for parity)
     var bsCalendarData = {
-        1970: [31, 31, 32, 31, 31, 31, 30, 29, 30, 29, 30, 30],
-        1971: [31, 31, 32, 31, 32, 30, 30, 29, 30, 29, 30, 30],
-        1972: [31, 32, 31, 32, 31, 30, 30, 30, 29, 29, 30, 31],
-        1973: [30, 32, 31, 32, 31, 30, 30, 30, 29, 30, 29, 31],
-        1974: [31, 31, 32, 31, 31, 31, 30, 29, 30, 29, 30, 30],
-        1975: [31, 31, 32, 32, 31, 30, 30, 29, 30, 29, 30, 30],
-        1976: [31, 32, 31, 32, 31, 30, 30, 30, 29, 29, 30, 31],
-        1977: [30, 32, 31, 32, 31, 31, 29, 30, 29, 30, 29, 31],
-        1978: [31, 31, 32, 31, 31, 31, 30, 29, 30, 29, 30, 30],
-        1979: [31, 31, 32, 32, 31, 30, 30, 29, 30, 29, 30, 30],
-        1980: [31, 32, 31, 32, 31, 30, 30, 30, 29, 29, 30, 31],
-        1981: [31, 31, 31, 32, 31, 31, 29, 30, 30, 29, 30, 30],
-        1982: [31, 31, 32, 31, 31, 31, 30, 29, 30, 29, 30, 30],
-        1983: [31, 31, 32, 32, 31, 30, 30, 29, 30, 29, 30, 30],
-        1984: [31, 32, 31, 32, 31, 30, 30, 30, 29, 29, 30, 31],
-        1985: [31, 31, 31, 32, 31, 31, 29, 30, 30, 29, 30, 30],
-        1986: [31, 31, 32, 31, 31, 31, 30, 29, 30, 29, 30, 30],
-        1987: [31, 32, 31, 32, 31, 30, 30, 29, 30, 29, 30, 30],
-        1988: [31, 32, 31, 32, 31, 30, 30, 30, 29, 29, 30, 31],
-        1989: [31, 31, 31, 32, 31, 31, 30, 29, 30, 29, 30, 30],
-        1990: [31, 31, 32, 31, 31, 31, 30, 29, 30, 29, 30, 30],
-        1991: [31, 32, 31, 32, 31, 30, 30, 30, 29, 29, 30, 30],
-        1992: [31, 32, 31, 32, 31, 30, 30, 30, 29, 30, 29, 31],
-        1993: [31, 31, 31, 32, 31, 31, 30, 29, 30, 29, 30, 30],
-        1994: [31, 31, 32, 31, 31, 31, 30, 29, 30, 29, 30, 30],
-        1995: [31, 32, 31, 32, 31, 30, 30, 30, 29, 29, 30, 30],
-        1996: [31, 32, 31, 32, 31, 30, 30, 30, 29, 30, 29, 31],
-        1997: [31, 31, 32, 31, 31, 31, 30, 29, 30, 29, 30, 30],
-        1998: [31, 31, 32, 31, 31, 31, 30, 29, 30, 29, 30, 30],
-        1999: [31, 32, 31, 32, 31, 30, 30, 30, 29, 29, 30, 31],
-        2000: [30, 32, 31, 32, 31, 30, 30, 30, 29, 30, 29, 31],
-        2001: [31, 31, 32, 31, 31, 31, 30, 29, 30, 29, 30, 30],
-        2002: [31, 31, 32, 32, 31, 30, 30, 29, 30, 29, 30, 30],
-        2003: [31, 32, 31, 32, 31, 30, 30, 30, 29, 29, 30, 31],
-        2004: [30, 32, 31, 32, 31, 30, 30, 30, 29, 30, 29, 31],
-        2005: [31, 31, 32, 31, 31, 31, 30, 29, 30, 29, 30, 30],
-        2006: [31, 31, 32, 32, 31, 30, 30, 29, 30, 29, 30, 30],
-        2007: [31, 32, 31, 32, 31, 30, 30, 30, 29, 29, 30, 31],
-        2008: [31, 31, 31, 32, 31, 31, 29, 30, 30, 29, 29, 31],
-        2009: [31, 31, 32, 31, 31, 31, 30, 29, 30, 29, 30, 30],
-        2010: [31, 31, 32, 32, 31, 30, 30, 29, 30, 29, 30, 30],
-        2011: [31, 32, 31, 32, 31, 30, 30, 30, 29, 29, 30, 31],
-        2012: [31, 31, 31, 32, 31, 31, 29, 30, 30, 29, 30, 30],
-        2013: [31, 31, 32, 31, 31, 31, 30, 29, 30, 29, 30, 30],
-        2014: [31, 31, 32, 32, 31, 30, 30, 29, 30, 29, 30, 30],
-        2015: [31, 32, 31, 32, 31, 30, 30, 30, 29, 29, 30, 31],
-        2016: [31, 31, 31, 32, 31, 31, 29, 30, 30, 29, 30, 30],
-        2017: [31, 31, 32, 31, 31, 31, 30, 29, 30, 29, 30, 30],
-        2018: [31, 32, 31, 32, 31, 30, 30, 29, 30, 29, 30, 30],
-        2019: [31, 32, 31, 32, 31, 30, 30, 30, 29, 30, 29, 31],
-        2020: [31, 31, 31, 32, 31, 31, 30, 29, 30, 29, 30, 30],
-        2021: [31, 31, 32, 31, 31, 31, 30, 29, 30, 29, 30, 30],
-        2022: [31, 32, 31, 32, 31, 30, 30, 30, 29, 29, 30, 30],
-        2023: [31, 32, 31, 32, 31, 30, 30, 30, 29, 30, 29, 31],
-        2024: [31, 31, 31, 32, 31, 31, 30, 29, 30, 29, 30, 30],
-        2025: [31, 31, 32, 31, 31, 31, 30, 29, 30, 29, 30, 30],
-        2026: [31, 32, 31, 32, 31, 30, 30, 30, 29, 29, 30, 31],
-        2027: [30, 32, 31, 32, 31, 30, 30, 30, 29, 30, 29, 31],
-        2028: [31, 31, 32, 31, 31, 31, 30, 29, 30, 29, 30, 30],
-        2029: [31, 31, 32, 31, 32, 30, 30, 29, 30, 29, 30, 30],
-        2030: [31, 32, 31, 32, 31, 30, 30, 30, 29, 29, 30, 31],
-        2031: [30, 32, 31, 32, 31, 30, 30, 30, 29, 30, 29, 31],
-        2032: [31, 31, 32, 31, 31, 31, 30, 29, 30, 29, 30, 30],
-        2033: [31, 31, 32, 32, 31, 30, 30, 29, 30, 29, 30, 30],
-        2034: [31, 32, 31, 32, 31, 30, 30, 30, 29, 29, 30, 31],
-        2035: [30, 32, 31, 32, 31, 31, 29, 30, 30, 29, 29, 31],
-        2036: [31, 31, 32, 31, 31, 31, 30, 29, 30, 29, 30, 30],
-        2037: [31, 31, 32, 32, 31, 30, 30, 29, 30, 29, 30, 30],
-        2038: [31, 32, 31, 32, 31, 30, 30, 30, 29, 29, 30, 31],
-        2039: [31, 31, 31, 32, 31, 31, 29, 30, 30, 29, 30, 30],
-        2040: [31, 31, 32, 31, 31, 31, 30, 29, 30, 29, 30, 30],
-        2041: [31, 31, 32, 32, 31, 30, 30, 29, 30, 29, 30, 30],
-        2042: [31, 32, 31, 32, 31, 30, 30, 30, 29, 29, 30, 31],
-        2043: [31, 31, 31, 32, 31, 31, 29, 30, 30, 29, 30, 30],
-        2044: [31, 31, 32, 31, 31, 31, 30, 29, 30, 29, 30, 30],
-        2045: [31, 32, 31, 32, 31, 30, 30, 29, 30, 29, 30, 30],
-        2046: [31, 32, 31, 32, 31, 30, 30, 30, 29, 29, 30, 31],
-        2047: [31, 31, 31, 32, 31, 31, 30, 29, 30, 29, 30, 30],
-        2048: [31, 31, 32, 31, 31, 31, 30, 29, 30, 29, 30, 30],
-        2049: [31, 32, 31, 32, 31, 30, 30, 30, 29, 29, 30, 30],
-        2050: [31, 32, 31, 32, 31, 30, 30, 30, 29, 30, 29, 31],
-        2051: [31, 31, 32, 31, 31, 31, 30, 29, 30, 29, 30, 30],
-        2052: [31, 31, 32, 32, 31, 30, 30, 29, 30, 29, 30, 30],
-        2053: [31, 32, 31, 32, 31, 30, 30, 30, 29, 29, 30, 31],
-        2054: [30, 32, 31, 32, 31, 30, 30, 30, 29, 30, 29, 31],
-        2055: [31, 31, 32, 31, 31, 31, 30, 29, 30, 29, 30, 30],
-        2056: [31, 31, 32, 32, 31, 30, 30, 29, 30, 29, 30, 30],
-        2057: [31, 32, 31, 32, 31, 30, 30, 30, 29, 29, 30, 31],
-        2058: [31, 31, 31, 32, 31, 31, 29, 30, 30, 29, 30, 30],
-        2059: [31, 31, 32, 31, 31, 31, 30, 29, 30, 29, 30, 30],
-        2060: [31, 32, 31, 32, 31, 30, 30, 29, 30, 29, 30, 30],
-        2061: [31, 32, 31, 32, 31, 30, 30, 30, 29, 30, 29, 31],
-        2062: [31, 31, 31, 32, 31, 31, 30, 29, 30, 29, 30, 30],
-        2063: [31, 31, 32, 31, 31, 31, 30, 29, 30, 29, 30, 30],
-        2064: [31, 32, 31, 32, 31, 30, 30, 30, 29, 29, 30, 30],
-        2065: [31, 32, 31, 32, 31, 30, 30, 30, 29, 30, 29, 31],
-        2066: [31, 31, 32, 31, 31, 31, 30, 29, 30, 29, 30, 30],
-        2067: [31, 31, 32, 32, 31, 30, 30, 29, 30, 29, 30, 30],
-        2068: [31, 32, 31, 32, 31, 30, 30, 30, 29, 29, 30, 31],
-        2069: [30, 32, 31, 32, 31, 30, 30, 30, 29, 30, 29, 31],
-        2070: [31, 31, 32, 31, 31, 31, 30, 29, 30, 29, 30, 30],
-        2071: [31, 31, 32, 32, 31, 30, 30, 29, 30, 29, 30, 30],
-        2072: [31, 32, 31, 32, 31, 30, 30, 30, 29, 29, 30, 31],
-        2073: [31, 31, 31, 32, 31, 31, 29, 30, 30, 29, 30, 30],
-        2074: [31, 31, 32, 31, 31, 31, 30, 29, 30, 29, 30, 30],
-        2075: [31, 32, 31, 32, 31, 30, 30, 29, 30, 29, 30, 30],
-        2076: [31, 32, 31, 32, 31, 30, 30, 30, 29, 30, 29, 31],
-        2077: [31, 31, 31, 32, 31, 31, 30, 29, 30, 29, 30, 30],
-        2078: [31, 31, 32, 31, 31, 31, 30, 29, 30, 29, 30, 30],
-        2079: [31, 32, 31, 32, 31, 30, 30, 30, 29, 29, 30, 30],
-        2080: [31, 32, 31, 32, 31, 30, 30, 30, 29, 30, 29, 31],
-        2081: [31, 31, 32, 31, 31, 31, 30, 29, 30, 29, 30, 30],
-        2082: [31, 31, 32, 32, 31, 30, 30, 29, 30, 29, 30, 30],
-        2083: [31, 32, 31, 32, 31, 30, 30, 30, 29, 29, 30, 31],
-        2084: [30, 32, 31, 32, 31, 30, 30, 30, 29, 30, 29, 31],
-        2085: [31, 31, 32, 31, 31, 31, 30, 29, 30, 29, 30, 30],
-        2086: [31, 31, 32, 32, 31, 30, 30, 29, 30, 29, 30, 30],
-        2087: [31, 32, 31, 32, 31, 30, 30, 30, 29, 29, 30, 31],
-        2088: [31, 31, 31, 32, 31, 31, 29, 30, 30, 29, 30, 30],
-        2089: [31, 31, 32, 31, 31, 31, 30, 29, 30, 29, 30, 30],
-        2090: [31, 32, 31, 32, 31, 30, 30, 29, 30, 29, 30, 30],
-        2091: [31, 32, 31, 32, 31, 30, 30, 30, 29, 30, 29, 31],
-        2092: [31, 31, 31, 32, 31, 31, 30, 29, 30, 29, 30, 30],
-        2093: [31, 31, 32, 31, 31, 31, 30, 29, 30, 29, 30, 30],
-        2094: [31, 32, 31, 32, 31, 30, 30, 30, 29, 29, 30, 30],
-        2095: [31, 32, 31, 32, 31, 30, 30, 30, 29, 30, 29, 31],
-        2096: [31, 31, 32, 31, 31, 31, 30, 29, 30, 29, 30, 30],
-        2097: [31, 31, 32, 32, 31, 30, 30, 29, 30, 29, 30, 30],
-        2098: [31, 32, 31, 32, 31, 30, 30, 30, 29, 29, 30, 31],
-        2099: [30, 32, 31, 32, 31, 30, 30, 30, 29, 30, 29, 31],
-        2100: [31, 31, 32, 31, 31, 31, 30, 29, 30, 29, 30, 30]
+        1970:[31,31,32,31,31,31,30,29,30,29,30,30],
+        1971:[31,31,32,31,32,30,30,29,30,29,30,30],
+        1972:[31,32,31,32,31,30,30,30,29,29,30,31],
+        1973:[30,32,31,32,31,30,30,30,29,30,29,31],
+        1974:[31,31,32,31,31,31,30,29,30,29,30,30],
+        1975:[31,31,32,32,31,30,30,29,30,29,30,30],
+        1976:[31,32,31,32,31,30,30,30,29,29,30,31],
+        1977:[30,32,31,32,31,31,29,30,29,30,29,31],
+        1978:[31,31,32,31,31,31,30,29,30,29,30,30],
+        1979:[31,31,32,32,31,30,30,29,30,29,30,30],
+        1980:[31,32,31,32,31,30,30,30,29,29,30,31],
+        1981:[31,31,31,32,31,31,29,30,30,29,30,30],
+        1982:[31,31,32,31,31,31,30,29,30,29,30,30],
+        1983:[31,31,32,32,31,30,30,29,30,29,30,30],
+        1984:[31,32,31,32,31,30,30,30,29,29,30,31],
+        1985:[31,31,31,32,31,31,29,30,30,29,30,30],
+        1986:[31,31,32,31,31,31,30,29,30,29,30,30],
+        1987:[31,32,31,32,31,30,30,29,30,29,30,30],
+        1988:[31,32,31,32,31,30,30,30,29,29,30,31],
+        1989:[31,31,31,32,31,31,30,29,30,29,30,30],
+        1990:[31,31,32,31,31,31,30,29,30,29,30,30],
+        1991:[31,32,31,32,31,30,30,30,29,29,30,30],
+        1992:[31,32,31,32,31,30,30,30,29,30,29,31],
+        1993:[31,31,31,32,31,31,30,29,30,29,30,30],
+        1994:[31,31,32,31,31,31,30,29,30,29,30,30],
+        1995:[31,32,31,32,31,30,30,30,29,29,30,30],
+        1996:[31,32,31,32,31,30,30,30,29,30,29,31],
+        1997:[31,31,32,31,31,31,30,29,30,29,30,30],
+        1998:[31,31,32,31,31,31,30,29,30,29,30,30],
+        1999:[31,32,31,32,31,30,30,30,29,29,30,31],
+        2000:[30,32,31,32,31,30,30,30,29,30,29,31],
+        2001:[31,31,32,31,31,31,30,29,30,29,30,30],
+        2002:[31,31,32,32,31,30,30,29,30,29,30,30],
+        2003:[31,32,31,32,31,30,30,30,29,29,30,31],
+        2004:[30,32,31,32,31,30,30,30,29,30,29,31],
+        2005:[31,31,32,31,31,31,30,29,30,29,30,30],
+        2006:[31,31,32,32,31,30,30,29,30,29,30,30],
+        2007:[31,32,31,32,31,30,30,30,29,29,30,31],
+        2008:[31,31,31,32,31,31,29,30,30,29,29,31],
+        2009:[31,31,32,31,31,31,30,29,30,29,30,30],
+        2010:[31,31,32,32,31,30,30,29,30,29,30,30],
+        2011:[31,32,31,32,31,30,30,30,29,29,30,31],
+        2012:[31,31,31,32,31,31,29,30,30,29,30,30],
+        2013:[31,31,32,31,31,31,30,29,30,29,30,30],
+        2014:[31,31,32,32,31,30,30,29,30,29,30,30],
+        2015:[31,32,31,32,31,30,30,30,29,29,30,31],
+        2016:[31,31,31,32,31,31,29,30,30,29,30,30],
+        2017:[31,31,32,31,31,31,30,29,30,29,30,30],
+        2018:[31,32,31,32,31,30,30,29,30,29,30,30],
+        2019:[31,32,31,32,31,30,30,30,29,30,29,31],
+        2020:[31,31,31,32,31,31,30,29,30,29,30,30],
+        2021:[31,31,32,31,31,31,30,29,30,29,30,30],
+        2022:[31,32,31,32,31,30,30,30,29,29,30,30],
+        2023:[31,32,31,32,31,30,30,30,29,30,29,31],
+        2024:[31,31,31,32,31,31,30,29,30,29,30,30],
+        2025:[31,31,32,31,31,31,30,29,30,29,30,30],
+        2026:[31,32,31,32,31,30,30,30,29,29,30,31],
+        2027:[30,32,31,32,31,30,30,30,29,30,29,31],
+        2028:[31,31,32,31,31,31,30,29,30,29,30,30],
+        2029:[31,31,32,31,32,30,30,29,30,29,30,30],
+        2030:[31,32,31,32,31,30,30,30,29,29,30,31],
+        2031:[30,32,31,32,31,30,30,30,29,30,29,31],
+        2032:[31,31,32,31,31,31,30,29,30,29,30,30],
+        2033:[31,31,32,32,31,30,30,29,30,29,30,30],
+        2034:[31,32,31,32,31,30,30,30,29,29,30,31],
+        2035:[30,32,31,32,31,31,29,30,30,29,29,31],
+        2036:[31,31,32,31,31,31,30,29,30,29,30,30],
+        2037:[31,31,32,32,31,30,30,29,30,29,30,30],
+        2038:[31,32,31,32,31,30,30,30,29,29,30,31],
+        2039:[31,31,31,32,31,31,29,30,30,29,30,30],
+        2040:[31,31,32,31,31,31,30,29,30,29,30,30],
+        2041:[31,31,32,32,31,30,30,29,30,29,30,30],
+        2042:[31,32,31,32,31,30,30,30,29,29,30,31],
+        2043:[31,31,31,32,31,31,29,30,30,29,30,30],
+        2044:[31,31,32,31,31,31,30,29,30,29,30,30],
+        2045:[31,32,31,32,31,30,30,29,30,29,30,30],
+        2046:[31,32,31,32,31,30,30,30,29,29,30,31],
+        2047:[31,31,31,32,31,31,30,29,30,29,30,30],
+        2048:[31,31,32,31,31,31,30,29,30,29,30,30],
+        2049:[31,32,31,32,31,30,30,30,29,29,30,30],
+        2050:[31,32,31,32,31,30,30,30,29,30,29,31],
+        2051:[31,31,32,31,31,31,30,29,30,29,30,30],
+        2052:[31,31,32,32,31,30,30,29,30,29,30,30],
+        2053:[31,32,31,32,31,30,30,30,29,29,30,31],
+        2054:[30,32,31,32,31,30,30,30,29,30,29,31],
+        2055:[31,31,32,31,31,31,30,29,30,29,30,30],
+        2056:[31,31,32,32,31,30,30,29,30,29,30,30],
+        2057:[31,32,31,32,31,30,30,30,29,29,30,31],
+        2058:[31,31,31,32,31,31,29,30,30,29,30,30],
+        2059:[31,31,32,31,31,31,30,29,30,29,30,30],
+        2060:[31,32,31,32,31,30,30,29,30,29,30,30],
+        2061:[31,32,31,32,31,30,30,30,29,30,29,31],
+        2062:[31,31,31,32,31,31,30,29,30,29,30,30],
+        2063:[31,31,32,31,31,31,30,29,30,29,30,30],
+        2064:[31,32,31,32,31,30,30,30,29,29,30,30],
+        2065:[31,32,31,32,31,30,30,30,29,30,29,31],
+        2066:[31,31,32,31,31,31,30,29,30,29,30,30],
+        2067:[31,31,32,32,31,30,30,29,30,29,30,30],
+        2068:[31,32,31,32,31,30,30,30,29,29,30,31],
+        2069:[30,32,31,32,31,30,30,30,29,30,29,31],
+        2070:[31,31,32,31,31,31,30,29,30,29,30,30],
+        2071:[31,31,32,32,31,30,30,29,30,29,30,30],
+        2072:[31,32,31,32,31,30,30,30,29,29,30,31],
+        2073:[31,31,31,32,31,31,29,30,30,29,30,30],
+        2074:[31,31,32,31,31,31,30,29,30,29,30,30],
+        2075:[31,32,31,32,31,30,30,29,30,29,30,30],
+        2076:[31,32,31,32,31,30,30,30,29,30,29,31],
+        2077:[31,31,31,32,31,31,30,29,30,29,30,30],
+        2078:[31,31,32,31,31,31,30,29,30,29,30,30],
+        2079:[31,32,31,32,31,30,30,30,29,29,30,30],
+        2080:[31,32,31,32,31,30,30,30,29,30,29,31],
+        2081:[31,31,32,31,31,31,30,29,30,29,30,30],
+        2082:[31,31,32,32,31,30,30,29,30,29,30,30],
+        2083:[31,32,31,32,31,30,30,30,29,29,30,31],
+        2084:[30,32,31,32,31,30,30,30,29,30,29,31],
+        2085:[31,31,32,31,31,31,30,29,30,29,30,30],
+        2086:[31,31,32,32,31,30,30,29,30,29,30,30],
+        2087:[31,32,31,32,31,30,30,30,29,29,30,31],
+        2088:[31,31,31,32,31,31,29,30,30,29,30,30],
+        2089:[31,31,32,31,31,31,30,29,30,29,30,30],
+        2090:[31,32,31,32,31,30,30,29,30,29,30,30],
+        2091:[31,32,31,32,31,30,30,30,29,30,29,31],
+        2092:[31,31,31,32,31,31,30,29,30,29,30,30],
+        2093:[31,31,32,31,31,31,30,29,30,29,30,30],
+        2094:[31,32,31,32,31,30,30,30,29,29,30,30],
+        2095:[31,32,31,32,31,30,30,30,29,30,29,31],
+        2096:[31,31,32,31,31,31,30,29,30,29,30,30],
+        2097:[31,31,32,32,31,30,30,29,30,29,30,30],
+        2098:[31,32,31,32,31,30,30,30,29,29,30,31],
+        2099:[30,32,31,32,31,30,30,30,29,30,29,31],
+        2100:[31,31,32,31,31,31,30,29,30,29,30,30]
+      };
+  
+    /*** ---------------- Month length overrides ---------------- ***/
+    // Only use when official table has known corrections.
+    var BS_DAYS_OVERRIDE = {
+      2082: { 4: 31 } // Shrawan 2082 is 31 (not 32)
     };
-
-    // Helper functions for year limits
-    function getMinYear() {
-        return Math.min.apply(Math, Object.keys(bsCalendarData).map(Number));
+  
+    // Single source of truth
+    function GetDaysInMonth(year, month) {
+      year = Number(year); month = Number(month);
+      if (BS_DAYS_OVERRIDE[year] && BS_DAYS_OVERRIDE[year][month] != null) {
+        return Number(BS_DAYS_OVERRIDE[year][month]);
+      }
+      var row = bsCalendarData[year];
+      if (!row || month < 1 || month > 12) {
+        throw new Error('GetDaysInMonth: invalid year/month');
+      }
+      return Number(row[month - 1]);
     }
-
-    function getMaxYear() {
-        return Math.max.apply(Math, Object.keys(bsCalendarData).map(Number));
+  
+    function isYearValid(y){ return !!bsCalendarData[y]; }
+    function toNepNum(str){
+      var map=['०','१','२','३','४','५','६','७','८','९'];
+      return String(str).replace(/\d/g, function(d){ return map[+d]; });
     }
-
-    function isYearValid(year) {
-        return bsCalendarData.hasOwnProperty(year);
+    function fmt(settings, date){
+      if(!date) return '';
+      var y = settings.language==='nepali'? toNepNum(date.year) : date.year;
+      var mm = String(date.month).padStart(2,'0');
+      var dd = String(date.day).padStart(2,'0');
+      if (settings.language==='nepali'){ mm = toNepNum(mm); dd = toNepNum(dd); }
+      return settings.dateFormat.replace('YYYY',y).replace('MM',mm).replace('DD',dd);
     }
-
-    // Global datepicker management
-    var activeDatepicker = null;
-
-    function closeActiveDatepicker() {
-        if (activeDatepicker && activeDatepicker !== null) {
-            // Find the input element for the active datepicker
-            var $activeInput = $('input[data-nepali-datepicker-active="true"]');
-            if ($activeInput.length > 0) {
-                $activeInput.nepaliDatepicker('hide');
-                $activeInput.removeData('nepali-datepicker-active');
-            }
-            activeDatepicker = null;
+    function same(a,b){ return !!a && !!b && a.year===b.year && a.month===b.month && a.day===b.day; }
+  
+    /*** ---------------- Conversion (Java parity) ---------------- ***/
+    // Anchor pair (same as Java)
+    var ANCHOR_BS = { year:2000, month:9, day:17 };
+    var ANCHOR_AD = new Date(Date.UTC(1944,0,1)); // 1944-01-01 UTC
+    var DAY_MS    = 24*60*60*1000;
+  
+    // BS -> AD (returns {year,month,day})
+    function bsToAD(bsYear, bsMonth, bsDay) {
+      // validate (throws on error)
+      if (bsMonth < 1 || bsMonth > 12) throw new Error('Invalid BS month');
+      var dim = GetDaysInMonth(bsYear, bsMonth);
+      if (bsDay < 1 || bsDay > dim) throw new Error('Invalid BS day');
+  
+      var y1 = ANCHOR_BS.year, m1 = ANCHOR_BS.month, d1 = ANCHOR_BS.day;
+      var y2 = bsYear,         m2 = bsMonth,        d2 = bsDay;
+  
+      // compute day offset by walking
+      var days = 0, sign = 0;
+      if (y1===y2 && m1===m2 && d1===d2){ sign = 0; }
+      else if (y1<y2 || (y1===y2 && (m1<m2 || (m1===m2 && d1<d2)))) { sign = 1; }
+      else { sign = -1; }
+  
+      var y=y1, m=m1, d=d1;
+      if (sign >= 0) {
+        while (!(y===y2 && m===m2 && d===d2)) {
+          d++;
+          var dm = GetDaysInMonth(y, m);
+          if (d > dm) { d=1; m++; if (m>12){ m=1; y++; } }
+          days++;
         }
+      } else {
+        while (!(y===y2 && m===m2 && d===d2)) {
+          d--;
+          if (d < 1) { m--; if (m<1){ m=12; y--; } d = GetDaysInMonth(y, m); }
+          days++;
+        }
+        days = -days;
+      }
+  
+      var t = ANCHOR_AD.getTime() + days*DAY_MS;
+      var ad = new Date(t);
+      return { year: ad.getUTCFullYear(), month: ad.getUTCMonth()+1, day: ad.getUTCDate() };
     }
-
-    // Simplified global click handler based on official library
-    $(document).on('click.nepaliDatepickerGlobal', function(e) {
-        if (activeDatepicker && activeDatepicker !== null) {
-            var $target = $(e.target);
-            var $activeInput = $('input[data-nepali-datepicker-active="true"]');
-            var $modalOverlay = $('.nepali-datepicker-modal-overlay');
-            
-            // For modal mode, close if clicking on the overlay itself
-            if ($modalOverlay.length > 0) {
-                if ($target.is($modalOverlay)) {
-                    closeActiveDatepicker();
-                }
-            } else {
-                // For non-modal mode, check if click is outside both input and datepicker
-                if (!$target.closest($activeInput).length && 
-                    !$target.closest(activeDatepicker).length) {
-                    closeActiveDatepicker();
-                }
-            }
+  
+    // AD -> BS (returns {year,month,day})
+    function adToBS(input) {
+      var y, m, d;
+      if (input instanceof Date) {
+        y = input.getUTCFullYear(); m = input.getUTCMonth()+1; d = input.getUTCDate();
+      } else if (typeof input === 'string') {
+        var mm = /^(\d{4})-(\d{1,2})-(\d{1,2})$/.exec(input.trim());
+        if (!mm) throw new Error('AD2BS: invalid string YYYY-MM-DD');
+        y=+mm[1]; m=+mm[2]; d=+mm[3];
+      } else if (input && typeof input==='object') {
+        y=+input.year; m=+input.month; d=+input.day;
+      } else { throw new Error('AD2BS: invalid input'); }
+  
+      var t0 = Date.UTC(1944,0,1);
+      var t1 = Date.UTC(y, m-1, d);
+      var daysFromAnchor = Math.round((t1 - t0) / DAY_MS);
+  
+      var by = ANCHOR_BS.year, bm = ANCHOR_BS.month, bd = ANCHOR_BS.day;
+      if (daysFromAnchor >= 0) {
+        while (daysFromAnchor > 0) {
+          var daysInMonth = GetDaysInMonth(by, bm);
+          var remainingInMonth = daysInMonth - bd;
+          if (daysFromAnchor <= remainingInMonth) {
+            bd += daysFromAnchor;
+            daysFromAnchor = 0;
+          } else {
+            daysFromAnchor -= (remainingInMonth + 1);
+            bd = 1;
+            bm++;
+            if (bm > 12) { bm = 1; by++; }
+          }
         }
-    });
-
-    // Main plugin function
-    $.fn.nepaliDatepicker = function(options) {
-        return this.each(function() {
-            var $this = $(this);
-            var settings = $.extend({}, defaults, options);
-            
-            // Initialize the datepicker
-            initDatepicker($this, settings);
-        });
-    };
-
-    function initDatepicker($input, settings) {
-        var isOpen = false;
-        var selectedDate = null;
-        var currentDate = getCurrentNepaliDate();
-        var $datepicker = null;
-        var $modalOverlay = null;
-        var currentView = 'month'; // 'month', 'year', or 'monthList'
-
-        // Set input attributes
-        $input.attr('readonly', true);
-        $input.attr('placeholder', settings.placeholder);
-
-        // Create datepicker element
-        function createDatepicker() {
-            $datepicker = $('<div class="nepali-datepicker ' + settings.theme + '"></div>');
-            $datepicker.hide();
-            
-            if (settings.modal) {
-                // Create modal overlay with proper structure
-                $modalOverlay = $('<div class="nepali-datepicker-modal-overlay"></div>');
-                $modalOverlay.hide();
-                
-                // Create modal content wrapper
-                var $modalContent = $('<div class="nepali-datepicker-modal-content"></div>');
-                $modalContent.append($datepicker);
-                $modalOverlay.append($modalContent);
-                
-                // Add modal class to datepicker
-                $datepicker.addClass('modal');
-                
-                // Append to body
-                $('body').append($modalOverlay);
-            } else {
-            $('body').append($datepicker);
-            }
+      } else {
+        daysFromAnchor = -daysFromAnchor;
+        while (daysFromAnchor > 0) {
+          if (bd > 1) {
+            var step = Math.min(bd - 1, daysFromAnchor);
+            bd -= step;
+            daysFromAnchor -= step;
+          } else {
+            bm--;
+            if (bm < 1) { bm = 12; by--; }
+            bd = GetDaysInMonth(by, bm);
+            daysFromAnchor -= 1;
+          }
         }
-
-        // Show datepicker
-        function showDatepicker() {
-            if (isOpen) return;
-            
-            // Close any existing datepicker first
-            closeActiveDatepicker();
-            
-            createDatepicker();
-            renderDatepicker();
-            
-            isOpen = true;
-            activeDatepicker = $datepicker;
-            $input.attr('data-nepali-datepicker-active', 'true');
-            
-            // Position after a brief delay to ensure DOM is updated
-            setTimeout(function() {
-                if (settings.modal) {
-                    // Show modal overlay with proper animation
-                    $modalOverlay.css({
-                        'display': 'flex',
-                        'opacity': '0'
-                    }).animate({
-                        'opacity': '1'
-                    }, 300);
-                    
-                    bindDatepickerElementEvents(); // Bind datepicker-specific events
-                    
-                    // Animate datepicker appearance
-                    $datepicker.css({
-                        'opacity': '0',
-                        'transform': 'scale(0.9)'
-                    }).animate({
-                        'opacity': '1'
-                    }, 300, function() {
-                        $datepicker.css('transform', 'scale(1)');
-                    });
-                } else {
-            positionDatepicker();
-                    bindDatepickerElementEvents(); // Bind datepicker-specific events
-            $datepicker.fadeIn(300);
-                }
-            
-            if (settings.onOpen) {
-                settings.onOpen();
-            }
-            }, 10);
+      }
+      return { year: by, month: bm, day: bd };
+    }
+  
+    function firstWeekday(bs){
+      var ad = bsToAD(bs.year, bs.month, 1);
+      return new Date(Date.UTC(ad.year, ad.month-1, ad.day)).getUTCDay(); // 0=Sun
+    }
+  
+    /*** ---------------- Plugin ---------------- ***/
+    var ACTIVE=null, ACTIVE_INPUT=null, INSTANCES=0, GLOBAL_BOUND=false;
+  
+    function bindGlobal(){
+      if (GLOBAL_BOUND) return;
+      GLOBAL_BOUND = true;
+      $(document).on('mousedown.ndp-global', function(e){
+        if (!ACTIVE) return;
+        if ($(e.target).closest(ACTIVE).length) return;
+        if ($(e.target).closest(ACTIVE_INPUT).length) return;
+        var closeFn = $(ACTIVE).data('__ndp_close__');
+        if (closeFn) closeFn();
+      });
+      $(window).on('resize.ndp-global scroll.ndp-global', function(){
+        if (!ACTIVE) return;
+        var pos = $(ACTIVE).data('__ndp_position__');
+        if (pos) pos();
+      });
+    }
+    function unbindGlobalIfIdle(){
+      if (INSTANCES>0) return;
+      $(document).off('.ndp-global'); $(window).off('.ndp-global'); GLOBAL_BOUND=false;
+    }
+  
+    $.fn.nepaliDatepicker = function(options){
+      bindGlobal();
+      return this.each(function(){
+        var $input = $(this);
+        var settings = $.extend({}, defaults, options||{});
+        $input.attr('readonly', true).attr('placeholder', settings.placeholder);
+  
+        var todayAd = new Date();
+        var today = adToBS(new Date(Date.UTC(
+          todayAd.getFullYear(), todayAd.getMonth(), todayAd.getDate()
+        )));
+  
+        var state = {
+          isOpen:false,
+          selected:{year:today.year, month:today.month, day:today.day},
+          current: {year:today.year, month:today.month, day:today.day},
+          view:'month',
+          $dp:null, $overlay:null, bound:false
+        };
+        INSTANCES++;
+        $input.val(fmt(settings, state.selected));
+  
+        function englishHeaderFor(yy, mm){
+          var ad = bsToAD(yy, mm, 1);
+          var nm = ad.month===12?1:ad.month+1;
+          var ny = ad.month===12?ad.year+1:ad.year;
+          return englishMonthNamesShort[ad.month-1]+' '+ad.year+' / '+englishMonthNamesShort[nm-1]+' '+ny;
         }
-
-        // Hide datepicker
-        function hideDatepicker() {
-            if (!isOpen) return;
-            
-            isOpen = false;
-            
-            // Clean up global state
-            if (activeDatepicker === $datepicker) {
-                activeDatepicker = null;
-            }
-            $input.removeAttr('data-nepali-datepicker-active');
-            
-            if (settings.modal && $modalOverlay) {
-                // Hide modal with proper animation
-                $datepicker.animate({
-                    'opacity': '0',
-                    'transform': 'scale(0.9)'
-                }, 200, function() {
-                    $modalOverlay.animate({
-                        'opacity': '0'
-                    }, 200, function() {
-                        $modalOverlay.css('display', 'none');
-                    });
-                });
-            } else {
-            $datepicker.fadeOut(300);
-            }
-            
-            if (settings.onClose) {
-                settings.onClose();
-            }
+  
+        function build(){
+          if (state.$dp) return;
+          var $dp = $('<div class="nepali-datepicker '+settings.theme+'" role="dialog" aria-label="Date Picker"></div>').hide();
+          state.$dp = $dp;
+          if (settings.modal){
+            var $ov = $('<div class="nepali-datepicker-modal-overlay" role="dialog" aria-modal="true"></div>').hide();
+            var $ct = $('<div class="nepali-datepicker-modal-content"></div>');
+            $ct.append($dp); $ov.append($ct);
+            $('body').append($ov); state.$overlay=$ov;
+            $ov.on('click.ndp', function(e){ if (e.target===$ov[0]) close(); });
+            $ct.on('click.ndp', function(e){ e.stopPropagation(); });
+          } else {
+            $('body').append($dp);
+          }
+          bindOnce();
         }
-
-        // Toggle datepicker
-        function toggleDatepicker() {
-            if (isOpen) {
-                hideDatepicker();
-            } else {
-                showDatepicker();
+  
+        function open(){
+          if (state.isOpen) return;
+          
+          // Close any existing active datepicker before opening new one
+          if (ACTIVE && ACTIVE !== state.$dp[0]) {
+            var closeFn = $(ACTIVE).data('__ndp_close__');
+            if (closeFn) closeFn();
+          }
+          
+          build(); render();
+          state.isOpen=true; ACTIVE=state.$dp[0]; ACTIVE_INPUT=$input[0];
+          if (settings.modal && state.$overlay){ state.$overlay.css('display','flex'); }
+          else { position(); state.$dp.show(); }
+          if (settings.onOpen) settings.onOpen.call($input[0]);
+        }
+        function close(){
+          if (!state.isOpen) return;
+          state.isOpen=false; if (ACTIVE===state.$dp[0]){ ACTIVE=null; ACTIVE_INPUT=null; }
+          if (settings.modal && state.$overlay){ state.$overlay.hide(); } else { state.$dp.hide(); }
+          if (settings.onClose) settings.onClose.call($input[0]);
+        }
+        function position(){
+          if (!state.isOpen || settings.modal || !state.$dp) return;
+          var $dp=state.$dp, off=$input.offset(), ih=$input.outerHeight();
+          var dh=$dp.outerHeight()||280, dw=$dp.outerWidth()||320;
+          var $w=$(window), vh=$w.height(), vw=$w.width(), st=$w.scrollTop(), sl=$w.scrollLeft();
+          var below=vh-(off.top-st)-ih, above=(off.top-st);
+          var top, left;
+          if (below>=dh+10) top=off.top+ih+5;
+          else if (above>=dh+10) top=off.top-dh-5;
+          else top=Math.min(off.top+ih+5, st+vh-dh-10);
+          left=off.left; if (left+dw>sl+vw) left=sl+vw-dw-10; if (left<sl+10) left=sl+10;
+          $dp.css({position:'absolute', top:top, left:left, zIndex:9999});
+        }
+  
+        function render(){
+          var cur=state.current, html='';
+          if (state.view==='month'){
+            var canPrevY=isYearValid(cur.year-1), canNextY=isYearValid(cur.year+1);
+            html+='<div class="datepicker-header">';
+            html+='<div class="nav-btn prev-year'+(canPrevY&&!settings.readonly?'':' disabled')+'" data-action="prev-year" role="button" tabindex="0">&#171;</div>';
+            html+='<div class="nav-btn prev-month'+(!settings.readonly?'':' disabled')+'" data-action="prev-month" role="button" tabindex="0">&#8249;</div>';
+            html+='<div class="month-year clickable-month-year" data-action="show-month-list" role="button" tabindex="0"><div class="nepali-date-display">';
+            html+='<span class="month">'+monthNames[settings.language][cur.month-1]+'</span> ';
+            html+='<span class="year">'+toNepNum(cur.year)+'</span></div>';
+            html+='<div class="english-date-header">'+englishHeaderFor(cur.year,cur.month)+'</div></div>';
+            html+='<div class="nav-btn next-month'+(!settings.readonly?'':' disabled')+'" data-action="next-month" role="button" tabindex="0">&#8250;</div>';
+            html+='<div class="nav-btn next-year'+(canNextY&&!settings.readonly?'':' disabled')+'" data-action="next-year" role="button" tabindex="0">&#187;</div>';
+            html+='</div>';
+  
+            html+='<div class="datepicker-body"><div class="weekdays">';
+            for(var i=0;i<7;i++) html+='<div class="weekday">'+dayNamesShort[settings.language][i]+'</div>';
+            html+='</div><div class="days">';
+  
+            var first=firstWeekday(cur);
+            var daysIn=GetDaysInMonth(cur.year, cur.month);
+            var today=adToBS(new Date(Date.UTC(
+              new Date().getFullYear(), new Date().getMonth(), new Date().getDate()
+            )));
+  
+            // prev month tail
+            var pm=cur.month===1?12:cur.month-1, py=cur.month===1?cur.year-1:cur.year;
+            var pmDim=GetDaysInMonth(py, pm);
+            for (var p=first-1;p>=0;p--){
+              var pd=pmDim-p, eP=bsToAD(py,pm,pd);
+              html+='<div class="day other-month"><div class="nepali-date">'+toNepNum(pd)+'</div><div class="english-date-subscript">'+eP.day+'</div></div>';
             }
-        }
-
-        // Position datepicker
-        function positionDatepicker() {
-            var inputOffset = $input.offset();
-            var inputHeight = $input.outerHeight();
-            var inputWidth = $input.outerWidth();
-            var datepickerHeight = $datepicker.outerHeight() || 280; // Use actual height or fallback
-            var datepickerWidth = $datepicker.outerWidth() || 320; // Use actual width or fallback
-            var viewportHeight = $(window).height();
-            var viewportWidth = $(window).width();
-            var scrollTop = $(window).scrollTop();
-            var scrollLeft = $(window).scrollLeft();
-            
-            // Calculate available space below and above the input
-            var spaceBelow = viewportHeight - (inputOffset.top - scrollTop) - inputHeight;
-            var spaceAbove = inputOffset.top - scrollTop;
-            
-            var top, left;
-            var positionedAbove = false;
-            
-            // Default: try to position below the input
-            if (spaceBelow >= datepickerHeight + 10) {
-                // Enough space below - position below
-                top = inputOffset.top + inputHeight + 5;
-                positionedAbove = false;
-            } else if (spaceAbove >= datepickerHeight + 10) {
-                // Not enough space below, but enough above - position above
-                top = inputOffset.top - datepickerHeight - 5;
-                positionedAbove = true;
-            } else {
-                // Not enough space in either direction - position below with scroll
-                top = inputOffset.top + inputHeight + 5;
-                positionedAbove = false;
-                // If it would go off screen, adjust to fit
-                if (top + datepickerHeight > viewportHeight + scrollTop) {
-                    top = viewportHeight + scrollTop - datepickerHeight - 10;
-                }
+  
+            // current month
+            for (var d=1; d<=daysIn; d++){
+              var bsDate={year:cur.year,month:cur.month,day:d};
+              var isT=same(bsDate,today), isS=state.selected && same(bsDate,state.selected);
+              var cls='day'+(isT?' today':'')+(isS?' selected':'');
+              var eD=bsToAD(cur.year,cur.month,d);
+              html+='<div class="'+cls+'" data-action="select-day" data-day="'+d+'" role="button" tabindex="0">';
+              html+='<div class="nepali-date">'+toNepNum(d)+'</div><div class="english-date-subscript">'+eD.day+'</div></div>';
             }
-            
-            // Align to left side of input, but keep within viewport
-            left = inputOffset.left;
-            
-            // Adjust if would go off screen horizontally
-            if (left + datepickerWidth > viewportWidth + scrollLeft) {
-                left = viewportWidth + scrollLeft - datepickerWidth - 10;
+  
+            // next month head (fill to 35)
+            var filled=first+daysIn, need=35-filled, nm=cur.month===12?1:cur.month+1, ny=cur.month===12?cur.year+1:cur.year;
+            for (var n=1;n<=need;n++){
+              var eN=bsToAD(ny, nm, n);
+              html+='<div class="day other-month"><div class="nepali-date">'+toNepNum(n)+'</div><div class="english-date-subscript">'+eN.day+'</div></div>';
             }
-            
-            if (left < scrollLeft + 10) {
-                left = scrollLeft + 10;
+  
+            html+='</div>';
+            if (defaults.showToday){
+              html+='<div class="datepicker-footer"><div class="btn-today" data-action="today" role="button" tabindex="0">Today</div></div>';
             }
-            
-            $datepicker.css({
-                position: 'absolute',
-                top: top,
-                left: left,
-                zIndex: 9999
-            });
-            
-            // Add position class for animation
-            $datepicker.removeClass('positioned-above positioned-below');
-            if (positionedAbove) {
-                $datepicker.addClass('positioned-above');
-            } else {
-                $datepicker.addClass('positioned-below');
+            html+='</div>';
+          } else if (state.view==='year'){
+            var years = Object.keys(bsCalendarData).map(Number);
+            var minY=Math.min.apply(Math,years), maxY=Math.max.apply(Math,years);
+            var base=Math.floor(cur.year/12)*12, start=Math.max(minY, Math.min(maxY-11, base));
+            html+='<div class="datepicker-header">';
+            html+='<div class="nav-btn prev-decade'+((start-12>=minY&&!settings.readonly)?'':' disabled')+'" data-action="prev-decade" role="button" tabindex="0">&#171;</div>';
+            html+='<div class="year-range"><span>'+toNepNum(start)+' - '+toNepNum(start+11)+'</span></div>';
+            html+='<div class="nav-btn next-decade'+((start+12<=maxY&&!settings.readonly)?'':' disabled')+'" data-action="next-decade" role="button" tabindex="0">&#187;</div>';
+            html+='</div><div class="datepicker-body year-view">';
+            for (var y=start;y<start+12;y++){
+              var c='year-item'; if (y===cur.year) c+=' current'; if (state.selected && y===state.selected.year) c+=' selected';
+              if (!isYearValid(y)||settings.readonly) c+=' disabled';
+              html+='<div class="'+c+'" data-action="select-year" data-year="'+y+'" role="button" tabindex="0">'+toNepNum(y)+'</div>';
             }
-            
-            // Add responsive classes
-            if (viewportWidth < 480) {
-                $datepicker.addClass('mobile-view');
-            } else {
-                $datepicker.removeClass('mobile-view');
+            html+='</div>';
+          } else if (state.view==='monthList'){
+            var canPY=isYearValid(cur.year-1), canNY=isYearValid(cur.year+1);
+            html+='<div class="datepicker-header">';
+            html+='<div class="nav-btn back-to-month" data-action="back-to-month" role="button" tabindex="0">&#8249;</div>';
+            html+='<div class="year-display"><div class="clickable-year" data-action="show-year-range" role="button" tabindex="0">'+toNepNum(cur.year)+'</div></div>';
+            html+='<div class="nav-btn today-btn" data-action="today" role="button" tabindex="0">&#10003;</div>';
+            html+='</div><div class="datepicker-body month-list-view">';
+            for (var m=1;m<=12;m++){
+              var cls2='month-item'+(m===cur.month?' current':'')+(state.selected&&m===state.selected.month?' selected':'');
+              html+='<div class="'+cls2+'" data-action="select-month" data-month="'+m+'" role="button" tabindex="0">'+monthNames[settings.language][m-1]+'</div>';
             }
+            html+='</div>';
+          }
+          state.$dp[0].innerHTML = html;
+          state.$dp.data('__ndp_close__', close);
+          state.$dp.data('__ndp_position__', position);
         }
-
-        // Show year range selector
-        function showYearRange() {
-            currentView = 'year';
-            renderDatepicker();
-        }
-
-        // Show month list selector
-        function showMonthList() {
-            currentView = 'monthList';
-            renderDatepicker();
-        }
-
-        // Check if navigation buttons should be disabled
-        function canNavigateYear(direction) {
-            if (direction === 'prev') {
-                return isYearValid(currentDate.year - 1);
-            } else if (direction === 'next') {
-                return isYearValid(currentDate.year + 1);
+  
+        function bindOnce(){
+          if (state.bound || !state.$dp) return;
+          state.bound=true;
+  
+          state.$dp.on('click.ndp','[data-action]',function(e){
+            e.preventDefault(); e.stopPropagation();
+            var $t=$(this), action=$t.data('action');
+            if ($t.hasClass('disabled')||$t.attr('aria-disabled')==='true') return;
+            var cur=state.current;
+  
+            switch(action){
+              case 'prev-year': if (isYearValid(cur.year-1)){ cur.year--; cur.day=Math.min(cur.day||1, GetDaysInMonth(cur.year,cur.month)); render(); } break;
+              case 'next-year': if (isYearValid(cur.year+1)){ cur.year++; cur.day=Math.min(cur.day||1, GetDaysInMonth(cur.year,cur.month)); render(); } break;
+              case 'prev-month':
+                cur.month--; if (cur.month<1){ cur.month=12; cur.year--; }
+                if (!isYearValid(cur.year)){ cur.year=Math.min.apply(Math,Object.keys(bsCalendarData).map(Number)); cur.month=1; }
+                cur.day=Math.min(cur.day||1, GetDaysInMonth(cur.year,cur.month)); render(); break;
+              case 'next-month':
+                cur.month++; if (cur.month>12){ cur.month=1; cur.year++; }
+                if (!isYearValid(cur.year)){ cur.year=Math.max.apply(Math,Object.keys(bsCalendarData).map(Number)); cur.month=12; }
+                cur.day=Math.min(cur.day||1, GetDaysInMonth(cur.year,cur.month)); render(); break;
+              case 'prev-decade':
+                if (isYearValid(cur.year-12)) cur.year-=12; else cur.year=Math.min.apply(Math,Object.keys(bsCalendarData).map(Number));
+                cur.day=Math.min(cur.day||1, GetDaysInMonth(cur.year,cur.month)); render(); break;
+              case 'next-decade':
+                if (isYearValid(cur.year+12)) cur.year+=12; else cur.year=Math.max.apply(Math,Object.keys(bsCalendarData).map(Number));
+                cur.day=Math.min(cur.day||1, GetDaysInMonth(cur.year,cur.month)); render(); break;
+              case 'select-year':
+                var y=parseInt($t.data('year'),10);
+                if (isYearValid(y)){ cur.year=y; cur.day=Math.min(cur.day||1, GetDaysInMonth(cur.year,cur.month)); state.view='monthList'; render(); }
+                break;
+              case 'show-year-range': state.view='year'; render(); break;
+              case 'show-month-list': state.view='monthList'; render(); break;
+              case 'back-to-month': state.view='month'; render(); break;
+              case 'select-month':
+                cur.month=parseInt($t.data('month'),10);
+                cur.day=Math.min(cur.day||1, GetDaysInMonth(cur.year,cur.month));
+                state.view='month'; render(); break;
+              case 'select-day':
+                var d=parseInt($t.data('day'),10);
+                state.selected={year:cur.year,month:cur.month,day:d};
+                $input.val(fmt(settings, state.selected));
+                if (settings.autoClose) close();
+                if (settings.onSelect) settings.onSelect.call($input[0], state.selected, fmt(settings, state.selected));
+                break;
+              case 'today':
+                var t = adToBS(new Date(Date.UTC(new Date().getFullYear(), new Date().getMonth(), new Date().getDate())));
+                state.current={year:t.year,month:t.month,day:t.day};
+                state.selected={year:t.year,month:t.month,day:t.day};
+                $input.val(fmt(settings, state.selected));
+                if (settings.autoClose) close();
+                if (settings.onSelect) settings.onSelect.call($input[0], state.selected, fmt(settings, state.selected));
+                break;
             }
-            return false;
+          });
+  
+          state.$dp.on('keydown.ndp','[data-action][role="button"]',function(e){
+            if (e.key==='Enter'||e.key===' ') { e.preventDefault(); $(this).trigger('click'); }
+          });
+          state.$dp.on('mousedown.ndp', function(e){ e.stopPropagation(); });
         }
-
-        function canNavigateDecade(direction) {
-            if (direction === 'prev') {
-                return currentDate.year - 12 >= getMinYear();
-            } else if (direction === 'next') {
-                return currentDate.year + 12 <= getMaxYear();
-            }
-            return false;
-        }
-
-        // Render datepicker
-        function renderDatepicker() {
-            var html = '';
-            
-            if (currentView === 'month') {
-                // Month view
-            html += '<div class="datepicker-header">';
-                var prevYearDisabled = !canNavigateYear('prev') ? ' disabled' : '';
-                var nextYearDisabled = !canNavigateYear('next') ? ' disabled' : '';
-                html += '<button type="button" class="nav-btn prev-year' + prevYearDisabled + '" title="Previous Year"><i class="fa fa-angle-double-left"></i></button>';
-                html += '<button type="button" class="nav-btn prev-month" title="Previous Month"><i class="fa fa-chevron-left"></i></button>';
-                html += '<div class="month-year">';
-                html += '<div class="nepali-date-display">';
-                html += '<span class="month">' + monthNames[settings.language][currentDate.month - 1] + '</span>';
-                html += ' <span class="year">' + convertToNepaliNumbers(currentDate.year) + '</span>';
-                html += '</div>';
-                // Add English date in header on new line
-                var englishDate = getEnglishDate(currentDate);
-                var nextMonth = englishDate.month === 12 ? 1 : englishDate.month + 1;
-                var nextYear = englishDate.month === 12 ? englishDate.year + 1 : englishDate.year;
-                console.log('English date conversion:', {
-                    nepaliDate: currentDate,
-                    englishDate: englishDate,
-                    nextMonth: nextMonth,
-                    nextYear: nextYear
-                });
-                html += '<div class="english-date-header">';
-                html += englishMonthNamesShort[englishDate.month - 1] + ' ' + englishDate.year + ' / ' + englishMonthNamesShort[nextMonth - 1] + ' ' + nextYear;
-                html += '</div>';
-                html += '</div>';
-                
-                // Add year list container (initially hidden)
-                html += '<div class="year-list-container" style="display: none;">';
-                html += '<div class="year-list-header">';
-                html += '<button type="button" class="nav-btn prev-year-range" title="Previous Year Range"><i class="fa fa-chevron-left"></i></button>';
-                html += '<span class="year-range-display">' + getYearRangeDisplay(currentDate.year) + '</span>';
-                html += '<button type="button" class="nav-btn next-year-range" title="Next Year Range"><i class="fa fa-chevron-right"></i></button>';
-                html += '</div>';
-                html += '<div class="year-list-grid">';
-                var yearRange = getYearRange(currentDate.year);
-                for (var y = yearRange.start; y <= yearRange.end; y++) {
-                    var isCurrentYear = y === currentDate.year;
-                    var isValidYear = isYearValid(y);
-                    var classes = 'year-list-item';
-                    if (isCurrentYear) classes += ' current';
-                    if (!isValidYear) classes += ' disabled';
-                    html += '<div class="' + classes + '" data-year="' + y + '">' + convertToNepaliNumbers(y) + '</div>';
-                }
-                html += '</div>';
-            html += '</div>';
-                
-                html += '<button type="button" class="nav-btn next-month" title="Next Month"><i class="fa fa-chevron-right"></i></button>';
-                html += '<button type="button" class="nav-btn next-year' + nextYearDisabled + '" title="Next Year"><i class="fa fa-angle-double-right"></i></button>';
-            html += '</div>';
-            
-            // Body
-            html += '<div class="datepicker-body">';
-            
-            // Weekdays
-            html += '<div class="weekdays">';
-            for (var i = 0; i < 7; i++) {
-                html += '<div class="weekday">' + dayNamesShort[settings.language][i] + '</div>';
-            }
-            html += '</div>';
-            
-            // Days
-            html += '<div class="days">';
-            var firstDay = getFirstDayOfMonth(currentDate);
-            var daysInMonth = getDaysInMonth(currentDate);
-            var today = getCurrentNepaliDate();
-            
-            // Previous month days
-            for (var i = firstDay - 1; i >= 0; i--) {
-                var day = daysInMonth - i;
-                    var prevMonth = currentDate.month === 1 ? 12 : currentDate.month - 1;
-                    var prevYear = currentDate.month === 1 ? currentDate.year - 1 : currentDate.year;
-                    var nepaliDate = {year: prevYear, month: prevMonth, day: day};
-                    var englishDate = getEnglishDate(nepaliDate);
-                    
-                    html += '<div class="day other-month" data-day="' + day + '">';
-                    html += '<div class="nepali-date">' + convertToNepaliNumbers(day) + '</div>';
-                    html += '<div class="english-date-subscript">' + englishDate.day + '</div>';
-                    html += '</div>';
-            }
-            
-            // Current month days
-            for (var day = 1; day <= daysInMonth; day++) {
-                var isToday = isSameDate({...currentDate, day: day}, today);
-                var isSelected = selectedDate && isSameDate({...currentDate, day: day}, selectedDate);
-                var classes = 'day';
-                if (isToday) classes += ' today';
-                if (isSelected) classes += ' selected';
-                
-                    // Get English date for this Nepali date
-                    var nepaliDate = {...currentDate, day: day};
-                    var englishDate = getEnglishDate(nepaliDate);
-                    
-                    html += '<div class="' + classes + '" data-day="' + day + '">';
-                    html += '<div class="nepali-date">' + convertToNepaliNumbers(day) + '</div>';
-                    html += '<div class="english-date-subscript">' + englishDate.day + '</div>';
-                    html += '</div>';
-                }
-                
-                // Next month days - limit to 5 rows (35 days total)
-                var remainingDays = 35 - (firstDay + daysInMonth);
-            for (var day = 1; day <= remainingDays; day++) {
-                    var nextMonth = currentDate.month === 12 ? 1 : currentDate.month + 1;
-                    var nextYear = currentDate.month === 12 ? currentDate.year + 1 : currentDate.year;
-                    var nepaliDate = {year: nextYear, month: nextMonth, day: day};
-                    var englishDate = getEnglishDate(nepaliDate);
-                    
-                    html += '<div class="day other-month" data-day="' + day + '">';
-                    html += '<div class="nepali-date">' + convertToNepaliNumbers(day) + '</div>';
-                    html += '<div class="english-date-subscript">' + englishDate.day + '</div>';
-                    html += '</div>';
-            }
-            
-            html += '</div>';
-                
-                // Add Today button like official library
-                html += '<div class="datepicker-footer">';
-                html += '<button type="button" class="btn-today">Today</button>';
-                html += '</div>';
-                html += '</div>';
-                
-            } else if (currentView === 'year') {
-                // Year view
-                html += '<div class="datepicker-header">';
-                var prevDecadeDisabled = !canNavigateDecade('prev') ? ' disabled' : '';
-                var nextDecadeDisabled = !canNavigateDecade('next') ? ' disabled' : '';
-                html += '<button type="button" class="nav-btn prev-decade' + prevDecadeDisabled + '" title="Previous Decade"><i class="fa fa-angle-double-left"></i></button>';
-                html += '<div class="year-range">';
-                var startYear = Math.floor(currentDate.year / 12) * 12;
-                var minYear = getMinYear();
-                var maxYear = getMaxYear();
-                
-                // Ensure startYear is within valid range
-                if (startYear < minYear) {
-                    startYear = minYear;
-                } else if (startYear + 11 > maxYear) {
-                    startYear = maxYear - 11;
-                }
-                
-                html += '<span>' + convertToNepaliNumbers(startYear) + ' - ' + convertToNepaliNumbers(startYear + 11) + '</span>';
-                html += '</div>';
-                html += '<button type="button" class="nav-btn next-decade' + nextDecadeDisabled + '" title="Next Decade"><i class="fa fa-angle-double-right"></i></button>';
-                html += '</div>';
-                
-                // Year grid (3x4 = 12 years)
-                html += '<div class="datepicker-body year-view">';
-                for (var y = startYear; y < startYear + 12; y++) {
-                    var isCurrentYear = y === currentDate.year;
-                    var isSelected = selectedDate && y === selectedDate.year;
-                    var isValidYear = isYearValid(y);
-                    var classes = 'year-item';
-                    if (isCurrentYear) classes += ' current';
-                    if (isSelected) classes += ' selected';
-                    if (!isValidYear) classes += ' disabled';
-                    
-                    html += '<div class="' + classes + '" data-year="' + y + '">' + 
-                           convertToNepaliNumbers(y) + '</div>';
-                }
-                html += '</div>';
-                
-            } else if (currentView === 'monthList') {
-                // Month list view
-                html += '<div class="datepicker-header">';
-                html += '<button type="button" class="nav-btn back-to-month" title="Back to Month"><i class="fa fa-arrow-left"></i></button>';
-                html += '<div class="year-display">';
-                html += '<span>' + convertToNepaliNumbers(currentDate.year) + '</span>';
-                html += '</div>';
-                html += '<button type="button" class="nav-btn today-btn" title="Go to Today"><i class="fa fa-calendar-check"></i></button>';
-            html += '</div>';
-            
-                // Month grid
-                html += '<div class="datepicker-body month-list-view">';
-                for (var m = 1; m <= 12; m++) {
-                    var isCurrentMonth = m === currentDate.month;
-                    var isSelected = selectedDate && m === selectedDate.month;
-                    var classes = 'month-item';
-                    if (isCurrentMonth) classes += ' current';
-                    if (isSelected) classes += ' selected';
-                    
-                    html += '<div class="' + classes + '" data-month="' + m + '">' + 
-                           monthNames[settings.language][m - 1] + '</div>';
-                }
-                html += '</div>';
-            }
-            
-            // English date is now shown in header and as subscripts, no need for separate display
-            
-            $datepicker.html(html);
-            bindDatepickerEvents();
-        }
-
-        // Bind events
-        function bindDatepickerEvents() {
-            // Year Navigation
-            $datepicker.find('.prev-year').on('click', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                var newYear = currentDate.year - 1;
-                if (isYearValid(newYear)) {
-                    currentDate.year = newYear;
-                    renderDatepicker();
-                }
-            });
-            
-            $datepicker.find('.next-year').on('click', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                var newYear = currentDate.year + 1;
-                if (isYearValid(newYear)) {
-                    currentDate.year = newYear;
-                    renderDatepicker();
-                }
-            });
-            
-            // Month Navigation
-            $datepicker.find('.prev-month').on('click', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                currentDate.month--;
-                if (currentDate.month < 1) {
-                    currentDate.month = 12;
-                    currentDate.year--;
-                }
-                renderDatepicker();
-            });
-            
-            $datepicker.find('.next-month').on('click', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                currentDate.month++;
-                if (currentDate.month > 12) {
-                    currentDate.month = 1;
-                    currentDate.year++;
-                }
-                renderDatepicker();
-            });
-            
-            // Decade Navigation (for year view) - now 12-year ranges
-            $datepicker.find('.prev-decade').on('click', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                var newYear = currentDate.year - 12;
-                if (isYearValid(newYear)) {
-                    currentDate.year = newYear;
-                    renderDatepicker();
-                } else {
-                    // If the exact year isn't valid, find the closest valid year
-                    var minYear = getMinYear();
-                    if (newYear < minYear) {
-                        currentDate.year = minYear;
-                        renderDatepicker();
-                    }
-                }
-            });
-            
-            $datepicker.find('.next-decade').on('click', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                var newYear = currentDate.year + 12;
-                if (isYearValid(newYear)) {
-                    currentDate.year = newYear;
-                    renderDatepicker();
-                } else {
-                    // If the exact year isn't valid, find the closest valid year
-                    var maxYear = getMaxYear();
-                    if (newYear > maxYear) {
-                        currentDate.year = maxYear;
-                        renderDatepicker();
-                    }
-                }
-            });
-            
-            // Year selection (in year view)
-            $datepicker.find('.year-item').on('click', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                var year = parseInt($(this).data('year'));
-                if (isYearValid(year)) {
-                    currentDate.year = year;
-                    currentView = 'month';
-                    renderDatepicker();
-                }
-            });
-            
-            // Back to month view - close datepicker like official library
-            $datepicker.find('.back-to-month').on('click', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                currentView = 'month';
-                
-                // Close datepicker when going back to month view like official library
-                hideDatepicker();
-            });
-            
-            // Today button - go to current date like official library
-            $datepicker.find('.today-btn').on('click', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                var today = getCurrentNepaliDate();
-                currentDate = {...today};
-                selectedDate = {...today};
-                $input.val(formatDate(selectedDate));
-                
-                // Close datepicker after going to today like official library
-                hideDatepicker();
-                
-                if (settings.onSelect) {
-                    settings.onSelect(selectedDate, formatDate(selectedDate));
-                }
-            });
-            
-            // Today button in main view
-            $datepicker.find('.btn-today').on('click', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                var today = getCurrentNepaliDate();
-                currentDate = {...today};
-                selectedDate = {...today};
-                $input.val(formatDate(selectedDate));
-                
-                // Close datepicker after going to today like official library
-                    hideDatepicker();
-                
-                if (settings.onSelect) {
-                    settings.onSelect(selectedDate, formatDate(selectedDate));
-                }
-            });
-            
-            // Month and year click events removed as requested
-            
-            
-            
-            // Year list navigation - using event delegation
-            $datepicker.on('click', '.prev-year-range', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                navigateYearRange('prev');
-            });
-            
-            $datepicker.on('click', '.next-year-range', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                navigateYearRange('next');
-            });
-            
-            // Year list item selection - close after selection like official library - using event delegation
-            $datepicker.on('click', '.year-list-item', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                var year = parseInt($(this).data('year'));
-                if (isYearValid(year)) {
-                    currentDate.year = year;
-                    hideYearList();
-                    
-                    // Close datepicker after year selection like official library
-                    hideDatepicker();
-                }
-            });
-            
-            // Month selection (in month list view) - close after selection like official library - using event delegation
-            $datepicker.on('click', '.month-item', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                var month = parseInt($(this).data('month'));
-                currentDate.month = month;
-                currentView = 'month';
-                
-                // Close datepicker after month selection like official library
-                hideDatepicker();
-            });
-            
-            
-            
-            
-            
-            // Day selection - show month selection like official library
-            $datepicker.find('.day:not(.other-month)').on('click', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                var day = parseInt($(this).data('day'));
-                selectedDate = {...currentDate, day: day};
-                $input.val(formatDate(selectedDate));
-                
-                // Show month selection instead of closing
-                showMonthList();
-                
-                if (settings.onSelect) {
-                    settings.onSelect(selectedDate, formatDate(selectedDate));
-                }
-            });
-            
-        }
-
-        // Utility functions
-        function getCurrentNepaliDate() {
-            var today = new Date();
-            return convertADToBS(today);
-        }
-
-        function convertADToBS(adDate) {
-            // Official library reference: 1944-01-01 AD = 2000-09-17 BS
-            var referenceAD = new Date(1944, 0, 1); // January 1, 1944
-            var referenceBS = { year: 2000, month: 9, day: 17 }; // 2000-09-17 BS
-            
-            // Calculate the difference in days
-            var diffTime = adDate.getTime() - referenceAD.getTime();
-            var diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-            
-            var bsDate = {...referenceBS};
-            
-            // If the AD date is before the reference date, we need to go backwards
-            if (diffDays < 0) {
-                // Go backwards day by day
-                for (var i = 0; i < Math.abs(diffDays); i++) {
-                    bsDate.day--;
-                    if (bsDate.day < 1) {
-                        bsDate.month--;
-                        if (bsDate.month < 1) {
-                            bsDate.month = 12;
-                            bsDate.year--;
-                        }
-                        bsDate.day = getDaysInMonth(bsDate);
-                    }
-                }
-            } else {
-                // Go forwards day by day
-            for (var i = 0; i < diffDays; i++) {
-                bsDate.day++;
-                var daysInMonth = getDaysInMonth(bsDate);
-                
-                if (bsDate.day > daysInMonth) {
-                    bsDate.day = 1;
-                    bsDate.month++;
-                    
-                    if (bsDate.month > 12) {
-                        bsDate.month = 1;
-                        bsDate.year++;
-                        }
-                    }
-                }
-            }
-            
-            return bsDate;
-        }
-
-        function getDaysInMonth(date) {
-            return bsCalendarData[date.year] ? bsCalendarData[date.year][date.month - 1] : 30;
-        }
-
-        function getFirstDayOfMonth(date) {
-            // Calculate the actual first day of the month based on calendar data
-            // Reference: 2000-09-17 BS = Sunday (day 0)
-            var referenceBS = { year: 2000, month: 9, day: 17 };
-            var referenceDayOfWeek = 0; // Sunday
-            
-            // Calculate total days from reference date to the first day of the target month
-            var totalDays = 0;
-            
-            // Calculate days from reference date to first day of target month
-            var tempDate = { year: referenceBS.year, month: referenceBS.month, day: referenceBS.day };
-            var targetDate = { year: date.year, month: date.month, day: 1 };
-            
-            while (tempDate.year !== targetDate.year || tempDate.month !== targetDate.month || tempDate.day !== targetDate.day) {
-                totalDays++;
-                tempDate.day++;
-                var daysInMonth = getDaysInMonth(tempDate);
-                if (tempDate.day > daysInMonth) {
-                    tempDate.day = 1;
-                    tempDate.month++;
-                    if (tempDate.month > 12) {
-                        tempDate.month = 1;
-                        tempDate.year++;
-                    }
-                }
-            }
-            
-            // Calculate day of week (0 = Sunday, 1 = Monday, etc.)
-            var dayOfWeek = (referenceDayOfWeek + totalDays) % 7;
-            if (dayOfWeek < 0) dayOfWeek += 7;
-            
-            return dayOfWeek;
-        }
-
-        function isSameDate(date1, date2) {
-            return date1.year === date2.year && 
-                   date1.month === date2.month && 
-                   date1.day === date2.day;
-        }
-
-        // Helper function to convert Nepali date to English date
-        function convertBSToAD(bsYear, bsMonth, bsDay) {
-            // Official library reference: 2000-09-17 BS = 1944-01-01 AD
-            var referenceBS = { year: 2000, month: 9, day: 17 };
-            var referenceAD = new Date(1944, 0, 1); // January 1, 1944
-            
-            // Calculate total days from reference BS date to given BS date
-            var totalDays = 0;
-            
-            // Calculate days from reference date to target date
-            var tempDate = { year: referenceBS.year, month: referenceBS.month, day: referenceBS.day };
-            while (tempDate.year !== bsYear || tempDate.month !== bsMonth || tempDate.day !== bsDay) {
-                totalDays++;
-                tempDate.day++;
-                var daysInMonth = getDaysInMonth(tempDate);
-                if (tempDate.day > daysInMonth) {
-                    tempDate.day = 1;
-                    tempDate.month++;
-                    if (tempDate.month > 12) {
-                        tempDate.month = 1;
-                        tempDate.year++;
-                    }
-                }
-            }
-            
-            // Convert to AD date using reference point
-            var adDate = new Date(referenceAD.getTime() + (totalDays * 24 * 60 * 60 * 1000));
-            
-            var result = {
-                year: adDate.getFullYear(),
-                month: adDate.getMonth() + 1,
-                day: adDate.getDate()
-            };
-            
-            return result;
-        }
-
-        // Helper function to get English date from Nepali date
-        function getEnglishDate(nepaliDate) {
-            return convertBSToAD(nepaliDate.year, nepaliDate.month, nepaliDate.day);
-        }
-
-        // Helper function to get year range for year list
-        function getYearRange(currentYear) {
-            var startYear = Math.floor(currentYear / 12) * 12;
-            var endYear = startYear + 11;
-            return { start: startYear, end: endYear };
-        }
-
-        // Helper function to get year range display text
-        function getYearRangeDisplay(currentYear) {
-            var range = getYearRange(currentYear);
-            return convertToNepaliNumbers(range.start) + ' - ' + convertToNepaliNumbers(range.end);
-        }
-
-        // Toggle year list visibility
-        function toggleYearList() {
-            var $yearListContainer = $datepicker.find('.year-list-container');
-            console.log('toggleYearList called, year list container found:', $yearListContainer.length);
-            if ($yearListContainer.is(':visible')) {
-                console.log('Hiding year list');
-                hideYearList();
-            } else {
-                console.log('Showing year list');
-                showYearList();
-            }
-        }
-
-        // Show year list
-        function showYearList() {
-            var $yearListContainer = $datepicker.find('.year-list-container');
-            console.log('showYearList called, container found:', $yearListContainer.length);
-            if ($yearListContainer.length > 0) {
-                console.log('Showing year list with slideDown');
-                $yearListContainer.slideDown(200);
-            } else {
-                console.log('Year list container not found!');
-            }
-        }
-
-        // Hide year list
-        function hideYearList() {
-            var $yearListContainer = $datepicker.find('.year-list-container');
-            $yearListContainer.slideUp(200);
-        }
-
-        // Navigate year range
-        function navigateYearRange(direction) {
-            var currentRange = getYearRange(currentDate.year);
-            var newYear;
-            
-            if (direction === 'prev') {
-                newYear = currentRange.start - 12;
-            } else {
-                newYear = currentRange.start + 12;
-            }
-            
-            if (isYearValid(newYear)) {
-                currentDate.year = newYear;
-                renderDatepicker();
-            }
-        }
-
-
-        function formatDate(date) {
-            if (!date) return '';
-            
-            var year = settings.language === 'nepali' ? 
-                convertToNepaliNumbers(date.year) : date.year;
-            var month = settings.language === 'nepali' ? 
-                convertToNepaliNumbers(date.month) : date.month;
-            var day = settings.language === 'nepali' ? 
-                convertToNepaliNumbers(date.day) : date.day;
-
-            return settings.dateFormat
-                .replace('YYYY', year)
-                .replace('MM', month.toString().padStart(2, '0'))
-                .replace('DD', day.toString().padStart(2, '0'));
-        }
-
-        function convertToNepaliNumbers(str) {
-            var nepaliNumbers = ['०', '१', '२', '३', '४', '५', '६', '७', '८', '९'];
-            return str.toString().replace(/\d/g, function(digit) {
-                return nepaliNumbers[parseInt(digit)];
-            });
-        }
-
-        // Simplified event handlers based on official library
-        $input.on('click focus', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            if (!isOpen) {
-                showDatepicker();
-            }
-        });
-
-        $input.on('mousedown', function(e) {
-            e.stopPropagation();
-        });
-
-        // Simplified document event handling based on official library
-        $(document).on('mousedown.nepaliDatepicker', function(e) {
-            // Close datepicker if clicking outside
-            if (isOpen && 
-                !$(e.target).closest($input).length && 
-                !$(e.target).closest($datepicker).length &&
-                !$(e.target).closest('.nepali-datepicker-modal-overlay').length) {
-                hideDatepicker();
-            }
-        });
-
-        // Simplified datepicker element event handling
-        function bindDatepickerElementEvents() {
-            if (!$datepicker) return;
-            
-            // Prevent closing when interacting with datepicker elements
-            $datepicker.on('mousedown', function(e) {
-                e.stopPropagation();
-            });
-            
-            // Add direct click handler to modal overlay for better reliability
-            if (settings.modal && $modalOverlay) {
-                $modalOverlay.on('click.nepaliDatepicker', function(e) {
-                    // Only close if clicking directly on the overlay, not on its children
-                    if (e.target === $modalOverlay[0]) {
-                        hideDatepicker();
-                    }
-                });
-                
-                // Prevent modal content clicks from bubbling to overlay
-                var $modalContent = $modalOverlay.find('.nepali-datepicker-modal-content');
-                if ($modalContent.length) {
-                    $modalContent.on('click.nepaliDatepicker', function(e) {
-                        e.stopPropagation();
-                    });
-                }
-            }
-        }
-
-        // Handle window resize to reposition datepicker
-        $(window).on('resize.nepaliDatepicker scroll.nepaliDatepicker', function() {
-            if (isOpen) {
-                if (settings.modal) {
-                    // Modal doesn't need repositioning
-                } else {
-                    positionDatepicker();
-                }
-            }
-        });
-
-        // Handle keyboard events for modal
-        if (settings.modal) {
-            $(document).on('keydown.nepaliDatepicker', function(e) {
-                if (e.keyCode === 27 && isOpen) { // Escape key
-                    console.log('Escape key pressed - closing datepicker');
-                    hideDatepicker();
-                }
-            });
-        }
-
-        // Initialize
-        createDatepicker();
-        
-        // Public methods
+  
+        // input triggers
+        $input.off('click.ndp focus.ndp mousedown.ndp')
+          .on('click.ndp focus.ndp', function(e){ e.preventDefault(); e.stopPropagation(); open(); })
+          .on('mousedown.ndp', function(e){ e.stopPropagation(); });
+  
+        // public API
         $input.data('nepaliDatepicker', {
-            show: showDatepicker,
-            hide: hideDatepicker,
-            getDate: function() { return selectedDate; },
-            setDate: function(date) { 
-                selectedDate = date; 
-                $input.val(formatDate(date));
-                renderDatepicker();
-            },
-            clear: function() {
-                selectedDate = null;
-                $input.val('');
-                renderDatepicker();
-            },
-            destroy: function() {
-                $(document).off('mousedown.nepaliDatepicker keydown.nepaliDatepicker');
-                $(window).off('resize.nepaliDatepicker scroll.nepaliDatepicker');
-                if ($datepicker) {
-                    $datepicker.off('mousedown');
-                    $datepicker.remove();
-                }
-                if ($modalOverlay) {
-                    $modalOverlay.off('click.nepaliDatepicker');
-                    $modalOverlay.find('.nepali-datepicker-modal-content').off('click.nepaliDatepicker');
-                    $modalOverlay.remove();
-                }
-                $input.removeData('nepaliDatepicker');
-                $input.removeAttr('data-nepali-datepicker-active');
-                
-                // Clean up global state if this was the active datepicker
-                if (activeDatepicker === $datepicker) {
-                    activeDatepicker = null;
-                }
+          show: open,
+          hide: close,
+          getDate: function(){ return state.selected; },
+          setDate: function(date){
+            var bs;
+            if (date && typeof date==='object' && 'year' in date) {
+              bs = {year:+date.year, month:+date.month, day:+(date.day||1)};
+            } else if (date instanceof Date) {
+              bs = adToBS(new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())));
+            } else if (typeof date==='string') {
+              var m = /^(\d{4})-(\d{1,2})-(\d{1,2})$/.exec(date.trim());
+              if (!m) throw new Error('setDate: invalid AD string');
+              bs = adToBS(new Date(Date.UTC(+m[1], +m[2]-1, +m[3])));
+            } else {
+              var t = adToBS(new Date(Date.UTC(new Date().getFullYear(), new Date().getMonth(), new Date().getDate())));
+              bs = t;
             }
+            var dmax=GetDaysInMonth(bs.year, bs.month);
+            if (bs.day<1) bs.day=1; if (bs.day>dmax) bs.day=dmax;
+            state.selected={year:bs.year,month:bs.month,day:bs.day};
+            state.current ={year:bs.year,month:bs.month,day:bs.day};
+            $input.val(fmt(settings, state.selected));
+            if (state.$dp) render();
+          },
+          clear: function(){ state.selected=null; $input.val(''); if (state.$dp) render(); },
+          destroy: function(){
+            close();
+            if (state.$dp){ state.$dp.off('.ndp').remove(); state.$dp=null; }
+            if (state.$overlay){ state.$overlay.off('.ndp').remove(); state.$overlay=null; }
+            $input.off('.ndp').removeData('nepaliDatepicker').removeAttr('readonly');
+            INSTANCES--; if (INSTANCES<=0) unbindGlobalIfIdle();
+          }
         });
-    }
-
-})(jQuery);
+      });
+    };
+  
+    // expose converters if needed
+    window.bs2ad = function(input, format){
+      var bs = (typeof input==='string')
+        ? (function(s){ var m=/^(\d{4})-(\d{1,2})-(\d{1,2})$/.exec(s.trim()); return {year:+m[1],month:+m[2],day:+m[3]}; })(input)
+        : input;
+      var ad = bsToAD(bs.year, bs.month, bs.day);
+      if (format==='string' || format===true){
+        var pad=function(n){return (n<10?'0':'')+n;};
+        return ad.year+'-'+pad(ad.month)+'-'+pad(ad.day);
+      }
+      return ad;
+    };
+    window.adtobs = function(input, format){
+      var bs = adToBS(input);
+      if (format==='string' || format===true){
+        var pad=function(n){return (n<10?'0':'')+n;};
+        return bs.year+'-'+pad(bs.month)+'-'+pad(bs.day);
+      }
+      return bs;
+    };
+  
+  })(jQuery);
+  
