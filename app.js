@@ -23,11 +23,24 @@ function initializeDatepickers() {
         }
     });
 
-    // Modern style datepicker
+    // Modern style datepicker with date restrictions
     $('#modern-datepicker').nepaliDatepicker({
         theme: 'light',
         language: 'english',
         dateFormat: 'DD-MM-YYYY',
+        minDate: {year: 2080, month: 1, day: 1}, // Can't select before Baisakh 2080
+        maxDate: {year: 2090, month: 12, day: 30}, // Can't select after Chaitra 2090
+        disabledDates: [
+            {year: 2081, month: 1, day: 1}, // Disable Baisakh 1, 2081
+            {year: 2081, month: 1, day: 2}, // Disable Baisakh 2, 2081
+            {year: 2081, month: 1, day: 3}  // Disable Baisakh 3, 2081
+        ],
+        disabledDateRanges: [
+            {
+                start: {year: 2082, month: 4, day: 1}, // Disable Shrawan 1, 2082
+                end: {year: 2082, month: 4, day: 10}   // to Shrawan 10, 2082
+            }
+        ],
         onSelect: function(date, formatted) {
             console.log('Modern datepicker selected:', date, formatted);
         }
@@ -69,11 +82,16 @@ function initializeDatepickers() {
         }
     });
 
-    // Dark theme datepicker
+    // Dark theme datepicker with disabled dates
     $('#dark-datepicker').nepaliDatepicker({
         theme: 'dark',
         language: 'nepali',
         dateFormat: 'YYYY-MM-DD',
+        disabledDates: [
+            {year: 2081, month: 6, day: 15}, // Disable Kartik 15, 2081
+            {year: 2081, month: 6, day: 16}, // Disable Kartik 16, 2081
+            {year: 2081, month: 6, day: 17}  // Disable Kartik 17, 2081
+        ],
         onSelect: function(date, formatted) {
             console.log('Dark datepicker selected:', date, formatted);
         }

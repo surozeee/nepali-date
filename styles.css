@@ -400,6 +400,24 @@ input {
     color: #2d3748;
 }
 
+/* Disabled date styles */
+.day.disabled {
+    color: #a0aec0 !important;
+    background: #f7fafc !important;
+    cursor: not-allowed !important;
+    opacity: 0.5;
+}
+
+.day.disabled:hover {
+    background: #f7fafc !important;
+    transform: none !important;
+}
+
+.day.disabled .nepali-date,
+.day.disabled .english-date-subscript {
+    color: #a0aec0 !important;
+}
+
 .day:hover {
     background: #e2e8f0;
     transform: scale(1.05);
@@ -628,6 +646,27 @@ input {
 .nepali-datepicker.dark .day.other-month,
 .custom-nepali-datepicker.dark .day.other-month {
     color: #718096;
+}
+
+.nepali-datepicker.dark .day.disabled,
+.custom-nepali-datepicker.dark .day.disabled {
+    color: #4a5568 !important;
+    background: #1a202c !important;
+    cursor: not-allowed !important;
+    opacity: 0.5;
+}
+
+.nepali-datepicker.dark .day.disabled:hover,
+.custom-nepali-datepicker.dark .day.disabled:hover {
+    background: #1a202c !important;
+    transform: none !important;
+}
+
+.nepali-datepicker.dark .day.disabled .nepali-date,
+.nepali-datepicker.dark .day.disabled .english-date-subscript,
+.custom-nepali-datepicker.dark .day.disabled .nepali-date,
+.custom-nepali-datepicker.dark .day.disabled .english-date-subscript {
+    color: #4a5568 !important;
 }
 
 

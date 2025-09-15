@@ -7,20 +7,24 @@
 (function ($) {
     'use strict';
   
-    /*** ---------------- Options ---------------- ***/
-    var defaults = {
-      theme: 'light',
-      language: 'nepali',          // 'nepali' | 'english'
-      dateFormat: 'YYYY-MM-DD',
-      placeholder: 'Select Date',
-      showToday: true,
-      autoClose: true,
-      modal: false,
-      onSelect: null,
-      onOpen: null,
-      onClose: null,
-      readonly: false
-    };
+  /*** ---------------- Options ---------------- ***/
+  var defaults = {
+    theme: 'light',
+    language: 'nepali',          // 'nepali' | 'english'
+    dateFormat: 'YYYY-MM-DD',
+    placeholder: 'Select Date',
+    showToday: true,
+    autoClose: true,
+    modal: false,
+    onSelect: null,
+    onOpen: null,
+    onClose: null,
+    readonly: false,
+    minDate: null,               // Minimum selectable date (BS format: {year, month, day})
+    maxDate: null,               // Maximum selectable date (BS format: {year, month, day})
+    disabledDates: [],           // Array of disabled dates (BS format: [{year, month, day}, ...])
+    disabledDateRanges: []       // Array of disabled date ranges (BS format: [{start: {year, month, day}, end: {year, month, day}}, ...])
+  };
   
     /*** ---------------- Labels ---------------- ***/
     var monthNames = {
@@ -202,6 +206,53 @@
       return settings.dateFormat.replace('YYYY',y).replace('MM',mm).replace('DD',dd);
     }
     function same(a,b){ return !!a && !!b && a.year===b.year && a.month===b.month && a.day===b.day; }
+    
+    // Date validation helper functions
+    function isDateDisabled(date, settings) {
+      if (!date) return false;
+      
+      // Check minDate
+      if (settings.minDate) {
+        if (date.year < settings.minDate.year) return true;
+        if (date.year === settings.minDate.year && date.month < settings.minDate.month) return true;
+        if (date.year === settings.minDate.year && date.month === settings.minDate.month && date.day < settings.minDate.day) return true;
+      }
+      
+      // Check maxDate
+      if (settings.maxDate) {
+        if (date.year > settings.maxDate.year) return true;
+        if (date.year === settings.maxDate.year && date.month > settings.maxDate.month) return true;
+        if (date.year === settings.maxDate.year && date.month === settings.maxDate.month && date.day > settings.maxDate.day) return true;
+      }
+      
+      // Check disabledDates array
+      if (settings.disabledDates && settings.disabledDates.length > 0) {
+        for (var i = 0; i < settings.disabledDates.length; i++) {
+          if (same(date, settings.disabledDates[i])) return true;
+        }
+      }
+      
+      // Check disabledDateRanges array
+      if (settings.disabledDateRanges && settings.disabledDateRanges.length > 0) {
+        for (var j = 0; j < settings.disabledDateRanges.length; j++) {
+          var range = settings.disabledDateRanges[j];
+          if (isDateInRange(date, range.start, range.end)) return true;
+        }
+      }
+      
+      return false;
+    }
+    
+    function isDateInRange(date, startDate, endDate) {
+      if (!date || !startDate || !endDate) return false;
+      
+      // Convert dates to comparable format (YYYYMMDD)
+      var dateNum = date.year * 10000 + date.month * 100 + date.day;
+      var startNum = startDate.year * 10000 + startDate.month * 100 + startDate.day;
+      var endNum = endDate.year * 10000 + endDate.month * 100 + endDate.day;
+      
+      return dateNum >= startNum && dateNum <= endNum;
+    }
   
     /*** ---------------- Conversion (Java parity) ---------------- ***/
     // Anchor pair (same as Java)
@@ -488,9 +539,12 @@ function close(){
             for (var d=1; d<=daysIn; d++){
               var bsDate={year:cur.year,month:cur.month,day:d};
               var isT=same(bsDate,today), isS=state.selected && same(bsDate,state.selected);
-              var cls='day'+(isT?' today':'')+(isS?' selected':'');
+              var isDisabled = isDateDisabled(bsDate, settings);
+              var cls='day'+(isT?' today':'')+(isS?' selected':'')+(isDisabled?' disabled':'');
               var eD=bsToAD(cur.year,cur.month,d);
-              html+='<div class="'+cls+'" data-action="select-day" data-day="'+d+'" role="button" tabindex="0">';
+              var dataAction = isDisabled ? '' : 'data-action="select-day"';
+              var role = isDisabled ? 'role="button" aria-disabled="true"' : 'role="button" tabindex="0"';
+              html+='<div class="'+cls+'" '+dataAction+' data-day="'+d+'" '+role+'>';
               html+='<div class="nepali-date">'+toNepNum(d)+'</div><div class="english-date-subscript">'+eD.day+'</div></div>';
             }
   
@@ -584,13 +638,26 @@ function close(){
                 state.view='month'; render(); break;
               case 'select-day':
                 var d=parseInt($t.data('day'),10);
-                state.selected={year:cur.year,month:cur.month,day:d};
+                var selectedDate = {year:cur.year,month:cur.month,day:d};
+                
+                // Check if the selected date is disabled
+                if (isDateDisabled(selectedDate, settings)) {
+                  return; // Don't select disabled dates
+                }
+                
+                state.selected = selectedDate;
                 $input.val(fmt(settings, state.selected));
                 if (settings.autoClose) close();
                 if (settings.onSelect) settings.onSelect.call($input[0], state.selected, fmt(settings, state.selected));
                 break;
               case 'today':
                 var t = adToBS(new Date(Date.UTC(new Date().getFullYear(), new Date().getMonth(), new Date().getDate())));
+                
+                // Check if today's date is disabled
+                if (isDateDisabled(t, settings)) {
+                  return; // Don't select today if it's disabled
+                }
+                
                 state.current={year:t.year,month:t.month,day:t.day};
                 state.selected={year:t.year,month:t.month,day:t.day};
                 $input.val(fmt(settings, state.selected));
