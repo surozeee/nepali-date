@@ -372,34 +372,68 @@
           bindOnce();
         }
   
-        function open(){
-          if (state.isOpen) return;
-          
-          // Close any existing active datepicker before opening new one
-          if (ACTIVE && ACTIVE !== state.$dp[0]) {
-            var closeFn = $(ACTIVE).data('__ndp_close__');
-            if (closeFn) closeFn();
-          }
-          
-          build(); render();
-          state.isOpen=true; ACTIVE=state.$dp[0]; ACTIVE_INPUT=$input[0];
-          if (settings.modal && state.$overlay){ 
-            state.$overlay.css('display','flex');
-            // Ensure modal overlay has higher z-index when inside another modal
-            var parentModal = $input.closest('.modal');
-            if (parentModal.length) {
-              state.$overlay.css('z-index', '10001');
-            }
-          }
-          else { position(); state.$dp.show(); }
-          if (settings.onOpen) settings.onOpen.call($input[0]);
-        }
-        function close(){
-          if (!state.isOpen) return;
-          state.isOpen=false; if (ACTIVE===state.$dp[0]){ ACTIVE=null; ACTIVE_INPUT=null; }
-          if (settings.modal && state.$overlay){ state.$overlay.hide(); } else { state.$dp.hide(); }
-          if (settings.onClose) settings.onClose.call($input[0]);
-        }
+        // --- replace your existing open() with this ---
+function open(){
+  if (state.isOpen) return;
+
+  // If another input's datepicker is open, fully close (destroy) it first
+  if (ACTIVE && ACTIVE !== state.$dp?.[0]) {
+    var closeFn = $(ACTIVE).data('__ndp_close__');
+    if (typeof closeFn === 'function') closeFn();
+    ACTIVE = null;
+    ACTIVE_INPUT = null;
+  }
+
+  // Build fresh UI for this input and show it
+  build();
+  render();
+
+  state.isOpen = true;
+  ACTIVE = state.$dp[0];
+  ACTIVE_INPUT = $input[0];
+
+  if (settings.modal && state.$overlay){
+    state.$overlay.css('display', 'flex');
+
+    // If this input lives inside a Bootstrap/other modal, ensure proper stacking
+    var parentModal = $input.closest('.modal');
+    if (parentModal.length) state.$overlay.css('z-index', '10001');
+  } else {
+    position();
+    state.$dp.show();
+  }
+
+  if (settings.onOpen) settings.onOpen.call($input[0]);
+}
+
+// --- replace your existing close() with this ---
+// Close now DESTROYS the UI so next click recreates a fresh instance
+function close(){
+  // If nothing is open/rendered, do nothing
+  if (!state.isOpen && !state.$dp && !state.$overlay) return;
+
+  state.isOpen = false;
+
+  // Clear global ACTIVE pointers when this was the active UI
+  if (ACTIVE === state.$dp?.[0]) {
+    ACTIVE = null;
+    ACTIVE_INPUT = null;
+  }
+
+  // Remove datepicker DOM and unbind its internal handlers
+  if (state.$dp){
+    state.$dp.off('.ndp').remove();
+    state.$dp = null;
+  }
+  if (settings.modal && state.$overlay){
+    state.$overlay.off('.ndp').remove();
+    state.$overlay = null;
+  }
+
+  // Let the host page know we closed
+  if (settings.onClose) settings.onClose.call($input[0]);
+}
+
         function position(){
           if (!state.isOpen || settings.modal || !state.$dp) return;
           var $dp=state.$dp, off=$input.offset(), ih=$input.outerHeight();
@@ -415,6 +449,8 @@
         }
   
         function render(){
+          state.$dp.data('__ndp_close__', close);
+          state.$dp.data('__ndp_position__', position);
           var cur=state.current, html='';
           if (state.view==='month'){
             var canPrevY=isYearValid(cur.year-1), canNextY=isYearValid(cur.year+1);
