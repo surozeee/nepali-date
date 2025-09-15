@@ -20,10 +20,12 @@
     onOpen: null,
     onClose: null,
     readonly: false,
-    minDate: null,               // Minimum selectable date (BS format: {year, month, day})
-    maxDate: null,               // Maximum selectable date (BS format: {year, month, day})
-    disabledDates: [],           // Array of disabled dates (BS format: [{year, month, day}, ...])
-    disabledDateRanges: []       // Array of disabled date ranges (BS format: [{start: {year, month, day}, end: {year, month, day}}, ...])
+    minDate: null,               // Minimum selectable date (BS format: {year, month, day} or 'YYYY-MM-DD')
+    maxDate: null,               // Maximum selectable date (BS format: {year, month, day} or 'YYYY-MM-DD')
+    disabledDates: [],           // Array of disabled dates (BS format: [{year, month, day}, ...] or ['YYYY-MM-DD', ...])
+    disabledDateRanges: [],      // Array of disabled date ranges (BS format: [{start: {year, month, day}, end: {year, month, day}}, ...])
+    defaultDate: null,           // Default date to set on initialization (BS format: {year, month, day} or 'YYYY-MM-DD')
+    showToday: true              // Show/hide the today button
   };
   
     /*** ---------------- Labels ---------------- ***/
@@ -253,6 +255,76 @@
       
       return dateNum >= startNum && dateNum <= endNum;
     }
+    
+    // Helper function to parse date strings or objects
+    function parseDate(dateInput) {
+      if (!dateInput) return null;
+      
+      if (typeof dateInput === 'string') {
+        // Parse string format 'YYYY-MM-DD'
+        var match = /^(\d{4})-(\d{1,2})-(\d{1,2})$/.exec(dateInput.trim());
+        if (match) {
+          return {
+            year: parseInt(match[1], 10),
+            month: parseInt(match[2], 10),
+            day: parseInt(match[3], 10)
+          };
+        }
+        return null;
+      }
+      
+      if (typeof dateInput === 'object' && dateInput.year && dateInput.month && dateInput.day) {
+        return {
+          year: parseInt(dateInput.year, 10),
+          month: parseInt(dateInput.month, 10),
+          day: parseInt(dateInput.day, 10)
+        };
+      }
+      
+      return null;
+    }
+    
+    // Helper function to normalize settings dates
+    function normalizeSettingsDates(settings) {
+      // Parse minDate
+      if (settings.minDate) {
+        settings.minDate = parseDate(settings.minDate);
+      }
+      
+      // Parse maxDate
+      if (settings.maxDate) {
+        settings.maxDate = parseDate(settings.maxDate);
+      }
+      
+      // Parse disabledDates
+      if (settings.disabledDates && Array.isArray(settings.disabledDates)) {
+        settings.disabledDates = settings.disabledDates.map(function(date) {
+          return parseDate(date);
+        }).filter(function(date) {
+          return date !== null;
+        });
+      }
+      
+      // Parse disabledDateRanges
+      if (settings.disabledDateRanges && Array.isArray(settings.disabledDateRanges)) {
+        settings.disabledDateRanges = settings.disabledDateRanges.map(function(range) {
+          if (range && range.start && range.end) {
+            return {
+              start: parseDate(range.start),
+              end: parseDate(range.end)
+            };
+          }
+          return null;
+        }).filter(function(range) {
+          return range && range.start && range.end;
+        });
+      }
+      
+      // Parse defaultDate
+      if (settings.defaultDate) {
+        settings.defaultDate = parseDate(settings.defaultDate);
+      }
+    }
   
     /*** ---------------- Conversion (Java parity) ---------------- ***/
     // Anchor pair (same as Java)
@@ -382,6 +454,10 @@
       return this.each(function(){
         var $input = $(this);
         var settings = $.extend({}, defaults, options||{});
+        
+        // Normalize date settings (parse strings to objects)
+        normalizeSettingsDates(settings);
+        
         $input.attr('readonly', true).attr('placeholder', settings.placeholder);
   
         var todayAd = new Date();
@@ -389,10 +465,13 @@
           todayAd.getFullYear(), todayAd.getMonth(), todayAd.getDate()
         )));
   
+        // Use defaultDate if provided, otherwise use today
+        var initialDate = settings.defaultDate || today;
+        
         var state = {
           isOpen:false,
-          selected:{year:today.year, month:today.month, day:today.day},
-          current: {year:today.year, month:today.month, day:today.day},
+          selected:{year:initialDate.year, month:initialDate.month, day:initialDate.day},
+          current: {year:initialDate.year, month:initialDate.month, day:initialDate.day},
           view:'month',
           $dp:null, $overlay:null, bound:false
         };
@@ -556,7 +635,7 @@ function close(){
             }
   
             html+='</div>';
-            if (defaults.showToday){
+            if (settings.showToday){
               html+='<div class="datepicker-footer"><div class="btn-today" data-action="today" role="button" tabindex="0">Today</div></div>';
             }
             html+='</div>';
