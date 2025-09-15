@@ -677,9 +677,9 @@ function close(){
           } else if (state.view==='monthList'){
             var canPY=isYearValid(cur.year-1), canNY=isYearValid(cur.year+1);
             html+='<div class="datepicker-header">';
-            html+='<div class="nav-btn back-to-month" data-action="back-to-month" role="button" tabindex="0">&#8249;</div>';
+            html+='<div class="nav-btn prev-year'+(canPY?'':' disabled')+'" data-action="prev-year" role="button" tabindex="0">&#8249;</div>';
             html+='<div class="year-display"><div class="clickable-year" data-action="show-year-range" role="button" tabindex="0">'+toNepNum(cur.year)+'</div></div>';
-            html+='<div class="nav-btn today-btn" data-action="today" role="button" tabindex="0">&#10003;</div>';
+            html+='<div class="nav-btn next-year'+(canNY?'':' disabled')+'" data-action="next-year" role="button" tabindex="0">&#8250;</div>';
             html+='</div><div class="datepicker-body month-list-view">';
             for (var m=1;m<=12;m++){
               var cls2='month-item'+(m===cur.month?' current':'')+(state.selected&&m===state.selected.month?' selected':'');
@@ -740,7 +740,20 @@ function close(){
                 break;
               case 'show-year-range': state.view='year'; render(); break;
               case 'show-month-list': state.view='monthList'; render(); break;
-              case 'back-to-month': state.view='month'; render(); break;
+              case 'prev-year': 
+                if (isYearValid(cur.year-1)) {
+                  cur.year--; 
+                  cur.day=Math.min(cur.day||1, GetDaysInMonth(cur.year,cur.month)); 
+                  render(); 
+                }
+                break;
+              case 'next-year': 
+                if (isYearValid(cur.year+1)) {
+                  cur.year++; 
+                  cur.day=Math.min(cur.day||1, GetDaysInMonth(cur.year,cur.month)); 
+                  render(); 
+                }
+                break;
               case 'select-month':
                 cur.month=parseInt($t.data('month'),10);
                 cur.day=Math.min(cur.day||1, GetDaysInMonth(cur.year,cur.month));
