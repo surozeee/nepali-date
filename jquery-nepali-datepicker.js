@@ -451,6 +451,7 @@ function close(){
         function render(){
           state.$dp.data('__ndp_close__', close);
           state.$dp.data('__ndp_position__', position);
+          
           var cur=state.current, html='';
           if (state.view==='month'){
             var canPrevY=isYearValid(cur.year-1), canNextY=isYearValid(cur.year+1);
@@ -536,18 +537,23 @@ function close(){
           state.$dp[0].innerHTML = html;
           state.$dp.data('__ndp_close__', close);
           state.$dp.data('__ndp_position__', position);
+          
+          // Bind event handlers after HTML is rendered
+          bindEventHandlers();
         }
   
-        function bindOnce(){
-          if (state.bound || !state.$dp) return;
-          state.bound=true;
-  
+        function bindEventHandlers(){
+          if (!state.$dp) return;
+          
+          // Remove any existing event handlers to avoid duplicates
+          state.$dp.off('click.ndp keydown.ndp mousedown.ndp');
+
           state.$dp.on('click.ndp','[data-action]',function(e){
             e.preventDefault(); e.stopPropagation();
             var $t=$(this), action=$t.data('action');
             if ($t.hasClass('disabled')||$t.attr('aria-disabled')==='true') return;
             var cur=state.current;
-  
+
             switch(action){
               case 'prev-year': if (isYearValid(cur.year-1)){ cur.year--; cur.day=Math.min(cur.day||1, GetDaysInMonth(cur.year,cur.month)); render(); } break;
               case 'next-year': if (isYearValid(cur.year+1)){ cur.year++; cur.day=Math.min(cur.day||1, GetDaysInMonth(cur.year,cur.month)); render(); } break;
@@ -593,11 +599,17 @@ function close(){
                 break;
             }
           });
-  
+
           state.$dp.on('keydown.ndp','[data-action][role="button"]',function(e){
             if (e.key==='Enter'||e.key===' ') { e.preventDefault(); $(this).trigger('click'); }
           });
           state.$dp.on('mousedown.ndp', function(e){ e.stopPropagation(); });
+        }
+
+        function bindOnce(){
+          if (state.bound || !state.$dp) return;
+          state.bound=true;
+          // Event handlers are now bound in bindEventHandlers() which is called from render()
         }
   
         // input triggers
