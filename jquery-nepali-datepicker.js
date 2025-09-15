@@ -642,13 +642,33 @@ function close(){
           } else if (state.view==='year'){
             var years = Object.keys(bsCalendarData).map(Number);
             var minY=Math.min.apply(Math,years), maxY=Math.max.apply(Math,years);
-            var base=Math.floor(cur.year/12)*12, start=Math.max(minY, Math.min(maxY-11, base));
+            
+            // Calculate the start year for the current 12-year range
+            // Ensure we start from the minimum year (1970) and show proper ranges
+            var base=Math.floor(cur.year/12)*12;
+            var start=Math.max(minY, base);
+            
+            // Ensure we don't go below the minimum year
+            if (start < minY) {
+              start = minY;
+            }
+            
+            // Calculate the end year for this range (max 12 years)
+            var endYear = Math.min(start + 11, maxY);
+            var actualYears = endYear - start + 1;
+            
             html+='<div class="datepicker-header">';
-            html+='<div class="nav-btn prev-decade'+((start-12>=minY&&!settings.readonly)?'':' disabled')+'" data-action="prev-decade" role="button" tabindex="0">&#171;</div>';
-            html+='<div class="year-range"><span>'+toNepNum(start)+' - '+toNepNum(start+11)+'</span></div>';
-            html+='<div class="nav-btn next-decade'+((start+12<=maxY&&!settings.readonly)?'':' disabled')+'" data-action="next-decade" role="button" tabindex="0">&#187;</div>';
+            // Disable prev-decade if we're at or near the minimum year
+            var canGoPrev = (start > minY) && !settings.readonly;
+            html+='<div class="nav-btn prev-decade'+(canGoPrev?'':' disabled')+'" data-action="prev-decade" role="button" tabindex="0">&#171;</div>';
+            html+='<div class="year-range"><span>'+toNepNum(start)+' - '+toNepNum(endYear)+'</span></div>';
+            // Disable next-decade if we're at or near the maximum year
+            var canGoNext = (start+12<=maxY) && !settings.readonly;
+            html+='<div class="nav-btn next-decade'+(canGoNext?'':' disabled')+'" data-action="next-decade" role="button" tabindex="0">&#187;</div>';
             html+='</div><div class="datepicker-body year-view">';
-            for (var y=start;y<start+12;y++){
+            
+            // Show years in a grid, but handle cases where we have fewer than 12 years
+            for (var y=start;y<=endYear;y++){
               var c='year-item'; if (y===cur.year) c+=' current'; if (state.selected && y===state.selected.year) c+=' selected';
               if (!isYearValid(y)||settings.readonly) c+=' disabled';
               html+='<div class="'+c+'" data-action="select-year" data-year="'+y+'" role="button" tabindex="0">'+toNepNum(y)+'</div>';
@@ -699,10 +719,20 @@ function close(){
                 if (!isYearValid(cur.year)){ cur.year=Math.max.apply(Math,Object.keys(bsCalendarData).map(Number)); cur.month=12; }
                 cur.day=Math.min(cur.day||1, GetDaysInMonth(cur.year,cur.month)); render(); break;
               case 'prev-decade':
-                if (isYearValid(cur.year-12)) cur.year-=12; else cur.year=Math.min.apply(Math,Object.keys(bsCalendarData).map(Number));
+                var minYear = Math.min.apply(Math,Object.keys(bsCalendarData).map(Number));
+                if (isYearValid(cur.year-12)) {
+                  cur.year-=12;
+                } else {
+                  cur.year = minYear; // Go to the minimum year (1970)
+                }
                 cur.day=Math.min(cur.day||1, GetDaysInMonth(cur.year,cur.month)); render(); break;
               case 'next-decade':
-                if (isYearValid(cur.year+12)) cur.year+=12; else cur.year=Math.max.apply(Math,Object.keys(bsCalendarData).map(Number));
+                var maxYear = Math.max.apply(Math,Object.keys(bsCalendarData).map(Number));
+                if (isYearValid(cur.year+12)) {
+                  cur.year+=12;
+                } else {
+                  cur.year = maxYear; // Go to the maximum year
+                }
                 cur.day=Math.min(cur.day||1, GetDaysInMonth(cur.year,cur.month)); render(); break;
               case 'select-year':
                 var y=parseInt($t.data('year'),10);
