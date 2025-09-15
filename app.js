@@ -38,11 +38,16 @@ function initializeDatepickers() {
         theme: 'light',
         language: 'nepali',
         dateFormat: 'YYYY-MM-DD',
-        modal: true,
-        showEnglishDate: true,
+        modal: false, // Don't use datepicker's modal since we have our own modal container
+        autoClose: true,
         onSelect: function(date, formatted) {
             console.log('Modal datepicker selected:', date, formatted);
             $('#modal-result').text('Selected: ' + formatted);
+            $('#modal-trigger-input').val(formatted);
+            // Auto-close modal after selection
+            setTimeout(() => {
+                closeModal();
+            }, 500);
         },
         onOpen: function() {
             console.log('Modal datepicker opened');
@@ -114,19 +119,6 @@ function initializeDatepickers() {
         }
     });
 
-    // Modal datepicker
-    $('#modal-datepicker').nepaliDatepicker({
-        theme: 'light',
-        language: 'nepali',
-        dateFormat: 'YYYY-MM-DD',
-        onSelect: function(date, formatted) {
-            console.log('Modal datepicker selected:', date, formatted);
-            // Auto-close modal after selection
-            setTimeout(() => {
-                closeModal();
-            }, 500);
-        }
-    });
 }
 
 // Setup configuration panel
@@ -173,26 +165,36 @@ function updateAllDatepickers(options) {
 
 // Modal functions
 function openModal() {
+    console.log('openModal() called');
     const modal = document.getElementById('datepicker-modal');
     if (modal) {
+        console.log('Modal found, opening...');
         modal.style.display = 'block';
         document.body.style.overflow = 'hidden';
-        
-        // Focus on the datepicker input
-        setTimeout(() => {
-            const input = document.getElementById('modal-datepicker');
-            if (input) {
-                input.focus();
-            }
-        }, 100);
+    } else {
+        console.log('ERROR: datepicker-modal not found');
     }
 }
 
 function closeModal() {
+    console.log('closeModal() called');
     const modal = document.getElementById('datepicker-modal');
     if (modal) {
+        console.log('Modal found, closing...');
         modal.style.display = 'none';
         document.body.style.overflow = 'auto';
+        
+        // Close any open datepicker
+        const $modalDatepicker = $('#modal-datepicker');
+        if ($modalDatepicker.length) {
+            const datepicker = $modalDatepicker.data('nepaliDatepicker');
+            if (datepicker && typeof datepicker.hide === 'function') {
+                console.log('Closing datepicker...');
+                datepicker.hide();
+            }
+        }
+    } else {
+        console.log('ERROR: datepicker-modal not found for closing');
     }
 }
 console.log('2082 Shrawan days =', GetDaysInMonth(2082, 4)); // 31
@@ -217,6 +219,15 @@ function setupModal() {
     // Close modal with Escape key
     document.addEventListener('keydown', function(event) {
         if (event.key === 'Escape') {
+            // Check if datepicker is open first
+            const $modalDatepicker = $('#modal-datepicker');
+            if ($modalDatepicker.length) {
+                const datepicker = $modalDatepicker.data('nepaliDatepicker');
+                if (datepicker && typeof datepicker.isOpen === 'function' && datepicker.isOpen() && typeof datepicker.hide === 'function') {
+                    datepicker.hide();
+                    return;
+                }
+            }
             closeModal();
         }
     });

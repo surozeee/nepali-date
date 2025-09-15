@@ -151,6 +151,7 @@ input {
 }
 
 /* Datepicker container */
+.nepali-datepicker,
 .custom-nepali-datepicker {
     position: absolute;
     background: #ffffff;
@@ -175,7 +176,7 @@ input {
     width: 100%;
     height: 100%;
     background: rgba(0, 0, 0, 0.5);
-    z-index: 9998;
+    z-index: 10001;
     display: none;
     align-items: center;
     justify-content: center;
@@ -194,9 +195,10 @@ input {
 }
 
 /* Modal datepicker */
+.nepali-datepicker.modal,
 .custom-nepali-datepicker.modal {
     position: relative;
-    z-index: 9999;
+    z-index: 10002;
     min-width: 320px;
     max-width: 400px;
     width: 100%;
@@ -601,63 +603,77 @@ input {
 
 
 /* Theme variations */
+.nepali-datepicker.dark,
 .custom-nepali-datepicker.dark {
     background: #2d3748;
     border-color: #4a5568;
     color: #e2e8f0;
 }
 
+.nepali-datepicker.dark .datepicker-header,
 .custom-nepali-datepicker.dark .datepicker-header {
     background: linear-gradient(135deg, #4a5568 0%, #2d3748 100%);
 }
 
+.nepali-datepicker.dark .day,
 .custom-nepali-datepicker.dark .day {
     color: #e2e8f0;
 }
 
+.nepali-datepicker.dark .day:hover,
 .custom-nepali-datepicker.dark .day:hover {
     background: #4a5568;
 }
 
+.nepali-datepicker.dark .day.other-month,
 .custom-nepali-datepicker.dark .day.other-month {
     color: #718096;
 }
 
 
+.nepali-datepicker.blue,
 .custom-nepali-datepicker.blue {
     border-color: #3182ce;
 }
 
+.nepali-datepicker.blue .datepicker-header,
 .custom-nepali-datepicker.blue .datepicker-header {
     background: linear-gradient(135deg, #3182ce 0%, #2c5aa0 100%);
 }
 
+.nepali-datepicker.blue .day.today,
 .custom-nepali-datepicker.blue .day.today {
     background: #3182ce;
 }
 
+.nepali-datepicker.blue .day.selected,
 .custom-nepali-datepicker.blue .day.selected {
     background: #3182ce;
 }
 
+.nepali-datepicker.green,
 .custom-nepali-datepicker.green {
     border-color: #38a169;
 }
 
+.nepali-datepicker.green .datepicker-header,
 .custom-nepali-datepicker.green .datepicker-header {
     background: linear-gradient(135deg, #38a169 0%, #2f855a 100%);
 }
 
+.nepali-datepicker.green .day.today,
 .custom-nepali-datepicker.green .day.today {
     background: #38a169;
 }
 
+.nepali-datepicker.green .day.selected,
 .custom-nepali-datepicker.green .day.selected {
     background: #38a169;
 }
 
 /* Responsive design */
 @media (max-width: 768px) {
+    .nepali-datepicker,
     .custom-nepali-datepicker {
         min-width: 260px;
         max-width: 95vw;
@@ -711,6 +727,7 @@ input {
 }
 
 @media (max-width: 480px) {
+    .nepali-datepicker,
     .custom-nepali-datepicker {
         min-width: 240px;
         max-width: 90vw;
@@ -783,6 +800,7 @@ input {
 }
 
 /* Mobile view specific styles */
+.nepali-datepicker.mobile-view,
 .custom-nepali-datepicker.mobile-view {
     position: fixed !important;
     top: 50% !important;
@@ -798,6 +816,7 @@ input {
 
 /* Modal responsive styles */
 @media (max-width: 768px) {
+    .nepali-datepicker.modal,
     .custom-nepali-datepicker.modal {
         min-width: 300px;
         max-width: 95vw;
@@ -807,6 +826,7 @@ input {
 }
 
 @media (max-width: 480px) {
+    .nepali-datepicker.modal,
     .custom-nepali-datepicker.modal {
         min-width: 280px;
         max-width: 95vw;
@@ -820,6 +840,7 @@ input {
     }
 }
 
+.nepali-datepicker.mobile-view .datepicker-header,
 .custom-nepali-datepicker.mobile-view .datepicker-header {
     position: sticky;
     top: 0;
@@ -845,10 +866,12 @@ input {
 }
 
 /* Animation classes */
+.nepali-datepicker.fade-in,
 .custom-nepali-datepicker.fade-in {
     animation: fadeIn 0.3s ease;
 }
 
+.nepali-datepicker.slide-up,
 .custom-nepali-datepicker.slide-up {
     animation: slideUp 0.3s ease;
 }
@@ -1059,6 +1082,10 @@ input {
 
 .modal-body {
     padding: 24px;
+}
+
+.nepali-datepicker {
+    z-index: 10000 !important;
 }
 
 /* English Date Header */

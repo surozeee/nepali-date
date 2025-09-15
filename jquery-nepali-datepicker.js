@@ -383,7 +383,14 @@
           
           build(); render();
           state.isOpen=true; ACTIVE=state.$dp[0]; ACTIVE_INPUT=$input[0];
-          if (settings.modal && state.$overlay){ state.$overlay.css('display','flex'); }
+          if (settings.modal && state.$overlay){ 
+            state.$overlay.css('display','flex');
+            // Ensure modal overlay has higher z-index when inside another modal
+            var parentModal = $input.closest('.modal');
+            if (parentModal.length) {
+              state.$overlay.css('z-index', '10001');
+            }
+          }
           else { position(); state.$dp.show(); }
           if (settings.onOpen) settings.onOpen.call($input[0]);
         }
@@ -566,6 +573,7 @@
         $input.data('nepaliDatepicker', {
           show: open,
           hide: close,
+          isOpen: function(){ return state.isOpen; },
           getDate: function(){ return state.selected; },
           setDate: function(date){
             var bs;
