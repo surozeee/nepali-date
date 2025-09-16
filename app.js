@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Application JavaScript for Custom Nepali Datepicker Demo
  */
 
@@ -164,6 +164,54 @@ function initializeDatepickers() {
         dateFormat: 'DD-MM-YYYY',
         onSelect: function(date, formatted) {
             console.log('Disabled dates datepicker selected:', date, formatted);
+        }
+    });
+
+    // Red theme datepicker
+    $('#red-datepicker').nepaliDatepicker({
+        theme: 'red',
+        language: 'nepali',
+        dateFormat: 'YYYY-MM-DD',
+        defaultDate: '2081-01-01',
+        showToday: true,
+        onSelect: function(date, formatted) {
+            console.log('Red datepicker selected:', date, formatted);
+        }
+    });
+
+    // Purple theme datepicker
+    $('#purple-datepicker').nepaliDatepicker({
+        theme: 'purple',
+        language: 'nepali',
+        dateFormat: 'YYYY-MM-DD',
+        defaultDate: '2081-01-01',
+        showToday: true,
+        onSelect: function(date, formatted) {
+            console.log('Purple datepicker selected:', date, formatted);
+        }
+    });
+
+    // Orange theme datepicker
+    $('#orange-datepicker').nepaliDatepicker({
+        theme: 'orange',
+        language: 'nepali',
+        dateFormat: 'YYYY-MM-DD',
+        defaultDate: '2081-01-01',
+        showToday: true,
+        onSelect: function(date, formatted) {
+            console.log('Orange datepicker selected:', date, formatted);
+        }
+    });
+
+    // Green theme datepicker (additional example)
+    $('#green-datepicker').nepaliDatepicker({
+        theme: 'green',
+        language: 'nepali',
+        dateFormat: 'YYYY-MM-DD',
+        defaultDate: '2081-01-01',
+        showToday: true,
+        onSelect: function(date, formatted) {
+            console.log('Green datepicker selected:', date, formatted);
         }
     });
 

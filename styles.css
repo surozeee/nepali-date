@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Custom Nepali Datepicker Styles
  * Modern, responsive design with multiple themes
  */
@@ -708,6 +708,66 @@ input {
 .nepali-datepicker.green .day.selected,
 .custom-nepali-datepicker.green .day.selected {
     background: #38a169;
+}
+
+.nepali-datepicker.red,
+.custom-nepali-datepicker.red {
+    border-color: #e53e3e;
+}
+
+.nepali-datepicker.red .datepicker-header,
+.custom-nepali-datepicker.red .datepicker-header {
+    background: linear-gradient(135deg, #e53e3e 0%, #c53030 100%);
+}
+
+.nepali-datepicker.red .day.today,
+.custom-nepali-datepicker.red .day.today {
+    background: #e53e3e;
+}
+
+.nepali-datepicker.red .day.selected,
+.custom-nepali-datepicker.red .day.selected {
+    background: #e53e3e;
+}
+
+.nepali-datepicker.purple,
+.custom-nepali-datepicker.purple {
+    border-color: #805ad5;
+}
+
+.nepali-datepicker.purple .datepicker-header,
+.custom-nepali-datepicker.purple .datepicker-header {
+    background: linear-gradient(135deg, #805ad5 0%, #6b46c1 100%);
+}
+
+.nepali-datepicker.purple .day.today,
+.custom-nepali-datepicker.purple .day.today {
+    background: #805ad5;
+}
+
+.nepali-datepicker.purple .day.selected,
+.custom-nepali-datepicker.purple .day.selected {
+    background: #805ad5;
+}
+
+.nepali-datepicker.orange,
+.custom-nepali-datepicker.orange {
+    border-color: #ed8936;
+}
+
+.nepali-datepicker.orange .datepicker-header,
+.custom-nepali-datepicker.orange .datepicker-header {
+    background: linear-gradient(135deg, #ed8936 0%, #dd6b20 100%);
+}
+
+.nepali-datepicker.orange .day.today,
+.custom-nepali-datepicker.orange .day.today {
+    background: #ed8936;
+}
+
+.nepali-datepicker.orange .day.selected,
+.custom-nepali-datepicker.orange .day.selected {
+    background: #ed8936;
 }
 
 /* Responsive design */
