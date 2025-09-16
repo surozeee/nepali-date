@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Application JavaScript for Custom Nepali Datepicker Demo
  */
 
