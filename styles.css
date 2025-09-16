@@ -1032,6 +1032,13 @@ input {
     border-color: #3182ce;
 }
 
+.config-group input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    accent-color: #3182ce;
+}
+
 .btn {
     padding: 12px 24px;
     border: none;

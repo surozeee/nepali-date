@@ -25,7 +25,8 @@
     disabledDates: [],           // Array of disabled dates (BS format: [{year, month, day}, ...] or ['YYYY-MM-DD', ...])
     disabledDateRanges: [],      // Array of disabled date ranges (BS format: [{start: {year, month, day}, end: {year, month, day}}, ...])
     defaultDate: null,           // Default date to set on initialization (BS format: {year, month, day} or 'YYYY-MM-DD')
-    showToday: true              // Show/hide the today button
+    showToday: true,             // Show/hide the today button
+    showEnglishDateSubscript: true  // Show/hide English date subscripts
   };
   
     /*** ---------------- Labels ---------------- ***/
@@ -611,7 +612,11 @@ function close(){
             var pmDim=GetDaysInMonth(py, pm);
             for (var p=first-1;p>=0;p--){
               var pd=pmDim-p, eP=bsToAD(py,pm,pd);
-              html+='<div class="day other-month"><div class="nepali-date">'+toNepNum(pd)+'</div><div class="english-date-subscript">'+eP.day+'</div></div>';
+              html+='<div class="day other-month"><div class="nepali-date">'+toNepNum(pd)+'</div>';
+              if (settings.showEnglishDateSubscript) {
+                html+='<div class="english-date-subscript">'+eP.day+'</div>';
+              }
+              html+='</div>';
             }
   
             // current month
@@ -624,14 +629,22 @@ function close(){
               var dataAction = isDisabled ? '' : 'data-action="select-day"';
               var role = isDisabled ? 'role="button" aria-disabled="true"' : 'role="button" tabindex="0"';
               html+='<div class="'+cls+'" '+dataAction+' data-day="'+d+'" '+role+'>';
-              html+='<div class="nepali-date">'+toNepNum(d)+'</div><div class="english-date-subscript">'+eD.day+'</div></div>';
+              html+='<div class="nepali-date">'+toNepNum(d)+'</div>';
+              if (settings.showEnglishDateSubscript) {
+                html+='<div class="english-date-subscript">'+eD.day+'</div>';
+              }
+              html+='</div>';
             }
   
             // next month head (fill to 35)
             var filled=first+daysIn, need=35-filled, nm=cur.month===12?1:cur.month+1, ny=cur.month===12?cur.year+1:cur.year;
             for (var n=1;n<=need;n++){
               var eN=bsToAD(ny, nm, n);
-              html+='<div class="day other-month"><div class="nepali-date">'+toNepNum(n)+'</div><div class="english-date-subscript">'+eN.day+'</div></div>';
+              html+='<div class="day other-month"><div class="nepali-date">'+toNepNum(n)+'</div>';
+              if (settings.showEnglishDateSubscript) {
+                html+='<div class="english-date-subscript">'+eN.day+'</div>';
+              }
+              html+='</div>';
             }
   
             html+='</div>';

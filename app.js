@@ -19,6 +19,8 @@ function initializeDatepickers() {
         language: 'nepali',
         dateFormat: 'YYYY-MM-DD',
         defaultDate: '2081-01-01',
+        showEnglishDateSubscript: false,
+        showToday: false,
         onSelect: function(date, formatted) {
             console.log('Basic datepicker selected:', date, formatted);
         }
@@ -172,6 +174,7 @@ function setupConfigurationPanel() {
     const themeSelector = document.getElementById('theme-selector');
     const languageSelector = document.getElementById('language-selector');
     const formatSelector = document.getElementById('format-selector');
+    const englishSubscriptToggle = document.getElementById('english-subscript-toggle');
 
     if (themeSelector) {
         themeSelector.addEventListener('change', function() {
@@ -191,6 +194,13 @@ function setupConfigurationPanel() {
         formatSelector.addEventListener('change', function() {
             const dateFormat = this.value;
             updateAllDatepickers({ dateFormat: dateFormat });
+        });
+    }
+
+    if (englishSubscriptToggle) {
+        englishSubscriptToggle.addEventListener('change', function() {
+            const showEnglishDateSubscript = this.checked;
+            updateAllDatepickers({ showEnglishDateSubscript: showEnglishDateSubscript });
         });
     }
 }
