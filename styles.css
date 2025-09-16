@@ -562,7 +562,7 @@ input {
     border-radius: 6px;
     transition: background 0.2s ease;
     font-weight: 600;
-    font-size: 16px;
+    font-size: 14px;
 }
 
 .year-range:hover {
@@ -581,7 +581,7 @@ input {
 }
 
 .month-item {
-    padding: 23px;
+    padding: 18px;
     text-align: center;
     border-radius: 6px;
     cursor: pointer;
@@ -635,7 +635,7 @@ input {
 
 .nepali-datepicker.dark .day,
 .custom-nepali-datepicker.dark .day {
-    color: #e2e8f0;
+    color: #000000;
 }
 
 .nepali-datepicker.dark .day:hover,

@@ -73,6 +73,29 @@ function initializeDatepickers() {
         }
     });
 
+    $('#modal-datepicker1').nepaliDatepicker({
+        theme: 'light',
+        language: 'nepali',
+        dateFormat: 'YYYY-MM-DD',
+        modal: false, // Don't use datepicker's modal since we have our own modal container
+        autoClose: true,
+        onSelect: function(date, formatted) {
+            console.log('Modal datepicker selected:', date, formatted);
+            $('#modal-result').text('Selected: ' + formatted);
+            $('#modal-trigger-input').val(formatted);
+            // Auto-close modal after selection
+            setTimeout(() => {
+                closeModal();
+            }, 500);
+        },
+        onOpen: function() {
+            console.log('Modal datepicker opened');
+        },
+        onClose: function() {
+            console.log('Modal datepicker closed');
+        }
+    });
+
     // Minimal style datepicker with default date
     $('#minimal-datepicker').nepaliDatepicker({
         theme: 'light',
