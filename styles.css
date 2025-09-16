@@ -1099,6 +1099,50 @@ input {
     accent-color: #3182ce;
 }
 
+
+/* SweetAlert2 Custom Styling */
+.swal2-popup-custom {
+    border-radius: 16px !important;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
+    border: 1px solid #e5e7eb !important;
+}
+
+.swal2-title-custom {
+    color: #1f2937 !important;
+    font-weight: 700 !important;
+    font-size: 24px !important;
+    margin-bottom: 20px !important;
+}
+
+.swal2-confirm-custom {
+    background: linear-gradient(135deg, #3182ce 0%, #2c5aa0 100%) !important;
+    border: none !important;
+    border-radius: 8px !important;
+    padding: 12px 24px !important;
+    font-weight: 600 !important;
+    font-size: 14px !important;
+    transition: all 0.3s ease !important;
+}
+
+.swal2-confirm-custom:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 10px 15px -3px rgba(49, 130, 206, 0.3) !important;
+}
+
+.swal2-close {
+    color: #6b7280 !important;
+    font-size: 20px !important;
+    transition: color 0.3s ease !important;
+}
+
+.swal2-close:hover {
+    color: #374151 !important;
+}
+
+.swal2-timer-progress-bar {
+    background: linear-gradient(90deg, #3182ce, #2c5aa0) !important;
+}
+
 .btn {
     padding: 12px 24px;
     border: none;

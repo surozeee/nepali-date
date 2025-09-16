@@ -62,6 +62,7 @@ function initializeDatepickers() {
             console.log('Modal datepicker selected:', date, formatted);
             $('#modal-result').text('Selected: ' + formatted);
             $('#modal-trigger-input').val(formatted);
+            displayDateConversion(date, formatted);
             // Auto-close modal after selection
             setTimeout(() => {
                 closeModal();
@@ -134,6 +135,7 @@ function initializeDatepickers() {
         dateFormat: 'DD-MM-YYYY',
         onSelect: function(date, formatted) {
             console.log('Range datepicker selected:', date, formatted);
+            displayDateConversion(date, formatted);
         }
     });
 
@@ -144,6 +146,7 @@ function initializeDatepickers() {
         dateFormat: 'YYYY-MM-DD',
         onSelect: function(date, formatted) {
             console.log('Time datepicker selected:', date, formatted);
+            displayDateConversion(date, formatted);
         }
     });
 
@@ -154,6 +157,7 @@ function initializeDatepickers() {
         dateFormat: 'YYYY-MM-DD',
         onSelect: function(date, formatted) {
             console.log('Readonly datepicker selected:', date, formatted);
+            displayDateConversion(date, formatted);
         }
     });
 
@@ -164,6 +168,7 @@ function initializeDatepickers() {
         dateFormat: 'DD-MM-YYYY',
         onSelect: function(date, formatted) {
             console.log('Disabled dates datepicker selected:', date, formatted);
+            displayDateConversion(date, formatted);
         }
     });
 
@@ -200,6 +205,7 @@ function initializeDatepickers() {
         showToday: true,
         onSelect: function(date, formatted) {
             console.log('Orange datepicker selected:', date, formatted);
+            displayDateConversion(date, formatted);
         }
     });
 
@@ -212,6 +218,7 @@ function initializeDatepickers() {
         showToday: true,
         onSelect: function(date, formatted) {
             console.log('Green datepicker selected:', date, formatted);
+            displayDateConversion(date, formatted);
         }
     });
 
@@ -301,7 +308,7 @@ function closeModal() {
         console.log('ERROR: datepicker-modal not found for closing');
     }
 }
-console.log('2082 Shrawan days =', GetDaysInMonth(2082, 4)); // 31
+
 // Setup modal event listeners
 function setupModal() {
     const modal = document.getElementById('datepicker-modal');
@@ -348,6 +355,7 @@ function getCurrentNepaliDate() {
     return currentDate;
 }
 
+
 function formatNepaliDate(date) {
     if (!date) return '';
     
@@ -365,14 +373,116 @@ function showDatepickerInfo(instanceName) {
         const datepicker = $input.data('nepaliDatepicker');
         if (datepicker) {
             const selectedDate = datepicker.getDate();
-            const info = {
-                instance: instanceName,
-                selectedDate: selectedDate,
-                formattedDate: selectedDate ? formatNepaliDate(selectedDate) : 'No date selected'
-            };
+            const formattedDate = selectedDate ? formatNepaliDate(selectedDate) : 'No date selected';
             
-            console.log('Datepicker Info:', info);
-            alert(`Selected Date: ${info.formattedDate}\nInstance: ${instanceName}`);
+            if (!selectedDate) {
+                // Show error if no date is selected
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'No Date Selected',
+                    text: 'Please select a date first to see the conversion.',
+                    confirmButtonColor: '#f59e0b'
+                });
+                return;
+            }
+            
+            try {
+                // Convert Nepali date to English date
+                const englishDate = window.bs2ad(selectedDate, 'string');
+                
+                // Parse the English date string to get individual components
+                const [year, month, day] = englishDate.split('-');
+                const englishDateObj = new Date(year, month - 1, day);
+                
+                // Format the English date in a readable format
+                const englishFormatted = englishDateObj.toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    weekday: 'long'
+                });
+                
+                // Show SweetAlert popup with date conversion
+                Swal.fire({
+                    title: '📅 Date Conversion',
+                    html: `
+                        <div style="text-align: left; font-family: 'Inter', sans-serif;">
+                            <div style="background: #f8fafc; padding: 20px; border-radius: 12px; margin: 20px 0; border-left: 4px solid #3182ce;">
+                                <h3 style="margin: 0 0 15px 0; color: #2d3748; font-size: 18px; font-weight: 600;">
+                                    🇳🇵 Nepali Date
+                                </h3>
+                                <p style="margin: 0; color: #4a5568; font-size: 16px; font-family: 'Courier New', monospace;">
+                                    ${formattedDate}
+                                </p>
+                            </div>
+                            
+                            <div style="background: #f0f9ff; padding: 20px; border-radius: 12px; margin: 20px 0; border-left: 4px solid #0ea5e9;">
+                                <h3 style="margin: 0 0 15px 0; color: #2d3748; font-size: 18px; font-weight: 600;">
+                                    🇺🇸 English Date
+                                </h3>
+                                <p style="margin: 0; color: #4a5568; font-size: 16px;">
+                                    ${englishFormatted}
+                                </p>
+                            </div>
+                            
+                            <div style="background: #f0fdf4; padding: 20px; border-radius: 12px; margin: 20px 0; border-left: 4px solid #22c55e;">
+                                <h3 style="margin: 0 0 15px 0; color: #2d3748; font-size: 18px; font-weight: 600;">
+                                    📊 ISO Format
+                                </h3>
+                                <p style="margin: 0; color: #4a5568; font-size: 16px; font-family: 'Courier New', monospace;">
+                                    ${englishDate}
+                                </p>
+                            </div>
+                            
+                            <div style="background: #fef3c7; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #f59e0b;">
+                                <p style="margin: 0; color: #92400e; font-size: 14px; font-weight: 500;">
+                                    📋 Instance: ${instanceName} Datepicker
+                                </p>
+                            </div>
+                        </div>
+                    `,
+                    width: '500px',
+                    padding: '30px',
+                    background: '#ffffff',
+                    backdrop: `
+                        rgba(0,0,0,0.4)
+                        left top
+                        no-repeat
+                    `,
+                    showConfirmButton: true,
+                    confirmButtonText: '✨ Great!',
+                    confirmButtonColor: '#3182ce',
+                    confirmButtonAriaLabel: 'Great',
+                    buttonsStyling: true,
+                    customClass: {
+                        popup: 'swal2-popup-custom',
+                        title: 'swal2-title-custom',
+                        confirmButton: 'swal2-confirm-custom'
+                    },
+                    showCloseButton: true,
+                    closeButtonHtml: '<i class="fas fa-times"></i>',
+                    timer: 10000,
+                    timerProgressBar: true,
+                    didOpen: () => {
+                        // Add some animation
+                        const popup = Swal.getPopup();
+                        popup.style.transform = 'scale(0.8)';
+                        popup.style.transition = 'transform 0.3s ease';
+                        setTimeout(() => {
+                            popup.style.transform = 'scale(1)';
+                        }, 100);
+                    }
+                });
+                
+            } catch (error) {
+                console.error('Error converting date:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Conversion Error',
+                    text: 'There was an error converting the date. Please try again.',
+                    confirmButtonColor: '#e53e3e'
+                });
+            }
         }
     }
 }
