@@ -1,12 +1,10 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
+<html lang="en"><head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Custom Nepali Datepicker Demo</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="container">
@@ -46,6 +44,10 @@
                         <option value="DD-MM-YYYY">DD-MM-YYYY</option>
                         <option value="MM/DD/YYYY">MM/DD/YYYY</option>
                     </select>
+                </div>
+                <div class="config-group">
+                    <label for="english-subscript-toggle">Show English Date Subscript:</label>
+                    <input type="checkbox" id="english-subscript-toggle" checked>
                 </div>
             </div>
         </div>
@@ -88,21 +90,21 @@
                 <div class="example-card">
                     <h3>Basic Datepicker</h3>
                     <p>Simple datepicker with default settings</p>
-                    <input type="text" id="basic-datepicker" placeholder="Select Date">
+                    <input type="text" id="basic-datepicker" placeholder="Select Date" readonly="readonly">
                     <button class="btn btn-primary" onclick="showDatepickerInfo('basic')">Show Info</button>
                 </div>
 
                 <div class="example-card">
                     <h3>Modern Style</h3>
                     <p>Clean, modern design with custom styling</p>
-                    <input type="text" id="modern-datepicker" placeholder="Select Date">
+                    <input type="text" id="modern-datepicker" placeholder="Select Date" readonly="readonly">
                     <button class="btn btn-primary" onclick="showDatepickerInfo('modern')">Show Info</button>
                 </div>
 
                 <div class="example-card">
                     <h3>Minimal Style</h3>
                     <p>Minimal design with reduced options</p>
-                    <input type="text" id="minimal-datepicker" placeholder="Select Date">
+                    <input type="text" id="minimal-datepicker" placeholder="Select Date" readonly="readonly">
                     <button class="btn btn-primary" onclick="showDatepickerInfo('minimal')">Show Info</button>
                 </div>
             </div>
@@ -115,21 +117,21 @@
                 <div class="example-card">
                     <h3>Dark Theme</h3>
                     <p>Dark theme for better visibility in low light</p>
-                    <input type="text" id="dark-datepicker" placeholder="Select Date">
+                    <input type="text" id="dark-datepicker" placeholder="Select Date" readonly="readonly">
                     <button class="btn btn-primary" onclick="showDatepickerInfo('dark')">Show Info</button>
                 </div>
 
                 <div class="example-card">
                     <h3>Blue Theme</h3>
                     <p>Blue color scheme with professional look</p>
-                    <input type="text" id="range-datepicker" placeholder="Select Date">
+                    <input type="text" id="range-datepicker" placeholder="Select Date" readonly="readonly">
                     <button class="btn btn-primary" onclick="showDatepickerInfo('range')">Show Info</button>
                 </div>
 
                 <div class="example-card">
                     <h3>Green Theme</h3>
                     <p>Green color scheme with time picker</p>
-                    <input type="text" id="time-datepicker" placeholder="Select Date & Time">
+                    <input type="text" id="time-datepicker" placeholder="Select Date" readonly="readonly">
                     <button class="btn btn-primary" onclick="showDatepickerInfo('time')">Show Info</button>
                 </div>
 
@@ -170,21 +172,21 @@
                 <div class="example-card">
                     <h3>Read Only</h3>
                     <p>Datepicker with pre-selected date (read-only)</p>
-                    <input type="text" id="readonly-datepicker" placeholder="Read Only Date">
+                    <input type="text" id="readonly-datepicker" placeholder="Select Date" readonly="readonly">
                     <button class="btn btn-primary" onclick="showDatepickerInfo('readonly')">Show Info</button>
                 </div>
 
                 <div class="example-card">
                     <h3>Disabled Dates</h3>
                     <p>Datepicker with specific disabled dates</p>
-                    <input type="text" id="disabled-datepicker" placeholder="Select Date">
+                    <input type="text" id="disabled-datepicker" placeholder="Select Date" readonly="readonly">
                     <button class="btn btn-primary" onclick="showDatepickerInfo('disabled')">Show Info</button>
                 </div>
 
                 <div class="example-card">
                     <h3>Modal Datepicker</h3>
                     <p>Datepicker that opens in a modal dialog with English date display</p>
-                    <input type="text" id="modal-datepicker" placeholder="Click to open modal datepicker">
+                    <input type="text" id="modal-trigger-input" placeholder="Click button to open modal" readonly="readonly">
                     <div id="modal-result" class="result-display"></div>
                     <button class="btn btn-primary" onclick="openModal()">
                         <i class="fas fa-calendar"></i> Open Modal Datepicker
@@ -212,10 +214,13 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h3>Select Date</h3>
-                <span class="close">&times;</span>
+                <span class="close">×</span>
             </div>
             <div class="modal-body">
                 <input type="text" id="modal-datepicker-modal" placeholder="Select Date">
+            </div>
+            <div class="modal-body">
+                <input type="text" id="modal-datepicker1" placeholder="Select Date">
             </div>
         </div>
     </div>
@@ -225,5 +230,6 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="jquery-nepali-datepicker.js"></script>
     <script src="app.js"></script>
-</body>
-</html>
+
+
+</body></html>
