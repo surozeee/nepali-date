@@ -591,7 +591,7 @@ function close(){
             html+='<div class="nav-btn prev-month'+(!settings.readonly?'':' disabled')+'" data-action="prev-month" role="button" tabindex="0">&#8249;</div>';
             html+='<div class="month-year clickable-month-year" data-action="show-month-list" role="button" tabindex="0"><div class="nepali-date-display">';
             html+='<span class="month">'+monthNames[settings.language][cur.month-1]+'</span> ';
-            html+='<span class="year">'+toNepNum(cur.year)+'</span></div>';
+            html+='<span class="year">'+(settings.language==='english'?cur.year:toNepNum(cur.year))+'</span></div>';
             html+='<div class="english-date-header">'+englishHeaderFor(cur.year,cur.month)+'</div></div>';
             html+='<div class="nav-btn next-month'+(!settings.readonly?'':' disabled')+'" data-action="next-month" role="button" tabindex="0">&#8250;</div>';
             html+='<div class="nav-btn next-year'+(canNextY&&!settings.readonly?'':' disabled')+'" data-action="next-year" role="button" tabindex="0">&#187;</div>';
@@ -612,7 +612,7 @@ function close(){
             var pmDim=GetDaysInMonth(py, pm);
             for (var p=first-1;p>=0;p--){
               var pd=pmDim-p, eP=bsToAD(py,pm,pd);
-              html+='<div class="day other-month"><div class="nepali-date">'+toNepNum(pd)+'</div>';
+              html+='<div class="day other-month"><div class="nepali-date">'+(settings.language==='english'?pd:toNepNum(pd))+'</div>';
               if (settings.showEnglishDateSubscript) {
                 html+='<div class="english-date-subscript">'+eP.day+'</div>';
               }
@@ -629,7 +629,7 @@ function close(){
               var dataAction = isDisabled ? '' : 'data-action="select-day"';
               var role = isDisabled ? 'role="button" aria-disabled="true"' : 'role="button" tabindex="0"';
               html+='<div class="'+cls+'" '+dataAction+' data-day="'+d+'" '+role+'>';
-              html+='<div class="nepali-date">'+toNepNum(d)+'</div>';
+              html+='<div class="nepali-date">'+(settings.language==='english'?d:toNepNum(d))+'</div>';
               if (settings.showEnglishDateSubscript) {
                 html+='<div class="english-date-subscript">'+eD.day+'</div>';
               }
@@ -640,7 +640,7 @@ function close(){
             var filled=first+daysIn, need=35-filled, nm=cur.month===12?1:cur.month+1, ny=cur.month===12?cur.year+1:cur.year;
             for (var n=1;n<=need;n++){
               var eN=bsToAD(ny, nm, n);
-              html+='<div class="day other-month"><div class="nepali-date">'+toNepNum(n)+'</div>';
+              html+='<div class="day other-month"><div class="nepali-date">'+(settings.language==='english'?n:toNepNum(n))+'</div>';
               if (settings.showEnglishDateSubscript) {
                 html+='<div class="english-date-subscript">'+eN.day+'</div>';
               }
@@ -674,7 +674,7 @@ function close(){
             // Disable prev-decade if we're at or near the minimum year
             var canGoPrev = (start > minY) && !settings.readonly;
             html+='<div class="nav-btn prev-decade'+(canGoPrev?'':' disabled')+'" data-action="prev-decade" role="button" tabindex="0">&#171;</div>';
-            html+='<div class="year-range"><span>'+toNepNum(start)+' - '+toNepNum(endYear)+'</span></div>';
+            html+='<div class="year-range"><span>'+(settings.language==='english'?start:toNepNum(start))+' - '+(settings.language==='english'?endYear:toNepNum(endYear))+'</span></div>';
             // Disable next-decade if we're at or near the maximum year
             var canGoNext = (start+12<=maxY) && !settings.readonly;
             html+='<div class="nav-btn next-decade'+(canGoNext?'':' disabled')+'" data-action="next-decade" role="button" tabindex="0">&#187;</div>';
@@ -684,14 +684,14 @@ function close(){
             for (var y=start;y<=endYear;y++){
               var c='year-item'; if (y===cur.year) c+=' current'; if (state.selected && y===state.selected.year) c+=' selected';
               if (!isYearValid(y)||settings.readonly) c+=' disabled';
-              html+='<div class="'+c+'" data-action="select-year" data-year="'+y+'" role="button" tabindex="0">'+toNepNum(y)+'</div>';
+              html+='<div class="'+c+'" data-action="select-year" data-year="'+y+'" role="button" tabindex="0">'+(settings.language==='english'?y:toNepNum(y))+'</div>';
             }
             html+='</div>';
           } else if (state.view==='monthList'){
             var canPY=isYearValid(cur.year-1), canNY=isYearValid(cur.year+1);
             html+='<div class="datepicker-header">';
             html+='<div class="nav-btn prev-year'+(canPY?'':' disabled')+'" data-action="prev-year" role="button" tabindex="0">&#8249;</div>';
-            html+='<div class="year-display"><div class="clickable-year" data-action="show-year-range" role="button" tabindex="0">'+toNepNum(cur.year)+'</div></div>';
+            html+='<div class="year-display"><div class="clickable-year" data-action="show-year-range" role="button" tabindex="0">'+(settings.language==='english'?cur.year:toNepNum(cur.year))+'</div></div>';
             html+='<div class="nav-btn next-year'+(canNY?'':' disabled')+'" data-action="next-year" role="button" tabindex="0">&#8250;</div>';
             html+='</div><div class="datepicker-body month-list-view">';
             for (var m=1;m<=12;m++){
