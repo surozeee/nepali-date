@@ -1,14 +1,36 @@
 ﻿/**
  * Application JavaScript for Custom Nepali Datepicker Demo
+ * Completely jQuery-based
  */
 
-// Global variables - now using jQuery
-
-// Initialize when DOM is loaded
-document.addEventListener('DOMContentLoaded', function() {
+$(document).ready(function() {
+    // Initialize all datepickers
     initializeDatepickers();
+    
+    // Setup configuration panel
     setupConfigurationPanel();
+    
+    // Setup modal functionality
     setupModal();
+    
+    // Load demo data after initialization
+    setTimeout(loadDemoData, 1000);
+    
+    // Add keyboard shortcuts
+    setupKeyboardShortcuts();
+    
+    // Add touch support for mobile devices
+    setupTouchSupport();
+    
+    // Performance monitoring
+    setupPerformanceMonitoring();
+    
+    console.log('Custom Nepali Datepicker Demo initialized successfully!');
+    console.log('Using jQuery version');
+    console.log('Keyboard shortcuts:');
+    console.log('- Ctrl/Cmd + D: Open modal');
+    console.log('- Ctrl/Cmd + R: Reset all datepickers');
+    console.log('- Escape: Close modal or datepicker');
 });
 
 // Initialize all datepickers
@@ -64,7 +86,7 @@ function initializeDatepickers() {
             $('#modal-trigger-input').val(formatted);
             displayDateConversion(date, formatted);
             // Auto-close modal after selection
-            setTimeout(() => {
+            setTimeout(function() {
                 closeModal();
             }, 500);
         },
@@ -87,7 +109,7 @@ function initializeDatepickers() {
             $('#modal-result').text('Selected: ' + formatted);
             $('#modal-trigger-input').val(formatted);
             // Auto-close modal after selection
-            setTimeout(() => {
+            setTimeout(function() {
                 closeModal();
             }, 500);
         },
@@ -221,43 +243,29 @@ function initializeDatepickers() {
             displayDateConversion(date, formatted);
         }
     });
-
 }
 
 // Setup configuration panel
 function setupConfigurationPanel() {
-    const themeSelector = document.getElementById('theme-selector');
-    const languageSelector = document.getElementById('language-selector');
-    const formatSelector = document.getElementById('format-selector');
-    const englishSubscriptToggle = document.getElementById('english-subscript-toggle');
+    $('#theme-selector').on('change', function() {
+        const theme = $(this).val();
+        updateAllDatepickers({ theme: theme });
+    });
 
-    if (themeSelector) {
-        themeSelector.addEventListener('change', function() {
-            const theme = this.value;
-            updateAllDatepickers({ theme: theme });
-        });
-    }
+    $('#language-selector').on('change', function() {
+        const language = $(this).val();
+        updateAllDatepickers({ language: language });
+    });
 
-    if (languageSelector) {
-        languageSelector.addEventListener('change', function() {
-            const language = this.value;
-            updateAllDatepickers({ language: language });
-        });
-    }
+    $('#format-selector').on('change', function() {
+        const dateFormat = $(this).val();
+        updateAllDatepickers({ dateFormat: dateFormat });
+    });
 
-    if (formatSelector) {
-        formatSelector.addEventListener('change', function() {
-            const dateFormat = this.value;
-            updateAllDatepickers({ dateFormat: dateFormat });
-        });
-    }
-
-    if (englishSubscriptToggle) {
-        englishSubscriptToggle.addEventListener('change', function() {
-            const showEnglishDateSubscript = this.checked;
-            updateAllDatepickers({ showEnglishDateSubscript: showEnglishDateSubscript });
-        });
-    }
+    $('#english-subscript-toggle').on('change', function() {
+        const showEnglishDateSubscript = $(this).is(':checked');
+        updateAllDatepickers({ showEnglishDateSubscript: showEnglishDateSubscript });
+    });
 }
 
 // Update all datepickers with new options
@@ -277,11 +285,11 @@ function updateAllDatepickers(options) {
 // Modal functions
 function openModal() {
     console.log('openModal() called');
-    const modal = document.getElementById('datepicker-modal');
-    if (modal) {
+    const $modal = $('#datepicker-modal');
+    if ($modal.length) {
         console.log('Modal found, opening...');
-        modal.style.display = 'block';
-        document.body.style.overflow = 'hidden';
+        $modal.show();
+        $('body').css('overflow', 'hidden');
     } else {
         console.log('ERROR: datepicker-modal not found');
     }
@@ -289,11 +297,11 @@ function openModal() {
 
 function closeModal() {
     console.log('closeModal() called');
-    const modal = document.getElementById('datepicker-modal');
-    if (modal) {
+    const $modal = $('#datepicker-modal');
+    if ($modal.length) {
         console.log('Modal found, closing...');
-        modal.style.display = 'none';
-        document.body.style.overflow = 'auto';
+        $modal.hide();
+        $('body').css('overflow', 'auto');
         
         // Close any open datepicker
         const $modalDatepicker = $('#modal-datepicker');
@@ -311,24 +319,17 @@ function closeModal() {
 
 // Setup modal event listeners
 function setupModal() {
-    const modal = document.getElementById('datepicker-modal');
-    const closeBtn = modal?.querySelector('.close');
-    
-    if (closeBtn) {
-        closeBtn.addEventListener('click', closeModal);
-    }
+    $('.close').on('click', closeModal);
     
     // Close modal when clicking outside
-    if (modal) {
-        modal.addEventListener('click', function(event) {
-            if (event.target === modal) {
-                closeModal();
-            }
-        });
-    }
+    $('#datepicker-modal').on('click', function(event) {
+        if (event.target === this) {
+            closeModal();
+        }
+    });
     
     // Close modal with Escape key
-    document.addEventListener('keydown', function(event) {
+    $(document).on('keydown', function(event) {
         if (event.key === 'Escape') {
             // Check if datepicker is open first
             const $modalDatepicker = $('#modal-datepicker');
@@ -355,7 +356,6 @@ function getCurrentNepaliDate() {
     return currentDate;
 }
 
-
 function formatNepaliDate(date) {
     if (!date) return '';
     
@@ -364,6 +364,36 @@ function formatNepaliDate(date) {
     const day = date.day.toString().padStart(2, '0');
     
     return `${year}-${month}-${day}`;
+}
+
+// Convert Nepali date to English date and display
+function displayDateConversion(nepaliDate, formattedNepaliDate) {
+    if (!nepaliDate) return;
+    
+    try {
+        // Convert Nepali date to English date using the datepicker's conversion function
+        const englishDate = window.bs2ad(nepaliDate, 'string');
+        
+        // Parse the English date string to get individual components
+        const [year, month, day] = englishDate.split('-');
+        const englishDateObj = new Date(year, month - 1, day);
+        
+        // Format the English date in a readable format
+        const englishFormatted = englishDateObj.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            weekday: 'long'
+        });
+        
+        console.log('Date Conversion:');
+        console.log('Nepali Date:', formattedNepaliDate);
+        console.log('English Date:', englishFormatted);
+        console.log('ISO Format:', englishDate);
+        
+    } catch (error) {
+        console.error('Error converting date:', error);
+    }
 }
 
 // Demo functions
@@ -463,12 +493,12 @@ function showDatepickerInfo(instanceName) {
                     closeButtonHtml: '<i class="fas fa-times"></i>',
                     timer: 10000,
                     timerProgressBar: true,
-                    didOpen: () => {
+                    didOpen: function() {
                         // Add some animation
                         const popup = Swal.getPopup();
                         popup.style.transform = 'scale(0.8)';
                         popup.style.transition = 'transform 0.3s ease';
-                        setTimeout(() => {
+                        setTimeout(function() {
                             popup.style.transform = 'scale(1)';
                         }, 100);
                     }
@@ -486,17 +516,6 @@ function showDatepickerInfo(instanceName) {
         }
     }
 }
-
-// Export functions for global access
-window.openModal = openModal;
-window.closeModal = closeModal;
-window.showDatepickerInfo = showDatepickerInfo;
-window.resetAllDatepickers = resetAllDatepickers;
-window.loadDemoData = loadDemoData;
-
-
-// Load demo data after initialization
-setTimeout(loadDemoData, 1000);
 
 // Additional utility functions
 function resetAllDatepickers() {
@@ -530,58 +549,50 @@ function loadDemoData() {
     console.log('Demo data loaded');
 }
 
-// Add keyboard shortcuts
-$(document).on('keydown', function(event) {
-    // Ctrl/Cmd + D to open modal
-    if ((event.ctrlKey || event.metaKey) && event.key === 'd') {
-        event.preventDefault();
-        openModal();
-    }
-    
-    // Ctrl/Cmd + R to reset all datepickers
-    if ((event.ctrlKey || event.metaKey) && event.key === 'r') {
-        event.preventDefault();
-        resetAllDatepickers();
-    }
-});
+// Setup keyboard shortcuts
+function setupKeyboardShortcuts() {
+    $(document).on('keydown', function(event) {
+        // Ctrl/Cmd + D to open modal
+        if ((event.ctrlKey || event.metaKey) && event.key === 'd') {
+            event.preventDefault();
+            openModal();
+        }
+        
+        // Ctrl/Cmd + R to reset all datepickers
+        if ((event.ctrlKey || event.metaKey) && event.key === 'r') {
+            event.preventDefault();
+            resetAllDatepickers();
+        }
+    });
+}
 
 // Add touch support for mobile devices
-function addTouchSupport() {
-    document.addEventListener('touchstart', function(event) {
-        // Handle touch events for better mobile experience
-        const target = event.target;
-        if (target.classList.contains('day') || target.classList.contains('nav-btn')) {
-            target.style.transform = 'scale(0.95)';
-        }
+function setupTouchSupport() {
+    $(document).on('touchstart', '.day, .nav-btn', function() {
+        $(this).css('transform', 'scale(0.95)');
     });
     
-    document.addEventListener('touchend', function(event) {
-        const target = event.target;
-        if (target.classList.contains('day') || target.classList.contains('nav-btn')) {
-            setTimeout(() => {
-                target.style.transform = '';
-            }, 150);
+    $(document).on('touchend', '.day, .nav-btn', function() {
+        const $this = $(this);
+        setTimeout(function() {
+            $this.css('transform', '');
+        }, 150);
+    });
+}
+
+// Performance monitoring
+function setupPerformanceMonitoring() {
+    $(window).on('load', function() {
+        if (window.performance && window.performance.timing) {
+            const loadTime = window.performance.timing.loadEventEnd - window.performance.timing.navigationStart;
+            console.log(`Page loaded in ${loadTime}ms`);
         }
     });
 }
 
-// Initialize touch support
-addTouchSupport();
-
-// Performance monitoring
-function logPerformance() {
-    if (window.performance && window.performance.timing) {
-        const loadTime = window.performance.timing.loadEventEnd - window.performance.timing.navigationStart;
-        console.log(`Page loaded in ${loadTime}ms`);
-    }
-}
-
-// Log performance after page load
-window.addEventListener('load', logPerformance);
-
-console.log('Custom Nepali Datepicker Demo initialized successfully!');
-console.log('Using jQuery version');
-console.log('Keyboard shortcuts:');
-console.log('- Ctrl/Cmd + D: Open modal');
-console.log('- Ctrl/Cmd + R: Reset all datepickers');
-console.log('- Escape: Close modal or datepicker');
+// Export functions for global access
+window.openModal = openModal;
+window.closeModal = closeModal;
+window.showDatepickerInfo = showDatepickerInfo;
+window.resetAllDatepickers = resetAllDatepickers;
+window.loadDemoData = loadDemoData;
