@@ -16,6 +16,13 @@ $(document).ready(function() {
     // Load demo data after initialization
     setTimeout(loadDemoData, 1000);
     
+    // Set default dates for empty datepickers after a short delay
+    setTimeout(function() {
+        // You can pass an English date to set as default
+        // Example: setDefaultDatesForEmptyDatepickers('2024-01-15');
+        setDefaultDatesForEmptyDatepickers();
+    }, 1500);
+    
     // Add keyboard shortcuts
     setupKeyboardShortcuts();
     
@@ -40,7 +47,8 @@ function initializeDatepickers() {
         theme: 'light',
         language: 'nepali',
         dateFormat: 'YYYY-MM-DD',
-        defaultDate: '2081-01-01',
+        defaultDate: '2024-01-15',
+        dateType: 'AD', // Case insensitive - will convert AD date to BS
         showEnglishDateSubscript: false,
         showToday: false,
         onSelect: function(date, formatted) {
@@ -66,7 +74,8 @@ function initializeDatepickers() {
                 end: '2082-04-10'    // to Shrawan 10, 2082
             }
         ],
-        defaultDate: '2081-01-01', // Set default date to Baisakh 1, 2081
+        defaultDate: '2081-01-01',
+        dateType: 'BS', // Case insensitive - BS date (no conversion needed)
         showToday: true, // Show today button
         onSelect: function(date, formatted) {
             console.log('Modern datepicker selected:', date, formatted);
@@ -79,16 +88,13 @@ function initializeDatepickers() {
         language: 'nepali',
         dateFormat: 'YYYY-MM-DD',
         modal: false, // Don't use datepicker's modal since we have our own modal container
-        autoClose: true,
+        autoClose: true, // Close the datepicker when date is selected
         onSelect: function(date, formatted) {
             console.log('Modal datepicker selected:', date, formatted);
             $('#modal-result').text('Selected: ' + formatted);
             $('#modal-trigger-input').val(formatted);
             displayDateConversion(date, formatted);
-            // Auto-close modal after selection
-            setTimeout(function() {
-                closeModal();
-            }, 500);
+            // Datepicker will close automatically, but modal stays open
         },
         onOpen: function() {
             console.log('Modal datepicker opened');
@@ -103,15 +109,12 @@ function initializeDatepickers() {
         language: 'nepali',
         dateFormat: 'YYYY-MM-DD',
         modal: false, // Don't use datepicker's modal since we have our own modal container
-        autoClose: true,
+        autoClose: true, // Close the datepicker when date is selected
         onSelect: function(date, formatted) {
             console.log('Modal datepicker selected:', date, formatted);
             $('#modal-result').text('Selected: ' + formatted);
             $('#modal-trigger-input').val(formatted);
-            // Auto-close modal after selection
-            setTimeout(function() {
-                closeModal();
-            }, 500);
+            // Datepicker will close automatically, but modal stays open
         },
         onOpen: function() {
             console.log('Modal datepicker opened');
@@ -199,7 +202,8 @@ function initializeDatepickers() {
         theme: 'red',
         language: 'nepali',
         dateFormat: 'YYYY-MM-DD',
-        defaultDate: '2081-01-01',
+        defaultDate: new Date(),
+        dateType: 'ad', // Case insensitive - AD date will be converted to BS
         showToday: true,
         onSelect: function(date, formatted) {
             console.log('Red datepicker selected:', date, formatted);
@@ -347,13 +351,21 @@ function setupModal() {
 
 // Utility functions
 function getCurrentNepaliDate() {
-    // Create a temporary input to get current date
-    const $tempInput = $('<input>');
-    $tempInput.nepaliDatepicker();
-    const datepicker = $tempInput.data('nepaliDatepicker');
-    const currentDate = datepicker.getDate();
-    $tempInput.nepaliDatepicker('destroy');
-    return currentDate;
+    // Use JavaScript's new Date() to get today's date
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = today.getMonth() + 1; // JavaScript months are 0-based
+    const day = today.getDate();
+    
+    // Convert English date to Nepali date using the datepicker's conversion function
+    try {
+        const nepaliDate = window.ad2bs({ year: year, month: month, day: day });
+        return nepaliDate;
+    } catch (error) {
+        console.error('Error converting English date to Nepali:', error);
+        // Fallback to a default date if conversion fails
+        return { year: 2081, month: 1, day: 1 };
+    }
 }
 
 function formatNepaliDate(date) {
@@ -525,7 +537,63 @@ function resetAllDatepickers() {
             datepicker.clear();
         }
     });
-    console.log('All datepickers reset');
+    
+    // Set today's date for all empty datepickers after reset
+    setTimeout(function() {
+        setDefaultDatesForEmptyDatepickers();
+    }, 100);
+    
+    console.log('All datepickers reset and default dates set');
+}
+
+// Set default date for empty datepickers
+function setDefaultDatesForEmptyDatepickers(englishDate = null) {
+    let nepaliDate;
+    
+    if (englishDate) {
+        // Convert provided English date to Nepali date
+        try {
+            nepaliDate = window.ad2bs(englishDate);
+            console.log('Using provided English date:', englishDate, 'converted to Nepali:', nepaliDate);
+        } catch (error) {
+            console.error('Error converting provided English date to Nepali:', error);
+            nepaliDate = getCurrentNepaliDate(); // Fallback to today's date
+        }
+    } else {
+        // Use today's date if no English date provided
+        nepaliDate = getCurrentNepaliDate();
+    }
+    
+    // List of datepicker IDs that should get the default date if empty
+    const datepickerIds = [
+        'basic-datepicker',
+        'modern-datepicker', 
+        'minimal-datepicker',
+        'dark-datepicker',
+        'range-datepicker',
+        'time-datepicker',
+        'readonly-datepicker',
+        'disabled-datepicker',
+        'red-datepicker',
+        'purple-datepicker',
+        'orange-datepicker',
+        'green-datepicker'
+    ];
+    
+    datepickerIds.forEach(function(id) {
+        const $input = $('#' + id);
+        if ($input.length) {
+            const datepicker = $input.data('nepaliDatepicker');
+            if (datepicker) {
+                const currentDate = datepicker.getDate();
+                // Only set default date if no date is currently selected
+                if (!currentDate) {
+                    datepicker.setDate(nepaliDate);
+                    console.log(`Set default date for ${id}:`, nepaliDate);
+                }
+            }
+        }
+    });
 }
 
 // Enhanced demo data loading
@@ -545,6 +613,9 @@ function loadDemoData() {
         const today = getCurrentNepaliDate();
         basicDatepicker.setDate(today);
     }
+    
+    // Set default dates for empty datepickers
+    setDefaultDatesForEmptyDatepickers();
     
     console.log('Demo data loaded');
 }
@@ -590,9 +661,16 @@ function setupPerformanceMonitoring() {
     });
 }
 
+// Helper function to set a specific English date as default
+function setEnglishDateAsDefault(englishDate) {
+    console.log('Setting English date as default:', englishDate);
+    setDefaultDatesForEmptyDatepickers(englishDate);
+}
+
 // Export functions for global access
 window.openModal = openModal;
 window.closeModal = closeModal;
 window.showDatepickerInfo = showDatepickerInfo;
 window.resetAllDatepickers = resetAllDatepickers;
 window.loadDemoData = loadDemoData;
+window.setEnglishDateAsDefault = setEnglishDateAsDefault;

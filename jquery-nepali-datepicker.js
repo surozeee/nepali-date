@@ -258,31 +258,45 @@
     }
     
     // Helper function to parse date strings or objects
-    function parseDate(dateInput) {
+    function parseDate(dateInput, dateType) {
       if (!dateInput) return null;
+      
+      var parsedDate = null;
       
       if (typeof dateInput === 'string') {
         // Parse string format 'YYYY-MM-DD'
         var match = /^(\d{4})-(\d{1,2})-(\d{1,2})$/.exec(dateInput.trim());
         if (match) {
-          return {
+          parsedDate = {
             year: parseInt(match[1], 10),
             month: parseInt(match[2], 10),
             day: parseInt(match[3], 10)
           };
         }
-        return null;
-      }
-      
-      if (typeof dateInput === 'object' && dateInput.year && dateInput.month && dateInput.day) {
-        return {
+      } else if (typeof dateInput === 'object' && dateInput.year && dateInput.month && dateInput.day) {
+        parsedDate = {
           year: parseInt(dateInput.year, 10),
           month: parseInt(dateInput.month, 10),
           day: parseInt(dateInput.day, 10)
         };
       }
       
-      return null;
+      if (!parsedDate) return null;
+      
+      // If dateType is specified and it's 'ad' (case insensitive), convert AD date to BS
+      if (dateType && dateType.toLowerCase() === 'ad') {
+        try {
+          // Convert AD date to BS date
+          var bsDate = window.ad2bs(parsedDate);
+          return bsDate;
+        } catch (error) {
+          console.error('Error converting AD date to BS:', error);
+          return parsedDate; // Return original if conversion fails
+        }
+      }
+      
+      // If dateType is 'bs' or not specified, assume it's already BS
+      return parsedDate;
     }
     
     // Helper function to normalize settings dates
@@ -321,9 +335,18 @@
         });
       }
       
-      // Parse defaultDate
+      // Parse defaultDate with optional dateType parameter
       if (settings.defaultDate) {
-        settings.defaultDate = parseDate(settings.defaultDate);
+        if (settings.dateType) {
+          // New format: defaultDate: '2024-01-15', dateType: 'AD'
+          settings.defaultDate = parseDate(settings.defaultDate, settings.dateType);
+        } else if (typeof settings.defaultDate === 'object' && settings.defaultDate.date && settings.defaultDate.type) {
+          // Legacy object format: {date: '2024-01-15', type: 'ad'}
+          settings.defaultDate = parseDate(settings.defaultDate.date, settings.defaultDate.type);
+        } else {
+          // Legacy format: just the date
+          settings.defaultDate = parseDate(settings.defaultDate);
+        }
       }
     }
   
