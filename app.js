@@ -83,7 +83,7 @@ function initializeDatepickers() {
     });
 
     // Modal datepicker with English date display
-    $('#modal-datepicker').nepaliDatepicker({
+    $('#startDate').nepaliDatepicker({
         theme: 'light',
         language: 'nepali',
         dateFormat: 'YYYY-MM-DD',
@@ -104,7 +104,7 @@ function initializeDatepickers() {
         }
     });
 
-    $('#modal-datepicker1').nepaliDatepicker({
+    $('#endDate').nepaliDatepicker({
         theme: 'light',
         language: 'nepali',
         dateFormat: 'YYYY-MM-DD',
