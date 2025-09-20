@@ -79,24 +79,66 @@ function initializeDatepickers() {
         }
     });
 
-    // Date range picker with dynamic minDate/maxDate like Gijgo
+    // Date range picker with click-based constraint management
+    var startDateValue = null;
+    var endDateValue = null;
+    
     $('#startDate').nepaliDatepicker({
         theme: 'light',
         language: 'nepali',
         dateFormat: 'YYYY-MM-DD',
         autoClose: true,
-        maxDate: function() {
-            return $('#endDate').val();
+        onSelect: function(date, formatted) {
+            console.log('Start date selected:', date, formatted);
+            startDateValue = formatted;
+            
+            // Update endDate with minDate constraint
+            $('#endDate').nepaliDatepicker('destroy');
+            $('#endDate').nepaliDatepicker({
+                theme: 'light',
+                language: 'nepali',
+                dateFormat: 'YYYY-MM-DD',
+                autoClose: true,
+                minDate: date,
+                onSelect: function(endDate, endFormatted) {
+                    console.log('End date selected:', endDate, endFormatted);
+                    endDateValue = endFormatted;
+                }
+            });
         }
     });
 
+    // Initialize endDate without constraints initially
     $('#endDate').nepaliDatepicker({
         theme: 'light',
         language: 'nepali',
         dateFormat: 'YYYY-MM-DD',
         autoClose: true,
-        minDate: function() {
-            return $('#startDate').val();
+        onSelect: function(date, formatted) {
+            console.log('End date selected:', date, formatted);
+            endDateValue = formatted;
+        }
+    });
+    
+    // Handle startDate click to disable dates before current selection
+    $('#startDate').on('click', function() {
+        if (startDateValue) {
+            // Second click - disable dates before current startDate
+            $('#startDate').nepaliDatepicker('destroy');
+            $('#startDate').nepaliDatepicker({
+                theme: 'light',
+                language: 'nepali',
+                dateFormat: 'YYYY-MM-DD',
+                autoClose: true,
+                minDate: startDateValue,
+                maxDate: function() {
+                    return endDateValue;
+                },
+                onSelect: function(date, formatted) {
+                    console.log('Start date updated:', date, formatted);
+                    startDateValue = formatted;
+                }
+            });
         }
     });
 
