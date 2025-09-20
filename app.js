@@ -79,50 +79,21 @@ function initializeDatepickers() {
         }
     });
 
-    // Modal datepicker with English date display
+    // Simple date range picker - no complex constraints
     $('#startDate').nepaliDatepicker({
         theme: 'light',
         language: 'nepali',
-        defaultDate: new Date(),
         dateFormat: 'YYYY-MM-DD',
-        modal: false, // Don't use datepicker's modal since we have our own modal container
-        autoClose: true, // Close the datepicker when date is selected
-        onSelect: function(date, formatted) {
-            console.log('Modal datepicker selected:', date, formatted);
-            $('#modal-result').text('Selected: ' + formatted);
-            $('#modal-trigger-input').val(formatted);
-            displayDateConversion(date, formatted);
-            // Datepicker will close automatically, but modal stays open
-        },
-        onOpen: function() {
-            console.log('Modal datepicker opened');
-        },
-        onClose: function() {
-            console.log('Modal datepicker closed');
-        }
+        autoClose: true
     });
 
     $('#endDate').nepaliDatepicker({
         theme: 'light',
         language: 'nepali',
         dateFormat: 'YYYY-MM-DD',
-        defaultDate: new Date(),
-        modal: false, // Don't use datepicker's modal since we have our own modal container
-        autoClose: true, // Close the datepicker when date is selected
-        onSelect: function(date, formatted) {
-            console.log('Modal datepicker selected:', date, formatted);
-            $('#modal-result').text('Selected: ' + formatted);
-            $('#modal-trigger-input').val(formatted);
-            displayDateConversion(date, formatted);
-            // Datepicker will close automatically, but modal stays open
-        },
-        onOpen: function() {
-            console.log('Modal datepicker opened');
-        },
-        onClose: function() {
-            console.log('Modal datepicker closed');
-        }
+        autoClose: true
     });
+
 
     // Minimal style datepicker with default date
     $('#minimal-datepicker').nepaliDatepicker({

@@ -1662,6 +1662,11 @@ input {
     color: #dc3545;
 }
 
+.day:nth-child(7n).today .nepali-date,
+.day:nth-child(7n).today .english-date-subscript {
+    color: #ffffff !important;
+}
+
 /* Selected date styling */
 .day.selected .nepali-date,
 .day.selected .english-date-subscript {
