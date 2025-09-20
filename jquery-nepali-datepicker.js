@@ -20,8 +20,8 @@
     onOpen: null,
     onClose: null,
     readonly: false,
-    minDate: null,               // Minimum selectable date (BS format: {year, month, day} or 'YYYY-MM-DD')
-    maxDate: null,               // Maximum selectable date (BS format: {year, month, day} or 'YYYY-MM-DD')
+    minDate: null,               // Minimum selectable date (BS format: {year, month, day}, 'YYYY-MM-DD', or function)
+    maxDate: null,               // Maximum selectable date (BS format: {year, month, day}, 'YYYY-MM-DD', or function)
     disabledDates: [],           // Array of disabled dates (BS format: [{year, month, day}, ...] or ['YYYY-MM-DD', ...])
     disabledDateRanges: [],      // Array of disabled date ranges (BS format: [{start: {year, month, day}, end: {year, month, day}}, ...])
     defaultDate: null,           // Default date to set on initialization (BS format: {year, month, day} or 'YYYY-MM-DD')
@@ -214,18 +214,26 @@
     function isDateDisabled(date, settings) {
       if (!date) return false;
       
-      // Check minDate
-      if (settings.minDate) {
-        if (date.year < settings.minDate.year) return true;
-        if (date.year === settings.minDate.year && date.month < settings.minDate.month) return true;
-        if (date.year === settings.minDate.year && date.month === settings.minDate.month && date.day < settings.minDate.day) return true;
+      // Check minDate (support both static and dynamic)
+      var minDate = settings.minDate;
+      if (typeof minDate === 'function') {
+        minDate = parseDate(minDate());
+      }
+      if (minDate) {
+        if (date.year < minDate.year) return true;
+        if (date.year === minDate.year && date.month < minDate.month) return true;
+        if (date.year === minDate.year && date.month === minDate.month && date.day < minDate.day) return true;
       }
       
-      // Check maxDate
-      if (settings.maxDate) {
-        if (date.year > settings.maxDate.year) return true;
-        if (date.year === settings.maxDate.year && date.month > settings.maxDate.month) return true;
-        if (date.year === settings.maxDate.year && date.month === settings.maxDate.month && date.day > settings.maxDate.day) return true;
+      // Check maxDate (support both static and dynamic)
+      var maxDate = settings.maxDate;
+      if (typeof maxDate === 'function') {
+        maxDate = parseDate(maxDate());
+      }
+      if (maxDate) {
+        if (date.year > maxDate.year) return true;
+        if (date.year === maxDate.year && date.month > maxDate.month) return true;
+        if (date.year === maxDate.year && date.month === maxDate.month && date.day > maxDate.day) return true;
       }
       
       // Check disabledDates array
@@ -301,13 +309,13 @@
     
     // Helper function to normalize settings dates
     function normalizeSettingsDates(settings) {
-      // Parse minDate
-      if (settings.minDate) {
+      // Parse minDate (only if it's not a function)
+      if (settings.minDate && typeof settings.minDate !== 'function') {
         settings.minDate = parseDate(settings.minDate);
       }
       
-      // Parse maxDate
-      if (settings.maxDate) {
+      // Parse maxDate (only if it's not a function)
+      if (settings.maxDate && typeof settings.maxDate !== 'function') {
         settings.maxDate = parseDate(settings.maxDate);
       }
       

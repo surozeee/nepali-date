@@ -79,19 +79,25 @@ function initializeDatepickers() {
         }
     });
 
-    // Simple date range picker - no complex constraints
+    // Date range picker with dynamic minDate/maxDate like Gijgo
     $('#startDate').nepaliDatepicker({
         theme: 'light',
         language: 'nepali',
         dateFormat: 'YYYY-MM-DD',
-        autoClose: true
+        autoClose: true,
+        maxDate: function() {
+            return $('#endDate').val();
+        }
     });
 
     $('#endDate').nepaliDatepicker({
         theme: 'light',
         language: 'nepali',
         dateFormat: 'YYYY-MM-DD',
-        autoClose: true
+        autoClose: true,
+        minDate: function() {
+            return $('#startDate').val();
+        }
     });
 
 
