@@ -287,7 +287,7 @@
       if (dateType && dateType.toLowerCase() === 'ad') {
         try {
           // Convert AD date to BS date
-          var bsDate = window.ad2bs(parsedDate);
+          var bsDate = window.adtobs(parsedDate);
           return bsDate;
         } catch (error) {
           console.error('Error converting AD date to BS:', error);
@@ -900,6 +900,29 @@ function close(){
         return bs.year+'-'+pad(bs.month)+'-'+pad(bs.day);
       }
       return bs;
+    };
+    
+    // Create nepaliFunction namespace and expose converters
+    window.nepaliFunction = {
+      bs2ad: function(input, format){
+        var bs = (typeof input==='string')
+          ? (function(s){ var m=/^(\d{4})-(\d{1,2})-(\d{1,2})$/.exec(s.trim()); return {year:+m[1],month:+m[2],day:+m[3]}; })(input)
+          : input;
+        var ad = bsToAD(bs.year, bs.month, bs.day);
+        if (format==='string' || format===true){
+          var pad=function(n){return (n<10?'0':'')+n;};
+          return ad.year+'-'+pad(ad.month)+'-'+pad(ad.day);
+        }
+        return ad;
+      },
+      ad2bs: function(input, format){
+        var bs = adToBS(input);
+        if (format==='string' || format===true){
+          var pad=function(n){return (n<10?'0':'')+n;};
+          return bs.year+'-'+pad(bs.month)+'-'+pad(bs.day);
+        }
+        return bs;
+      }
     };
   
   })(jQuery);

@@ -166,6 +166,48 @@
             </div>
         </div>
 
+        <!-- Date Range Picker -->
+        <div class="demo-section">
+            <h2>Date Range Picker</h2>
+            <div class="example-grid">
+                <div class="example-card range-card">
+                    <h3>Unified Date Range Picker</h3>
+                    <p>Single datepicker that handles both start and end date selection with range highlighting</p>
+                    <div class="unified-range-container">
+                        <div class="single-picker-wrapper">
+                            <input type="text" id="unified-range-picker" placeholder="Click to select date range" readonly="readonly">
+                        </div>
+                        <div class="range-display">
+                            <div id="unified-range-result" class="range-result-display">
+                                <span class="range-label">Selected Range:</span>
+                                <span id="unified-range-text">No dates selected</span>
+                            </div>
+                            <div class="range-instructions">
+                                <p><strong>Instructions:</strong></p>
+                                <ul>
+                                    <li>Click to select start date (datepicker stays open)</li>
+                                    <li>Click again to select end date (shows OK button)</li>
+                                    <li>Click OK to confirm and close datepicker</li>
+                                    <li>Click same date again to reset selection</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="range-actions">
+                            <button class="btn btn-primary" onclick="showUnifiedRangeInfo()">
+                                <i class="fas fa-info-circle"></i> Show Range Info
+                            </button>
+                            <button class="btn btn-secondary" onclick="clearUnifiedRange()">
+                                <i class="fas fa-times"></i> Clear Range
+                            </button>
+                            <button class="btn btn-success" onclick="completeRange()">
+                                <i class="fas fa-check"></i> Complete Range
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Advanced Examples -->
         <div class="demo-section">
             <h2>Advanced Examples</h2>
@@ -205,6 +247,9 @@
                 </button>
                 <button class="btn btn-primary" onclick="resetAllDatepickers()">
                     <i class="fas fa-refresh"></i> Reset All
+                </button>
+                <button class="btn btn-primary" onclick="showGetCurrentDateDemo()">
+                    <i class="fas fa-calendar-day"></i> getCurrentDate Demo
                 </button>
             </div>
         </div>
