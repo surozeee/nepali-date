@@ -3,6 +3,18 @@
  * Completely jQuery-based
  */
 
+// Helper function to compare dates
+function compareDates(date1, date2) {
+    if (!date1 || !date2) return 0;
+    
+    const d1 = date1.year * 10000 + date1.month * 100 + date1.day;
+    const d2 = date2.year * 10000 + date2.month * 100 + date2.day;
+    
+    if (d1 < d2) return -1;
+    if (d1 > d2) return 1;
+    return 0;
+}
+
 $(document).ready(function() {
     // Initialize all datepickers
     initializeDatepickers();
@@ -178,6 +190,12 @@ function initializeDatepickers() {
 
     // Initialize unified range picker
     initializeUnifiedRangePicker();
+    
+    // Initialize English range picker
+    initializeEnglishRangePicker();
+    
+    // Initialize date validation examples
+    initializeDateValidationExamples();
 }
 
 // Setup configuration panel
@@ -316,6 +334,10 @@ function showDatepickerInfo(instanceName) {
             const selectedDate = datepicker.getDate();
             const formattedDate = selectedDate ? formatEnglishDate(selectedDate) : 'No date selected';
             
+            // Get validation constraints
+            const startDate = datepicker.getStartDate();
+            const endDate = datepicker.getEndDate();
+            
             if (!selectedDate) {
                 Swal.fire({
                     icon: 'warning',
@@ -324,6 +346,21 @@ function showDatepickerInfo(instanceName) {
                     confirmButtonColor: '#f59e0b'
                 });
                 return;
+            }
+            
+            // Build validation info for validation examples
+            let validationInfo = '';
+            if (['startdate', 'enddate', 'daterange', 'dynamic'].includes(instanceName)) {
+                validationInfo = `
+                    <div style="background: #e6fffa; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #10b981;">
+                        <h4 style="margin: 0 0 10px 0; color: #065f46; font-size: 16px; font-weight: 600;">
+                            🔒 Date Validation Constraints
+                        </h4>
+                        ${startDate ? `<p style="margin: 5px 0; color: #047857; font-size: 14px;"><strong>Start Date:</strong> ${formatEnglishDate(startDate)}</p>` : ''}
+                        ${endDate ? `<p style="margin: 5px 0; color: #047857; font-size: 14px;"><strong>End Date:</strong> ${formatEnglishDate(endDate)}</p>` : ''}
+                        ${!startDate && !endDate ? '<p style="margin: 5px 0; color: #047857; font-size: 14px;">No date constraints applied</p>' : ''}
+                    </div>
+                `;
             }
             
             Swal.fire({
@@ -338,6 +375,8 @@ function showDatepickerInfo(instanceName) {
                                 ${formattedDate}
                             </p>
                         </div>
+                        
+                        ${validationInfo}
                         
                         <div style="background: #fef3c7; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #f59e0b;">
                             <p style="margin: 0; color: #92400e; font-size: 14px; font-weight: 500;">
@@ -606,6 +645,537 @@ function completeRange() {
     }
 }
 
+// English Range Picker Functionality
+let englishRangeState = {
+    startDate: null,
+    endDate: null,
+    isSelectingStart: true,
+    isRangeComplete: false
+};
+
+function initializeEnglishRangePicker() {
+    $('#english-range-picker').englishDatepicker({
+        theme: 'light',
+        language: 'english',
+        dateFormat: 'YYYY-MM-DD',
+        autoClose: false,
+        showToday: false,
+        onSelect: function(date, formatted) {
+            handleEnglishRangeSelection(date, formatted);
+        },
+        onOpen: function() {
+            console.log('English range picker opened');
+            updateEnglishRangeDisplay();
+            // Re-highlight any existing range when datepicker opens
+            setTimeout(highlightEnglishRangeDates, 100);
+        },
+        onClose: function() {
+            console.log('English range picker closed');
+        }
+    });
+}
+
+// Initialize date validation examples
+function initializeDateValidationExamples() {
+    // Start Date Validation Example
+    $('#startdate-datepicker').englishDatepicker({
+        theme: 'light',
+        language: 'english',
+        dateFormat: 'YYYY-MM-DD',
+        startDate: { year: 2024, month: 1, day: 1 }, // Minimum date: 2024-01-01
+        onSelect: function(date, formatted) {
+            console.log('Start date validation selected:', date, formatted);
+            // Update end date picker to have this as minimum date
+            updateEndDatePickerConstraints(date);
+        }
+    });
+
+    // End Date Validation Example
+    $('#enddate-datepicker').englishDatepicker({
+        theme: 'light',
+        language: 'english',
+        dateFormat: 'YYYY-MM-DD',
+        endDate: { year: 2025, month: 12, day: 31 }, // Maximum date: 2025-12-31
+        onSelect: function(date, formatted) {
+            console.log('End date validation selected:', date, formatted);
+            // Update start date picker to have this as maximum date
+            updateStartDatePickerConstraints(date);
+        }
+    });
+
+    // Date Range Validation Example
+    $('#daterange-datepicker').englishDatepicker({
+        theme: 'light',
+        language: 'english',
+        dateFormat: 'YYYY-MM-DD',
+        startDate: { year: 2024, month: 6, day: 1 }, // Minimum date: 2024-06-01
+        endDate: { year: 2024, month: 12, day: 31 }, // Maximum date: 2024-12-31
+        onSelect: function(date, formatted) {
+            console.log('Date range validation selected:', date, formatted);
+        }
+    });
+
+    // Dynamic Date Validation Example
+    $('#dynamic-datepicker').englishDatepicker({
+        theme: 'light',
+        language: 'english',
+        dateFormat: 'YYYY-MM-DD',
+        startDate: function() {
+            // Dynamic start date: today
+            const today = new Date();
+            return { year: today.getFullYear(), month: today.getMonth() + 1, day: today.getDate() };
+        },
+        endDate: function() {
+            // Dynamic end date: 30 days from today
+            const today = new Date();
+            const futureDate = new Date(today.getTime() + (30 * 24 * 60 * 60 * 1000));
+            return { year: futureDate.getFullYear(), month: futureDate.getMonth() + 1, day: futureDate.getDate() };
+        },
+        onSelect: function(date, formatted) {
+            console.log('Dynamic date validation selected:', date, formatted);
+        }
+    });
+
+    console.log('Date validation examples initialized');
+}
+
+// Update end date picker constraints based on start date selection
+function updateEndDatePickerConstraints(startDate) {
+    const $endDatePicker = $('#enddate-datepicker');
+    const endDatePicker = $endDatePicker.data('englishDatepicker');
+    
+    if (endDatePicker) {
+        // Get the current end date constraint
+        const currentEndDate = endDatePicker.getEndDate();
+        
+        // Only set start date if it doesn't conflict with existing end date
+        if (!currentEndDate || compareDates(startDate, currentEndDate) <= 0) {
+            // Set the selected start date as the minimum date for end date picker
+            endDatePicker.setStartDate(startDate);
+            
+            // Update placeholder to show the constraint
+            $endDatePicker.attr('placeholder', `Select End Date (after ${formatEnglishDate(startDate)})`);
+            
+            // Show validation message
+            showCrossValidationMessage('startdate', startDate, 'enddate');
+            
+            console.log('End date picker constraints updated:', startDate);
+        } else {
+            // Show warning if dates conflict
+            Swal.fire({
+                icon: 'warning',
+                title: 'Date Conflict',
+                text: `Selected start date (${formatEnglishDate(startDate)}) is after the maximum end date (${formatEnglishDate(currentEndDate)}). Please select an earlier start date.`,
+                confirmButtonColor: '#f59e0b'
+            });
+            return;
+        }
+        
+        // Update validation status
+        updateValidationStatus();
+    }
+}
+
+// Update start date picker constraints based on end date selection
+function updateStartDatePickerConstraints(endDate) {
+    const $startDatePicker = $('#startdate-datepicker');
+    const startDatePicker = $startDatePicker.data('englishDatepicker');
+    
+    if (startDatePicker) {
+        // Get the current start date constraint
+        const currentStartDate = startDatePicker.getStartDate();
+        
+        // Only set end date if it doesn't conflict with existing start date
+        if (!currentStartDate || compareDates(currentStartDate, endDate) <= 0) {
+            // Set the selected end date as the maximum date for start date picker
+            startDatePicker.setEndDate(endDate);
+            
+            // Update placeholder to show the constraint
+            $startDatePicker.attr('placeholder', `Select Start Date (before ${formatEnglishDate(endDate)})`);
+            
+            // Show validation message
+            showCrossValidationMessage('enddate', endDate, 'startdate');
+            
+            console.log('Start date picker constraints updated:', endDate);
+        } else {
+            // Show warning if dates conflict
+            Swal.fire({
+                icon: 'warning',
+                title: 'Date Conflict',
+                text: `Selected end date (${formatEnglishDate(endDate)}) is before the minimum start date (${formatEnglishDate(currentStartDate)}). Please select a later end date.`,
+                confirmButtonColor: '#f59e0b'
+            });
+            return;
+        }
+        
+        // Update validation status
+        updateValidationStatus();
+    }
+}
+
+// Show cross-validation message
+function showCrossValidationMessage(selectedPicker, selectedDate, targetPicker) {
+    const pickerNames = {
+        'startdate': 'Start Date',
+        'enddate': 'End Date'
+    };
+    
+    const targetNames = {
+        'startdate': 'Start Date',
+        'enddate': 'End Date'
+    };
+    
+    Swal.fire({
+        title: '🔗 Cross-Validation Applied',
+        html: `
+            <div style="text-align: left; font-family: 'Inter', sans-serif;">
+                <div style="background: #e6fffa; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #10b981;">
+                    <h4 style="margin: 0 0 10px 0; color: #065f46; font-size: 16px; font-weight: 600;">
+                        ✅ ${pickerNames[selectedPicker]} Selected
+                    </h4>
+                    <p style="margin: 5px 0; color: #047857; font-size: 14px;">
+                        <strong>Selected Date:</strong> ${formatEnglishDate(selectedDate)}
+                    </p>
+                </div>
+                
+                <div style="background: #fef3c7; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #f59e0b;">
+                    <h4 style="margin: 0 0 10px 0; color: #92400e; font-size: 16px; font-weight: 600;">
+                        🔒 ${targetNames[targetPicker]} Constraint Updated
+                    </h4>
+                    <p style="margin: 5px 0; color: #92400e; font-size: 14px;">
+                        The ${targetNames[targetPicker]} picker now has a ${selectedPicker === 'startdate' ? 'minimum' : 'maximum'} date of <strong>${formatEnglishDate(selectedDate)}</strong>
+                    </p>
+                </div>
+            </div>
+        `,
+        width: '500px',
+        padding: '30px',
+        background: '#ffffff',
+        showConfirmButton: true,
+        confirmButtonText: '✨ Got it!',
+        confirmButtonColor: '#10b981',
+        showCloseButton: true,
+        closeButtonHtml: '<i class="fas fa-times"></i>'
+    });
+}
+
+// Update validation status display
+function updateValidationStatus() {
+    const $startDatePicker = $('#startdate-datepicker');
+    const $endDatePicker = $('#enddate-datepicker');
+    
+    const startDatePicker = $startDatePicker.data('englishDatepicker');
+    const endDatePicker = $endDatePicker.data('englishDatepicker');
+    
+    // Get selected dates
+    const startDate = startDatePicker ? startDatePicker.getDate() : null;
+    const endDate = endDatePicker ? endDatePicker.getDate() : null;
+    
+    // Get constraints
+    const startDateConstraint = startDatePicker ? startDatePicker.getEndDate() : null;
+    const endDateConstraint = endDatePicker ? endDatePicker.getEndDate() : null;
+    
+    // Update status display
+    $('#startdate-status').text(startDate ? formatEnglishDate(startDate) : 'None');
+    $('#enddate-status').text(endDate ? formatEnglishDate(endDate) : 'None');
+    
+    // Determine cross-validation status
+    let crossValidationStatus = 'Inactive';
+    if (startDate && endDate) {
+        crossValidationStatus = 'Active (Both dates selected)';
+    } else if (startDate || endDate) {
+        crossValidationStatus = 'Partial (One date selected)';
+    }
+    
+    $('#cross-validation-status').text(crossValidationStatus);
+    
+    // Add visual indicators
+    if (startDate) {
+        $('#startdate-status').css('color', '#10b981').css('font-weight', '600');
+    } else {
+        $('#startdate-status').css('color', '#6b7280').css('font-weight', '400');
+    }
+    
+    if (endDate) {
+        $('#enddate-status').css('color', '#10b981').css('font-weight', '600');
+    } else {
+        $('#enddate-status').css('color', '#6b7280').css('font-weight', '400');
+    }
+    
+    if (crossValidationStatus.includes('Active')) {
+        $('#cross-validation-status').css('color', '#10b981').css('font-weight', '600');
+    } else if (crossValidationStatus.includes('Partial')) {
+        $('#cross-validation-status').css('color', '#f59e0b').css('font-weight', '600');
+    } else {
+        $('#cross-validation-status').css('color', '#6b7280').css('font-weight', '400');
+    }
+    
+    console.log('Validation status updated:', { startDate, endDate, crossValidationStatus });
+}
+
+function handleEnglishRangeSelection(date, formatted) {
+    if (englishRangeState.isSelectingStart) {
+        // Check if clicking the same start date again (third click reset)
+        if (englishRangeState.startDate && 
+            englishRangeState.startDate.date.year === date.year &&
+            englishRangeState.startDate.date.month === date.month &&
+            englishRangeState.startDate.date.day === date.day) {
+            // Reset the range picker
+            resetEnglishRangePicker();
+            return;
+        }
+        
+        // First click: Select start date
+        englishRangeState.startDate = { date: date, formatted: formatted };
+        englishRangeState.isSelectingStart = false;
+        englishRangeState.isRangeComplete = false;
+        
+        // Update input to show we're now selecting end date
+        $('#english-range-picker').val(`${formatted} → Select End Date`);
+        
+        console.log('Start date selected:', date, formatted);
+        
+    } else {
+        // Check if clicking the same end date again (fourth click reset)
+        if (englishRangeState.endDate && 
+            englishRangeState.endDate.date.year === date.year &&
+            englishRangeState.endDate.date.month === date.month &&
+            englishRangeState.endDate.date.day === date.day) {
+            // Reset the range picker
+            resetEnglishRangePicker();
+            return;
+        }
+        
+        // Second click: Select end date
+        englishRangeState.endDate = { date: date, formatted: formatted };
+        englishRangeState.isSelectingStart = true;
+        englishRangeState.isRangeComplete = true;
+        
+        // Update input to show complete range
+        const startFormatted = englishRangeState.startDate.formatted;
+        const endFormatted = englishRangeState.endDate.formatted;
+        $('#english-range-picker').val(`${startFormatted} to ${endFormatted}`);
+        
+        console.log('End date selected:', date, formatted);
+        console.log('Range complete:', englishRangeState);
+    }
+    
+    // Highlight the range after selection
+    setTimeout(highlightEnglishRangeDates, 100);
+    
+    updateEnglishRangeDisplay();
+}
+
+function resetEnglishRangePicker() {
+    // Reset the range state
+    englishRangeState.startDate = null;
+    englishRangeState.endDate = null;
+    englishRangeState.isSelectingStart = true;
+    englishRangeState.isRangeComplete = false;
+    
+    // Clear the input field
+    $('#english-range-picker').val('Select start date');
+    
+    // Remove range highlights
+    $('.english-datepicker .day').removeClass('range-start range-end range-between');
+    
+    updateEnglishRangeDisplay();
+    console.log('English range picker reset - click same date to reset');
+}
+
+function highlightEnglishRangeDates() {
+    // Remove any existing range highlights
+    $('.english-datepicker .day').removeClass('range-start range-end range-between');
+    
+    if (englishRangeState.startDate) {
+        const startDate = englishRangeState.startDate.date;
+        
+        // Find and highlight start date
+        const $startDay = $(`.english-datepicker .day[data-day="${startDate.day}"]`).filter(function() {
+            return !$(this).hasClass('other-month');
+        });
+        
+        if ($startDay.length > 0) {
+            $startDay.addClass('range-start');
+            console.log('Highlighted start date:', startDate);
+        }
+        
+        if (englishRangeState.endDate) {
+            const endDate = englishRangeState.endDate.date;
+            
+            // Find and highlight end date
+            const $endDay = $(`.english-datepicker .day[data-day="${endDate.day}"]`).filter(function() {
+                return !$(this).hasClass('other-month');
+            });
+            
+            if ($endDay.length > 0) {
+                $endDay.addClass('range-end');
+                console.log('Highlighted end date:', endDate);
+            }
+            
+            // Highlight dates between start and end
+            highlightEnglishDatesBetween(startDate, endDate);
+        }
+    }
+}
+
+function highlightEnglishDatesBetween(startDate, endDate) {
+    console.log('Highlighting dates between:', startDate, 'and', endDate);
+    
+    // Work with English dates directly
+    let currentDate = { ...startDate };
+    const endDateCopy = { ...endDate };
+    
+    // Ensure start is before end
+    const startNum = startDate.year * 10000 + startDate.month * 100 + startDate.day;
+    const endNum = endDate.year * 10000 + endDate.month * 100 + endDate.day;
+    
+    if (startNum > endNum) {
+        // Swap dates if start is after end
+        const temp = currentDate;
+        currentDate = endDateCopy;
+        endDateCopy = temp;
+    }
+    
+    // Find all dates between start and end (inclusive)
+    while (true) {
+        const currentNum = currentDate.year * 10000 + currentDate.month * 100 + currentDate.day;
+        const endNum = endDateCopy.year * 10000 + endDateCopy.month * 100 + endDateCopy.day;
+        
+        if (currentNum > endNum) break;
+        
+        // Find the day element for this date
+        const $dayElement = $(`.english-datepicker .day[data-day="${currentDate.day}"]`).filter(function() {
+            return !$(this).hasClass('other-month');
+        });
+        
+        if ($dayElement.length > 0) {
+            $dayElement.addClass('range-between');
+            console.log('Highlighted date:', currentDate);
+        }
+        
+        // Move to next day
+        currentDate.day++;
+        // Use a simple approach for month days (this is approximate)
+        const monthDays = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+        const maxDays = monthDays[currentDate.month - 1] || 30;
+        
+        if (currentDate.day > maxDays) {
+            currentDate.day = 1;
+            currentDate.month++;
+            if (currentDate.month > 12) {
+                currentDate.month = 1;
+                currentDate.year++;
+            }
+        }
+    }
+}
+
+function updateEnglishRangeDisplay() {
+    const $rangeText = $('#english-range-text');
+    
+    if (englishRangeState.isRangeComplete && englishRangeState.startDate && englishRangeState.endDate) {
+        const startFormatted = englishRangeState.startDate.formatted;
+        const endFormatted = englishRangeState.endDate.formatted;
+        $rangeText.text(`✅ ${startFormatted} to ${endFormatted}`);
+        $rangeText.css('border-left-color', '#10b981'); // Green for complete range
+    } else if (englishRangeState.startDate && !englishRangeState.endDate) {
+        $rangeText.text(`🔄 Start: ${englishRangeState.startDate.formatted} (Select end date)`);
+        $rangeText.css('border-left-color', '#f59e0b'); // Orange for partial range
+    } else {
+        $rangeText.text('📅 No dates selected (Click to select start date)');
+        $rangeText.css('border-left-color', '#3b82f6'); // Blue for no selection
+    }
+}
+
+function enableEnglishRangeSelection() {
+    const $datepicker = $('#english-range-picker');
+    $datepicker.englishDatepicker('enableRangeSelection');
+    updateEnglishRangeDisplay();
+    console.log('English range selection enabled');
+}
+
+function disableEnglishRangeSelection() {
+    const $datepicker = $('#english-range-picker');
+    $datepicker.englishDatepicker('disableRangeSelection');
+    englishRangeState.startDate = null;
+    englishRangeState.endDate = null;
+    englishRangeState.isSelectingStart = true;
+    englishRangeState.isRangeComplete = false;
+    updateEnglishRangeDisplay();
+    console.log('English range selection disabled');
+}
+
+function clearEnglishRange() {
+    const $datepicker = $('#english-range-picker');
+    $datepicker.englishDatepicker('clear');
+    $datepicker.englishDatepicker('disableRangeSelection');
+    englishRangeState.startDate = null;
+    englishRangeState.endDate = null;
+    englishRangeState.isSelectingStart = true;
+    englishRangeState.isRangeComplete = false;
+    updateEnglishRangeDisplay();
+    console.log('English range cleared');
+}
+
+function showEnglishRangeInfo() {
+    const $datepicker = $('#english-range-picker');
+    const range = $datepicker.englishDatepicker('getRangeSelection');
+    
+    if (!range.startDate && !range.endDate) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'No Range Selected',
+            text: 'Please select a date range first.',
+            confirmButtonColor: '#f59e0b'
+        });
+        return;
+    }
+
+    let rangeInfo = '';
+    if (range.startDate) {
+        rangeInfo += `Start Date: ${formatEnglishDate(range.startDate)}<br>`;
+    }
+    if (range.endDate) {
+        rangeInfo += `End Date: ${formatEnglishDate(range.endDate)}<br>`;
+    }
+
+    Swal.fire({
+        title: '📅 English Date Range Information',
+        html: `
+            <div style="text-align: left; font-family: 'Inter', sans-serif;">
+                <div style="background: #f8fafc; padding: 20px; border-radius: 12px; margin: 20px 0; border-left: 4px solid #3182ce;">
+                    <h3 style="margin: 0 0 15px 0; color: #2d3748; font-size: 18px; font-weight: 600;">
+                        🇺🇸 English Date Range
+                    </h3>
+                    <p style="margin: 0; color: #4a5568; font-size: 16px;">
+                        ${rangeInfo}
+                    </p>
+                </div>
+                
+                <div style="background: #f0fdf4; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #22c55e;">
+                    <p style="margin: 0; color: #92400e; font-size: 14px; font-weight: 500;">
+                        📊 Range Status: ${range.isActive ? 'Active' : 'Inactive'}
+                    </p>
+                </div>
+            </div>
+        `,
+        width: '500px',
+        padding: '30px',
+        background: '#ffffff',
+        showConfirmButton: true,
+        confirmButtonText: '✨ Great!',
+        confirmButtonColor: '#3182ce',
+        showCloseButton: true,
+        closeButtonHtml: '<i class="fas fa-times"></i>'
+    });
+}
+
+function formatEnglishDate(dateObj) {
+    if (!dateObj) return '';
+    return dateObj.year + '-' + String(dateObj.month).padStart(2, '0') + '-' + String(dateObj.day).padStart(2, '0');
+}
+
 // Export functions for global access
 window.openModal = openModal;
 window.closeModal = closeModal;
@@ -617,3 +1187,7 @@ window.clearUnifiedRange = clearUnifiedRange;
 window.completeRange = completeRange;
 window.getCurrentEnglishDate = getCurrentEnglishDate;
 window.showGetCurrentDateDemo = showGetCurrentDateDemo;
+window.enableEnglishRangeSelection = enableEnglishRangeSelection;
+window.disableEnglishRangeSelection = disableEnglishRangeSelection;
+window.clearEnglishRange = clearEnglishRange;
+window.showEnglishRangeInfo = showEnglishRangeInfo;

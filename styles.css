@@ -3,6 +3,189 @@
  * Modern, responsive design with multiple themes
  */
 
+/* English Range Picker Styles */
+.english-range-container {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 20px;
+    margin: 10px 0;
+}
+
+/* Cross-Validation Status Styles */
+.validation-status {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 15px;
+    margin: 15px 0;
+}
+
+.status-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.status-item:last-child {
+    border-bottom: none;
+}
+
+.status-label {
+    font-weight: 500;
+    color: #4a5568;
+    font-size: 14px;
+}
+
+.status-value {
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    background: #f1f5f9;
+    color: #6b7280;
+    font-weight: 400;
+}
+
+.english-range-container .single-picker-wrapper {
+    margin-bottom: 15px;
+}
+
+.english-range-container input[type="text"] {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: 'Inter', sans-serif;
+    background: #ffffff;
+    color: #2d3748;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.english-range-container input[type="text"]:hover {
+    border-color: #3182ce;
+    box-shadow: 0 2px 8px rgba(49, 130, 206, 0.1);
+}
+
+.english-range-container input[type="text"]:focus {
+    outline: none;
+    border-color: #3182ce;
+    box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.1);
+}
+
+.english-range-container .range-display {
+    margin: 15px 0;
+}
+
+.english-range-container .range-result-display {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-bottom: 10px;
+    border-left: 4px solid #3b82f6;
+    transition: all 0.3s ease;
+}
+
+.english-range-container .range-label {
+    font-weight: 600;
+    color: #4a5568;
+    margin-right: 8px;
+}
+
+.english-range-container .range-instructions {
+    background: #f7fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-top: 10px;
+}
+
+.english-range-container .range-instructions p {
+    margin: 0 0 8px 0;
+    font-weight: 600;
+    color: #2d3748;
+}
+
+.english-range-container .range-instructions ul {
+    margin: 0;
+    padding-left: 20px;
+    color: #4a5568;
+}
+
+.english-range-container .range-instructions li {
+    margin-bottom: 4px;
+    font-size: 14px;
+}
+
+.english-range-container .range-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 15px;
+}
+
+.english-range-container .range-actions .btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.english-range-container .range-actions .btn-primary {
+    background: #3182ce;
+    color: white;
+}
+
+.english-range-container .range-actions .btn-primary:hover {
+    background: #2c5aa0;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(49, 130, 206, 0.3);
+}
+
+.english-range-container .range-actions .btn-secondary {
+    background: #6b7280;
+    color: white;
+}
+
+.english-range-container .range-actions .btn-secondary:hover {
+    background: #4b5563;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(107, 114, 128, 0.3);
+}
+
+.english-range-container .range-actions .btn-warning {
+    background: #f59e0b;
+    color: white;
+}
+
+.english-range-container .range-actions .btn-warning:hover {
+    background: #d97706;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+}
+
+.english-range-container .range-actions .btn-success {
+    background: #10b981;
+    color: white;
+}
+
+.english-range-container .range-actions .btn-success:hover {
+    background: #059669;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
 /* Reset and base styles */
 * {
     box-sizing: border-box;

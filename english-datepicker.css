@@ -1,5 +1,53 @@
 /* English DatePicker Styles - Matching Nepali DatePicker Design */
 
+/* Range Selection Styles */
+.english-datepicker .day.range-start {
+    background: #3182ce !important;
+    color: white !important;
+    border-radius: 50% 0 0 50%;
+    position: relative;
+}
+
+.english-datepicker .day.range-end {
+    background: #3182ce !important;
+    color: white !important;
+    border-radius: 0 50% 50% 0;
+    position: relative;
+}
+
+.english-datepicker .day.range-between {
+    background: #e6f3ff !important;
+    color: #1a365d !important;
+    border-radius: 0;
+    position: relative;
+}
+
+.english-datepicker .day.range-start.range-end {
+    border-radius: 50%;
+}
+
+.english-datepicker .day.range-start:not(.range-end)::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 50%;
+    background: #e6f3ff;
+    z-index: -1;
+}
+
+.english-datepicker .day.range-end:not(.range-start)::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 50%;
+    background: #e6f3ff;
+    z-index: -1;
+}
+
 .english-datepicker {
     position: absolute;
     background: #ffffff;

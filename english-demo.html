@@ -135,9 +135,115 @@
             </div>
         </div>
 
+        <!-- Date Validation Examples -->
+        <div class="demo-section">
+            <h2>Date Validation Examples</h2>
+            <div class="example-grid">
+                <div class="example-card">
+                    <h3>Start Date Validation</h3>
+                    <p>Datepicker with minimum date constraint. <strong>Selecting a date will set it as the minimum date for the End Date picker.</strong></p>
+                    <input type="text" id="startdate-datepicker" placeholder="Select Date (after 2024-01-01)" readonly="readonly">
+                    <button class="btn btn-primary" onclick="showDatepickerInfo('startdate')">Show Info</button>
+                </div>
+
+                <div class="example-card">
+                    <h3>End Date Validation</h3>
+                    <p>Datepicker with maximum date constraint. <strong>Selecting a date will set it as the maximum date for the Start Date picker.</strong></p>
+                    <input type="text" id="enddate-datepicker" placeholder="Select Date (before 2025-12-31)" readonly="readonly">
+                    <button class="btn btn-primary" onclick="showDatepickerInfo('enddate')">Show Info</button>
+                </div>
+
+                <div class="example-card">
+                    <h3>Date Range Validation</h3>
+                    <p>Datepicker with both start and end date constraints</p>
+                    <input type="text" id="daterange-datepicker" placeholder="Select Date (2024-06-01 to 2024-12-31)" readonly="readonly">
+                    <button class="btn btn-primary" onclick="showDatepickerInfo('daterange')">Show Info</button>
+                </div>
+
+                <div class="example-card">
+                    <h3>Dynamic Date Validation</h3>
+                    <p>Datepicker with dynamic date constraints using functions</p>
+                    <input type="text" id="dynamic-datepicker" placeholder="Select Date (next 30 days)" readonly="readonly">
+                    <button class="btn btn-primary" onclick="showDatepickerInfo('dynamic')">Show Info</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cross-Validation Status -->
+        <div class="demo-section">
+            <h2>Cross-Validation Status</h2>
+            <div class="example-grid">
+                <div class="example-card">
+                    <h3>Validation Status</h3>
+                    <p>Monitor the cross-validation between Start Date and End Date pickers</p>
+                    <div class="validation-status">
+                        <div class="status-item">
+                            <span class="status-label">Start Date Selected:</span>
+                            <span id="startdate-status" class="status-value">None</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-label">End Date Selected:</span>
+                            <span id="enddate-status" class="status-value">None</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-label">Cross-Validation:</span>
+                            <span id="cross-validation-status" class="status-value">Inactive</span>
+                        </div>
+                    </div>
+                    <button class="btn btn-secondary" onclick="updateValidationStatus()">Refresh Status</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- English Range Picker -->
+        <div class="demo-section">
+            <h2>English Range Picker</h2>
+            <div class="example-grid">
+                <div class="example-card range-card">
+                    <h3>English Date Range Picker</h3>
+                    <p>English datepicker with range selection functionality and date constraints</p>
+                    <div class="english-range-container">
+                        <div class="single-picker-wrapper">
+                            <input type="text" id="english-range-picker" placeholder="Click to select date range" readonly="readonly">
+                        </div>
+                        <div class="range-display">
+                            <div id="english-range-result" class="range-result-display">
+                                <span class="range-label">Selected Range:</span>
+                                <span id="english-range-text">No dates selected</span>
+                            </div>
+                            <div class="range-instructions">
+                                <p><strong>Instructions:</strong></p>
+                                <ul>
+                                    <li>First click: Select start date</li>
+                                    <li>Second click: Select end date (dates before start date are disabled)</li>
+                                    <li>Third click: Click same start date to reset and start new range</li>
+                                    <li>Fourth click: Select new end date</li>
+                                    <li>Range highlighting shows selected dates with visual feedback</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="range-actions">
+                            <button class="btn btn-primary" onclick="enableEnglishRangeSelection()">
+                                <i class="fas fa-calendar-alt"></i> Enable Range Selection
+                            </button>
+                            <button class="btn btn-secondary" onclick="disableEnglishRangeSelection()">
+                                <i class="fas fa-calendar"></i> Disable Range Selection
+                            </button>
+                            <button class="btn btn-warning" onclick="clearEnglishRange()">
+                                <i class="fas fa-times"></i> Clear Range
+                            </button>
+                            <button class="btn btn-success" onclick="showEnglishRangeInfo()">
+                                <i class="fas fa-info-circle"></i> Show Range Info
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Date Range Picker -->
         <div class="demo-section">
-            <h2>Date Range Picker</h2>
+            <h2>Nepali Date Range Picker</h2>
             <div class="example-grid">
                 <div class="example-card range-card">
                     <h3>Unified Date Range Picker</h3>

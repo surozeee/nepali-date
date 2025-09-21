@@ -24,7 +24,9 @@
         disabledDateRanges: [],      // Array of disabled date ranges (AD format: [{start: {year, month, day}, end: {year, month, day}}, ...])
         defaultDate: null,           // Default date to set on initialization (AD format: {year, month, day} or 'YYYY-MM-DD')
         showToday: true,             // Show/hide the today button
-        showEnglishDateSubscript: true  // Show/hide English date subscripts
+        showEnglishDateSubscript: true,  // Show/hide English date subscripts
+        startDate: null,            // Minimum selectable date (AD format: {year, month, day}, 'YYYY-MM-DD', or function)
+        endDate: null                // Maximum selectable date (AD format: {year, month, day}, 'YYYY-MM-DD', or function)
     };
   
     /*** ---------------- Labels ---------------- ***/
@@ -62,10 +64,27 @@
     function same(a, b) { 
         return !!a && !!b && a.year === b.year && a.month === b.month && a.day === b.day; 
     }
+    
+    // Helper function to compare dates
+    function compareDates(date1, date2) {
+        if (date1.year !== date2.year) return date1.year - date2.year;
+        if (date1.month !== date2.month) return date1.month - date2.month;
+        return date1.day - date2.day;
+    }
 
     // Date validation helper functions
-    function isDateDisabled(date, settings) {
+    function isDateDisabled(date, settings, state) {
         if (!date) return false;
+        
+        // Check range selection constraints
+        if (state && state.rangeSelection && state.rangeSelection.isActive) {
+            // If we're selecting end date and have a start date, disable dates before start date
+            if (!state.rangeSelection.isSelectingStart && state.rangeSelection.startDate) {
+                if (compareDates(date, state.rangeSelection.startDate) < 0) {
+                    return true;
+                }
+            }
+        }
         
         // Check minDate (support both static and dynamic)
         var minDate = settings.minDate;
@@ -87,6 +106,28 @@
             if (date.year > maxDate.year) return true;
             if (date.year === maxDate.year && date.month > maxDate.month) return true;
             if (date.year === maxDate.year && date.month === maxDate.month && date.day > maxDate.day) return true;
+        }
+        
+        // Check startDate (alias for minDate, with higher priority)
+        var startDate = settings.startDate;
+        if (typeof startDate === 'function') {
+            startDate = parseDate(startDate());
+        }
+        if (startDate) {
+            if (date.year < startDate.year) return true;
+            if (date.year === startDate.year && date.month < startDate.month) return true;
+            if (date.year === startDate.year && date.month === startDate.month && date.day < startDate.day) return true;
+        }
+        
+        // Check endDate (alias for maxDate, with higher priority)
+        var endDate = settings.endDate;
+        if (typeof endDate === 'function') {
+            endDate = parseDate(endDate());
+        }
+        if (endDate) {
+            if (date.year > endDate.year) return true;
+            if (date.year === endDate.year && date.month > endDate.month) return true;
+            if (date.year === endDate.year && date.month === endDate.month && date.day > endDate.day) return true;
         }
         
         // Check disabledDates array
@@ -251,10 +292,96 @@
                 selected: {year: initialDate.year, month: initialDate.month, day: initialDate.day},
                 current: {year: initialDate.year, month: initialDate.month, day: initialDate.day},
                 view: 'month',
-                $dp: null, $overlay: null, bound: false
+                $dp: null, $overlay: null, bound: false,
+                // Range selection state
+                rangeSelection: {
+                    isActive: false,
+                    startDate: null,
+                    endDate: null,
+                    isSelectingStart: true
+                }
             };
             INSTANCES++;
             $input.val(formatDate(settings, state.selected));
+            
+            // Enable range selection mode
+            function enableRangeSelection() {
+                state.rangeSelection.isActive = true;
+                state.rangeSelection.startDate = null;
+                state.rangeSelection.endDate = null;
+                state.rangeSelection.isSelectingStart = true;
+                $input.val('Select start date');
+                if (state.$dp) render();
+            }
+            
+            // Disable range selection mode
+            function disableRangeSelection() {
+                state.rangeSelection.isActive = false;
+                state.rangeSelection.startDate = null;
+                state.rangeSelection.endDate = null;
+                state.rangeSelection.isSelectingStart = true;
+                if (state.$dp) render();
+            }
+            
+            // Handle range selection logic
+            function handleRangeSelection(selectedDate) {
+                if (state.rangeSelection.isSelectingStart) {
+                    // First click: Select start date
+                    state.rangeSelection.startDate = selectedDate;
+                    state.rangeSelection.isSelectingStart = false;
+                    $input.val('Select end date');
+                    console.log('Start date selected:', selectedDate);
+                } else {
+                    // Second click: Select end date
+                    state.rangeSelection.endDate = selectedDate;
+                    
+                    // Ensure start date is before end date
+                    if (compareDates(state.rangeSelection.startDate, state.rangeSelection.endDate) > 0) {
+                        // Swap dates if start is after end
+                        var temp = state.rangeSelection.startDate;
+                        state.rangeSelection.startDate = state.rangeSelection.endDate;
+                        state.rangeSelection.endDate = temp;
+                    }
+                    
+                    // Update input with range
+                    var startFormatted = formatDate(settings, state.rangeSelection.startDate);
+                    var endFormatted = formatDate(settings, state.rangeSelection.endDate);
+                    $input.val(startFormatted + ' to ' + endFormatted);
+                    
+                    // Set the selected date to the end date for compatibility
+                    state.selected = state.rangeSelection.endDate;
+                    
+                    console.log('End date selected:', selectedDate);
+                    console.log('Range:', state.rangeSelection.startDate, 'to', state.rangeSelection.endDate);
+                    
+                    // Call onSelect callback with range information
+                    if (settings.onSelect) {
+                        var rangeInfo = {
+                            startDate: state.rangeSelection.startDate,
+                            endDate: state.rangeSelection.endDate,
+                            isRange: true
+                        };
+                        settings.onSelect.call($input[0], rangeInfo, startFormatted + ' to ' + endFormatted);
+                    }
+                    
+                    // Reset for next range selection (third click)
+                    state.rangeSelection.startDate = null;
+                    state.rangeSelection.endDate = null;
+                    state.rangeSelection.isSelectingStart = true;
+                }
+                
+                // Re-render to show highlights
+                render();
+            }
+            
+            
+            // Helper function to check if a date is in range
+            function isDateInRange(date, startDate, endDate) {
+                if (!startDate || !endDate) return false;
+                var startCompare = compareDates(date, startDate);
+                var endCompare = compareDates(date, endDate);
+                return startCompare > 0 && endCompare < 0;
+            }
 
             function build() {
                 if (state.$dp) return;
@@ -389,8 +516,24 @@
                             day: new Date().getDate()
                         });
                         var isSelected = state.selected && same(adDate, state.selected);
-                        var isDisabled = isDateDisabled(adDate, settings);
-                        var cls = 'day' + (isToday ? ' today' : '') + (isSelected ? ' selected' : '') + (isDisabled ? ' disabled' : '');
+                        var isDisabled = isDateDisabled(adDate, settings, state);
+                        
+                        // Range selection highlighting
+                        var rangeClasses = '';
+                        if (state.rangeSelection.isActive) {
+                            if (state.rangeSelection.startDate && same(adDate, state.rangeSelection.startDate)) {
+                                rangeClasses += ' range-start';
+                            }
+                            if (state.rangeSelection.endDate && same(adDate, state.rangeSelection.endDate)) {
+                                rangeClasses += ' range-end';
+                            }
+                            if (state.rangeSelection.startDate && state.rangeSelection.endDate && 
+                                isDateInRange(adDate, state.rangeSelection.startDate, state.rangeSelection.endDate)) {
+                                rangeClasses += ' range-between';
+                            }
+                        }
+                        
+                        var cls = 'day' + (isToday ? ' today' : '') + (isSelected ? ' selected' : '') + (isDisabled ? ' disabled' : '') + rangeClasses;
                         var dataAction = isDisabled ? '' : 'data-action="select-day"';
                         var role = isDisabled ? 'role="button" aria-disabled="true"' : 'role="button" tabindex="0"';
                         
@@ -538,14 +681,19 @@
                             var selectedDate = {year: cur.year, month: cur.month, day: d};
                             
                             // Check if the selected date is disabled
-                            if (isDateDisabled(selectedDate, settings)) {
+                            if (isDateDisabled(selectedDate, settings, state)) {
                                 return; // Don't select disabled dates
                             }
                             
-                            state.selected = selectedDate;
-                            $input.val(formatDate(settings, state.selected));
-                            if (settings.autoClose) close();
-                            if (settings.onSelect) settings.onSelect.call($input[0], state.selected, formatDate(settings, state.selected));
+                            if (state.rangeSelection.isActive) {
+                                handleRangeSelection(selectedDate);
+                            } else {
+                                // Normal single date selection
+                                state.selected = selectedDate;
+                                $input.val(formatDate(settings, state.selected));
+                                if (settings.autoClose) close();
+                                if (settings.onSelect) settings.onSelect.call($input[0], state.selected, formatDate(settings, state.selected));
+                            }
                             break;
                         case 'today':
                             var today = new Date();
@@ -556,7 +704,7 @@
                             };
                             
                             // Check if today's date is disabled
-                            if (isDateDisabled(todayDate, settings)) {
+                            if (isDateDisabled(todayDate, settings, state)) {
                                 return; // Don't select today if it's disabled
                             }
                             
@@ -605,6 +753,30 @@
                     }
                 },
                 clear: function() { state.selected = null; $input.val(''); if (state.$dp) render(); },
+                enableRangeSelection: function() { enableRangeSelection(); },
+                disableRangeSelection: function() { disableRangeSelection(); },
+                getRangeSelection: function() { 
+                    return {
+                        isActive: state.rangeSelection.isActive,
+                        startDate: state.rangeSelection.startDate,
+                        endDate: state.rangeSelection.endDate,
+                        isSelectingStart: state.rangeSelection.isSelectingStart
+                    };
+                },
+                setStartDate: function(date) {
+                    settings.startDate = date;
+                    if (state.$dp) render();
+                },
+                setEndDate: function(date) {
+                    settings.endDate = date;
+                    if (state.$dp) render();
+                },
+                getStartDate: function() {
+                    return settings.startDate;
+                },
+                getEndDate: function() {
+                    return settings.endDate;
+                },
                 destroy: function() {
                     close();
                     if (state.$dp) { state.$dp.off('.edp').remove(); state.$dp = null; }
