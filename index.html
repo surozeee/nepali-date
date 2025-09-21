@@ -238,6 +238,52 @@
             </div>
         </div>
 
+        <!-- Nepali Cross-Validation Examples -->
+        <div class="demo-section">
+            <h2>Nepali Cross-Validation Examples</h2>
+            <div class="example-grid">
+                <div class="example-card">
+                    <h3>Nepali Start Date Validation</h3>
+                    <p>Datepicker with minimum date constraint. <strong>Selecting a date will set it as the minimum date for the End Date picker.</strong></p>
+                    <input type="text" id="nepali-startdate-datepicker" placeholder="Select Date (after 2081-01-01)" readonly="readonly">
+                    <button class="btn btn-primary" onclick="showDatepickerInfo('nepali-startdate')">Show Info</button>
+                </div>
+
+                <div class="example-card">
+                    <h3>Nepali End Date Validation</h3>
+                    <p>Datepicker with maximum date constraint. <strong>Selecting a date will set it as the maximum date for the Start Date picker.</strong></p>
+                    <input type="text" id="nepali-enddate-datepicker" placeholder="Select Date (before 2082-12-31)" readonly="readonly">
+                    <button class="btn btn-primary" onclick="showDatepickerInfo('nepali-enddate')">Show Info</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Nepali Cross-Validation Status -->
+        <div class="demo-section">
+            <h2>Nepali Cross-Validation Status</h2>
+            <div class="example-grid">
+                <div class="example-card">
+                    <h3>Nepali Validation Status</h3>
+                    <p>Monitor the cross-validation between Nepali Start Date and End Date pickers</p>
+                    <div class="validation-status">
+                        <div class="status-item">
+                            <span class="status-label">Start Date Selected:</span>
+                            <span id="nepali-startdate-status" class="status-value">None</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-label">End Date Selected:</span>
+                            <span id="nepali-enddate-status" class="status-value">None</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-label">Cross-Validation:</span>
+                            <span id="nepali-cross-validation-status" class="status-value">Inactive</span>
+                        </div>
+                    </div>
+                    <button class="btn btn-secondary" onclick="updateNepaliValidationStatus()">Refresh Status</button>
+                </div>
+            </div>
+        </div>
+
         <!-- Demo Actions -->
         <div class="demo-section">
             <h2>Demo Actions</h2>

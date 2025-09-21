@@ -26,7 +26,9 @@
     disabledDateRanges: [],      // Array of disabled date ranges (BS format: [{start: {year, month, day}, end: {year, month, day}}, ...])
     defaultDate: null,           // Default date to set on initialization (BS format: {year, month, day} or 'YYYY-MM-DD')
     showToday: true,             // Show/hide the today button
-    showEnglishDateSubscript: true  // Show/hide English date subscripts
+    showEnglishDateSubscript: true,  // Show/hide English date subscripts
+    startDate: null,            // Minimum selectable date (BS format: {year, month, day}, 'YYYY-MM-DD', or function)
+    endDate: null                // Maximum selectable date (BS format: {year, month, day}, 'YYYY-MM-DD', or function)
   };
   
     /*** ---------------- Labels ---------------- ***/
@@ -234,6 +236,28 @@
         if (date.year > maxDate.year) return true;
         if (date.year === maxDate.year && date.month > maxDate.month) return true;
         if (date.year === maxDate.year && date.month === maxDate.month && date.day > maxDate.day) return true;
+      }
+      
+      // Check startDate (alias for minDate, with higher priority)
+      var startDate = settings.startDate;
+      if (typeof startDate === 'function') {
+        startDate = parseDate(startDate());
+      }
+      if (startDate) {
+        if (date.year < startDate.year) return true;
+        if (date.year === startDate.year && date.month < startDate.month) return true;
+        if (date.year === startDate.year && date.month === startDate.month && date.day < startDate.day) return true;
+      }
+      
+      // Check endDate (alias for maxDate, with higher priority)
+      var endDate = settings.endDate;
+      if (typeof endDate === 'function') {
+        endDate = parseDate(endDate());
+      }
+      if (endDate) {
+        if (date.year > endDate.year) return true;
+        if (date.year === endDate.year && date.month > endDate.month) return true;
+        if (date.year === endDate.year && date.month === endDate.month && date.day > endDate.day) return true;
       }
       
       // Check disabledDates array
@@ -887,6 +911,20 @@ function close(){
             if (state.$dp) render();
           },
           clear: function(){ state.selected=null; $input.val(''); if (state.$dp) render(); },
+          setStartDate: function(date) {
+            settings.startDate = date;
+            if (state.$dp) render();
+          },
+          setEndDate: function(date) {
+            settings.endDate = date;
+            if (state.$dp) render();
+          },
+          getStartDate: function() {
+            return settings.startDate;
+          },
+          getEndDate: function() {
+            return settings.endDate;
+          },
           destroy: function(){
             close();
             if (state.$dp){ state.$dp.off('.ndp').remove(); state.$dp=null; }

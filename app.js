@@ -272,6 +272,9 @@ function initializeDatepickers() {
     
     // Initialize unified range picker
     initializeUnifiedRangePicker();
+    
+    // Initialize Nepali cross-validation examples
+    initializeNepaliCrossValidationExamples();
 }
 
 // Setup configuration panel
@@ -784,6 +787,227 @@ function setupTouchSupport() {
     });
 }
 
+// Initialize Nepali cross-validation examples
+function initializeNepaliCrossValidationExamples() {
+    // Nepali Start Date Validation Example
+    $('#nepali-startdate-datepicker').nepaliDatepicker({
+        theme: 'light',
+        language: 'nepali',
+        dateFormat: 'YYYY-MM-DD',
+        startDate: { year: 2081, month: 1, day: 1 }, // Minimum date: 2081-01-01
+        onSelect: function(date, formatted) {
+            console.log('Nepali start date validation selected:', date, formatted);
+            // Update end date picker to have this as minimum date
+            updateNepaliEndDatePickerConstraints(date);
+        }
+    });
+
+    // Nepali End Date Validation Example
+    $('#nepali-enddate-datepicker').nepaliDatepicker({
+        theme: 'light',
+        language: 'nepali',
+        dateFormat: 'YYYY-MM-DD',
+        endDate: { year: 2082, month: 12, day: 31 }, // Maximum date: 2082-12-31
+        onSelect: function(date, formatted) {
+            console.log('Nepali end date validation selected:', date, formatted);
+            // Update start date picker to have this as maximum date
+            updateNepaliStartDatePickerConstraints(date);
+        }
+    });
+
+    console.log('Nepali cross-validation examples initialized');
+}
+
+// Update Nepali end date picker constraints based on start date selection
+function updateNepaliEndDatePickerConstraints(startDate) {
+    const $endDatePicker = $('#nepali-enddate-datepicker');
+    const endDatePicker = $endDatePicker.data('nepaliDatepicker');
+    
+    if (endDatePicker) {
+        // Get the current end date constraint
+        const currentEndDate = endDatePicker.getEndDate();
+        
+        // Only set start date if it doesn't conflict with existing end date
+        if (!currentEndDate || compareNepaliDates(startDate, currentEndDate) <= 0) {
+            // Set the selected start date as the minimum date for end date picker
+            endDatePicker.setStartDate(startDate);
+            
+            // Update placeholder to show the constraint
+            $endDatePicker.attr('placeholder', `Select End Date (after ${formatNepaliDate(startDate)})`);
+            
+            // Show validation message
+            showNepaliCrossValidationMessage('startdate', startDate, 'enddate');
+            
+            console.log('Nepali end date picker constraints updated:', startDate);
+        } else {
+            // Show warning if dates conflict
+            Swal.fire({
+                icon: 'warning',
+                title: 'Date Conflict',
+                text: `Selected start date (${formatNepaliDate(startDate)}) is after the maximum end date (${formatNepaliDate(currentEndDate)}). Please select an earlier start date.`,
+                confirmButtonColor: '#f59e0b'
+            });
+            return;
+        }
+        
+        // Update validation status
+        updateNepaliValidationStatus();
+    }
+}
+
+// Update Nepali start date picker constraints based on end date selection
+function updateNepaliStartDatePickerConstraints(endDate) {
+    const $startDatePicker = $('#nepali-startdate-datepicker');
+    const startDatePicker = $startDatePicker.data('nepaliDatepicker');
+    
+    if (startDatePicker) {
+        // Get the current start date constraint
+        const currentStartDate = startDatePicker.getStartDate();
+        
+        // Only set end date if it doesn't conflict with existing start date
+        if (!currentStartDate || compareNepaliDates(currentStartDate, endDate) <= 0) {
+            // Set the selected end date as the maximum date for start date picker
+            startDatePicker.setEndDate(endDate);
+            
+            // Update placeholder to show the constraint
+            $startDatePicker.attr('placeholder', `Select Start Date (before ${formatNepaliDate(endDate)})`);
+            
+            // Show validation message
+            showNepaliCrossValidationMessage('enddate', endDate, 'startdate');
+            
+            console.log('Nepali start date picker constraints updated:', endDate);
+        } else {
+            // Show warning if dates conflict
+            Swal.fire({
+                icon: 'warning',
+                title: 'Date Conflict',
+                text: `Selected end date (${formatNepaliDate(endDate)}) is before the minimum start date (${formatNepaliDate(currentStartDate)}). Please select a later end date.`,
+                confirmButtonColor: '#f59e0b'
+            });
+            return;
+        }
+        
+        // Update validation status
+        updateNepaliValidationStatus();
+    }
+}
+
+// Show Nepali cross-validation message
+function showNepaliCrossValidationMessage(selectedPicker, selectedDate, targetPicker) {
+    const pickerNames = {
+        'startdate': 'Start Date',
+        'enddate': 'End Date'
+    };
+    
+    const targetNames = {
+        'startdate': 'Start Date',
+        'enddate': 'End Date'
+    };
+    
+    Swal.fire({
+        title: '🔗 Cross-Validation Applied',
+        html: `
+            <div style="text-align: left; font-family: 'Inter', sans-serif;">
+                <div style="background: #e6fffa; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #10b981;">
+                    <h4 style="margin: 0 0 10px 0; color: #065f46; font-size: 16px; font-weight: 600;">
+                        ✅ ${pickerNames[selectedPicker]} Selected
+                    </h4>
+                    <p style="margin: 5px 0; color: #047857; font-size: 14px;">
+                        <strong>Selected Date:</strong> ${formatNepaliDate(selectedDate)}
+                    </p>
+                </div>
+                
+                <div style="background: #fef3c7; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #f59e0b;">
+                    <h4 style="margin: 0 0 10px 0; color: #92400e; font-size: 16px; font-weight: 600;">
+                        🔒 ${targetNames[targetPicker]} Constraint Updated
+                    </h4>
+                    <p style="margin: 5px 0; color: #92400e; font-size: 14px;">
+                        The ${targetNames[targetPicker]} picker now has a ${selectedPicker === 'startdate' ? 'minimum' : 'maximum'} date of <strong>${formatNepaliDate(selectedDate)}</strong>
+                    </p>
+                </div>
+            </div>
+        `,
+        width: '500px',
+        padding: '30px',
+        background: '#ffffff',
+        showConfirmButton: true,
+        confirmButtonText: '✨ Got it!',
+        confirmButtonColor: '#10b981',
+        showCloseButton: true,
+        closeButtonHtml: '<i class="fas fa-times"></i>'
+    });
+}
+
+// Update Nepali validation status display
+function updateNepaliValidationStatus() {
+    const $startDatePicker = $('#nepali-startdate-datepicker');
+    const $endDatePicker = $('#nepali-enddate-datepicker');
+    
+    const startDatePicker = $startDatePicker.data('nepaliDatepicker');
+    const endDatePicker = $endDatePicker.data('nepaliDatepicker');
+    
+    // Get selected dates
+    const startDate = startDatePicker ? startDatePicker.getDate() : null;
+    const endDate = endDatePicker ? endDatePicker.getDate() : null;
+    
+    // Update status display
+    $('#nepali-startdate-status').text(startDate ? formatNepaliDate(startDate) : 'None');
+    $('#nepali-enddate-status').text(endDate ? formatNepaliDate(endDate) : 'None');
+    
+    // Determine cross-validation status
+    let crossValidationStatus = 'Inactive';
+    if (startDate && endDate) {
+        crossValidationStatus = 'Active (Both dates selected)';
+    } else if (startDate || endDate) {
+        crossValidationStatus = 'Partial (One date selected)';
+    }
+    
+    $('#nepali-cross-validation-status').text(crossValidationStatus);
+    
+    // Add visual indicators
+    if (startDate) {
+        $('#nepali-startdate-status').css('color', '#10b981').css('font-weight', '600');
+    } else {
+        $('#nepali-startdate-status').css('color', '#6b7280').css('font-weight', '400');
+    }
+    
+    if (endDate) {
+        $('#nepali-enddate-status').css('color', '#10b981').css('font-weight', '600');
+    } else {
+        $('#nepali-enddate-status').css('color', '#6b7280').css('font-weight', '400');
+    }
+    
+    if (crossValidationStatus.includes('Active')) {
+        $('#nepali-cross-validation-status').css('color', '#10b981').css('font-weight', '600');
+    } else if (crossValidationStatus.includes('Partial')) {
+        $('#nepali-cross-validation-status').css('color', '#f59e0b').css('font-weight', '600');
+    } else {
+        $('#nepali-cross-validation-status').css('color', '#6b7280').css('font-weight', '400');
+    }
+    
+    console.log('Nepali validation status updated:', { startDate, endDate, crossValidationStatus });
+}
+
+// Helper function to compare Nepali dates
+function compareNepaliDates(date1, date2) {
+    if (!date1 || !date2) return 0;
+    
+    const d1 = date1.year * 10000 + date1.month * 100 + date1.day;
+    const d2 = date2.year * 10000 + date2.month * 100 + date2.day;
+    
+    if (d1 < d2) return -1;
+    if (d1 > d2) return 1;
+    return 0;
+}
+
+// Helper function to format Nepali dates
+function formatNepaliDate(date) {
+    if (!date) return 'None';
+    const year = date.year;
+    const month = date.month.toString().padStart(2, '0');
+    const day = date.day.toString().padStart(2, '0');
+    return `${year}-${month}-${day}`;
+}
 
 // Helper function to set a specific English date as default
 function setEnglishDateAsDefault(englishDate) {
