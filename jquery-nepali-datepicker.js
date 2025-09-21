@@ -667,8 +667,17 @@ function close(){
               html+='</div>';
             }
   
-            // next month head (fill to 35)
-            var filled=first+daysIn, need=35-filled, nm=cur.month===12?1:cur.month+1, ny=cur.month===12?cur.year+1:cur.year;
+            // next month head (fill to 35 or 28 based on last day position)
+            var filled=first+daysIn;
+            
+            // Calculate which row the last day of the month falls in
+            var lastDayRow = Math.ceil((first + daysIn) / 7);
+            
+            // Determine total days needed: 28 (4 rows) if last day is in 4th row, 35 (5 rows) if in 5th row
+            var totalDaysNeeded = (lastDayRow <= 4) ? 28 : 35;
+            var need = totalDaysNeeded - filled;
+            
+            var nm=cur.month===12?1:cur.month+1, ny=cur.month===12?cur.year+1:cur.year;
             for (var n=1;n<=need;n++){
               var eN=bsToAD(ny, nm, n);
               html+='<div class="day other-month"><div class="nepali-date">'+(settings.language==='english'?n:toNepNum(n))+'</div>';

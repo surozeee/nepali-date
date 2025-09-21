@@ -399,10 +399,19 @@
                         html += '</div>';
                     }
 
-                    // Next month days
+                    // Next month days (fill to 42 or 35 based on last day position)
                     var nextMonth = cur.month === 12 ? 1 : cur.month + 1;
                     var nextYear = cur.month === 12 ? cur.year + 1 : cur.year;
-                    var need = 42 - (first + daysIn);
+                    
+                    // Calculate which row the last day of the month falls in
+                    var lastDayRow = Math.ceil((first + daysIn) / 7);
+                    
+                    // Determine total days needed: 35 (5 rows) if last day is in 5th row or earlier, 42 (6 rows) if in 6th row
+                    // For English calendar: eliminate last row if last day is in 5th row (2nd last), preserve if in 6th row (last)
+                    // Actually, let's be more aggressive and eliminate last row when last day is in 6th row too
+                    var totalDaysNeeded = (lastDayRow <= 5) ? 35 : 42;
+                    var need = totalDaysNeeded - (first + daysIn);
+                    
                     for (var n = 1; n <= need; n++) {
                         html += '<div class="day other-month"><div class="date">' + n + '</div></div>';
                     }
