@@ -79,66 +79,37 @@ function initializeDatepickers() {
         }
     });
 
-    // Date range picker with click-based constraint management
-    var startDateValue = null;
-    var endDateValue = null;
+    // Modal datepickers with cross-validation
+    var modalStartDateValue = null;
+    var modalEndDateValue = null;
     
+    // Modal Start Date Picker
     $('#startDate').nepaliDatepicker({
         theme: 'light',
         language: 'nepali',
         dateFormat: 'YYYY-MM-DD',
         autoClose: true,
+        startDate: { year: 2081, month: 1, day: 1 }, // Minimum date: 2081-01-01
         onSelect: function(date, formatted) {
-            console.log('Start date selected:', date, formatted);
-            startDateValue = formatted;
-            
-            // Update endDate with minDate constraint
-            $('#endDate').nepaliDatepicker('destroy');
-            $('#endDate').nepaliDatepicker({
-                theme: 'light',
-                language: 'nepali',
-                dateFormat: 'YYYY-MM-DD',
-                autoClose: true,
-                minDate: date,
-                onSelect: function(endDate, endFormatted) {
-                    console.log('End date selected:', endDate, endFormatted);
-                    endDateValue = endFormatted;
-                }
-            });
+            console.log('Modal start date selected:', date, formatted);
+            modalStartDateValue = date;
+            // Update end date picker to have this as minimum date
+            updateModalEndDatePickerConstraints(date);
         }
     });
 
-    // Initialize endDate without constraints initially
+    // Modal End Date Picker
     $('#endDate').nepaliDatepicker({
         theme: 'light',
         language: 'nepali',
         dateFormat: 'YYYY-MM-DD',
         autoClose: true,
+        endDate: { year: 2082, month: 12, day: 31 }, // Maximum date: 2082-12-31
         onSelect: function(date, formatted) {
-            console.log('End date selected:', date, formatted);
-            endDateValue = formatted;
-        }
-    });
-    
-    // Handle startDate click to disable dates before current selection
-    $('#startDate').on('click', function() {
-        if (startDateValue) {
-            // Second click - disable dates before current startDate
-            $('#startDate').nepaliDatepicker('destroy');
-            $('#startDate').nepaliDatepicker({
-                theme: 'light',
-                language: 'nepali',
-                dateFormat: 'YYYY-MM-DD',
-                autoClose: true,
-                minDate: startDateValue,
-                maxDate: function() {
-                    return endDateValue;
-                },
-                onSelect: function(date, formatted) {
-                    console.log('Start date updated:', date, formatted);
-                    startDateValue = formatted;
-                }
-            });
+            console.log('Modal end date selected:', date, formatted);
+            modalEndDateValue = date;
+            // Update start date picker to have this as maximum date
+            updateModalStartDatePickerConstraints(date);
         }
     });
 
@@ -1007,6 +978,163 @@ function formatNepaliDate(date) {
     const month = date.month.toString().padStart(2, '0');
     const day = date.day.toString().padStart(2, '0');
     return `${year}-${month}-${day}`;
+}
+
+// Modal cross-validation functions
+function updateModalEndDatePickerConstraints(startDate) {
+    const $endDatePicker = $('#endDate');
+    const endDatePicker = $endDatePicker.data('nepaliDatepicker');
+    
+    if (endDatePicker) {
+        // Get the current end date constraint
+        const currentEndDate = endDatePicker.getEndDate();
+        
+        // Only set start date if it doesn't conflict with existing end date
+        if (!currentEndDate || compareNepaliDates(startDate, currentEndDate) <= 0) {
+            // Set the selected start date as the minimum date for end date picker
+            endDatePicker.setStartDate(startDate);
+            
+            // Update placeholder to show the constraint
+            $endDatePicker.attr('placeholder', `Select End Date (after ${formatNepaliDate(startDate)})`);
+            
+            // Show validation message
+            showModalCrossValidationMessage('startdate', startDate, 'enddate');
+            
+            console.log('Modal end date picker constraints updated:', startDate);
+        } else {
+            // Show warning if dates conflict
+            Swal.fire({
+                icon: 'warning',
+                title: 'Date Conflict',
+                text: `Selected start date (${formatNepaliDate(startDate)}) is after the maximum end date (${formatNepaliDate(currentEndDate)}). Please select an earlier start date.`,
+                confirmButtonColor: '#f59e0b'
+            });
+            return;
+        }
+    }
+}
+
+function updateModalStartDatePickerConstraints(endDate) {
+    const $startDatePicker = $('#startDate');
+    const startDatePicker = $startDatePicker.data('nepaliDatepicker');
+    
+    if (startDatePicker) {
+        // Get the current start date constraint
+        const currentStartDate = startDatePicker.getStartDate();
+        
+        // Only set end date if it doesn't conflict with existing start date
+        if (!currentStartDate || compareNepaliDates(currentStartDate, endDate) <= 0) {
+            // Set the selected end date as the maximum date for start date picker
+            startDatePicker.setEndDate(endDate);
+            
+            // Update placeholder to show the constraint
+            $startDatePicker.attr('placeholder', `Select Start Date (before ${formatNepaliDate(endDate)})`);
+            
+            // Show validation message
+            showModalCrossValidationMessage('enddate', endDate, 'startdate');
+            
+            console.log('Modal start date picker constraints updated:', endDate);
+        } else {
+            // Show warning if dates conflict
+            Swal.fire({
+                icon: 'warning',
+                title: 'Date Conflict',
+                text: `Selected end date (${formatNepaliDate(endDate)}) is before the minimum start date (${formatNepaliDate(currentStartDate)}). Please select a later end date.`,
+                confirmButtonColor: '#f59e0b'
+            });
+            return;
+        }
+    }
+}
+
+function showModalCrossValidationMessage(selectedPicker, selectedDate, targetPicker) {
+    const pickerNames = {
+        'startdate': 'Start Date',
+        'enddate': 'End Date'
+    };
+    
+    const targetNames = {
+        'startdate': 'Start Date',
+        'enddate': 'End Date'
+    };
+    
+    Swal.fire({
+        title: '🔗 Modal Cross-Validation Applied',
+        html: `
+            <div style="text-align: left; font-family: 'Inter', sans-serif;">
+                <div style="background: #e6fffa; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #10b981;">
+                    <h4 style="margin: 0 0 10px 0; color: #065f46; font-size: 16px; font-weight: 600;">
+                        ✅ Modal ${pickerNames[selectedPicker]} Selected
+                    </h4>
+                    <p style="margin: 5px 0; color: #047857; font-size: 14px;">
+                        <strong>Selected Date:</strong> ${formatNepaliDate(selectedDate)}
+                    </p>
+                </div>
+                
+                <div style="background: #fef3c7; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #f59e0b;">
+                    <h4 style="margin: 0 0 10px 0; color: #92400e; font-size: 16px; font-weight: 600;">
+                        🔒 Modal ${targetNames[targetPicker]} Constraint Updated
+                    </h4>
+                    <p style="margin: 5px 0; color: #92400e; font-size: 14px;">
+                        The modal ${targetNames[targetPicker]} picker now has a ${selectedPicker === 'startdate' ? 'minimum' : 'maximum'} date of <strong>${formatNepaliDate(selectedDate)}</strong>
+                    </p>
+                </div>
+            </div>
+        `,
+        width: '500px',
+        padding: '30px',
+        background: '#ffffff',
+        showConfirmButton: true,
+        confirmButtonText: '✨ Got it!',
+        confirmButtonColor: '#10b981',
+        showCloseButton: true,
+        closeButtonHtml: '<i class="fas fa-times"></i>'
+    });
+}
+
+// Reset modal datepickers
+function resetModalDatepickers() {
+    // Reset start date picker
+    $('#startDate').nepaliDatepicker('destroy');
+    $('#startDate').nepaliDatepicker({
+        theme: 'light',
+        language: 'nepali',
+        dateFormat: 'YYYY-MM-DD',
+        autoClose: true,
+        startDate: { year: 2081, month: 1, day: 1 }, // Minimum date: 2081-01-01
+        onSelect: function(date, formatted) {
+            console.log('Modal start date selected:', date, formatted);
+            modalStartDateValue = date;
+            // Update end date picker to have this as minimum date
+            updateModalEndDatePickerConstraints(date);
+        }
+    });
+
+    // Reset end date picker
+    $('#endDate').nepaliDatepicker('destroy');
+    $('#endDate').nepaliDatepicker({
+        theme: 'light',
+        language: 'nepali',
+        dateFormat: 'YYYY-MM-DD',
+        autoClose: true,
+        endDate: { year: 2082, month: 12, day: 31 }, // Maximum date: 2082-12-31
+        onSelect: function(date, formatted) {
+            console.log('Modal end date selected:', date, formatted);
+            modalEndDateValue = date;
+            // Update start date picker to have this as maximum date
+            updateModalStartDatePickerConstraints(date);
+        }
+    });
+
+    // Clear values
+    modalStartDateValue = null;
+    modalEndDateValue = null;
+
+    // Reset placeholders
+    $('#startDate').attr('placeholder', 'Select Start Date (after 2081-01-01)');
+    $('#endDate').attr('placeholder', 'Select End Date (before 2082-12-31)');
+
+    console.log('Modal datepickers reset');
 }
 
 // Helper function to set a specific English date as default
