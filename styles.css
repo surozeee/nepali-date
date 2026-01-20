@@ -1266,64 +1266,53 @@ input {
     box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
 }
 
-/* Range Highlighting Styles */
+/* Range Highlighting Styles - professional, calm palette */
 .nepali-datepicker .day.range-start {
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
-    color: white !important;
-    font-weight: bold !important;
+    background: #4f46e5 !important; /* Indigo 600 */
+    color: #ffffff !important;
+    font-weight: 600 !important;
     border-radius: 50% !important;
-    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.3) !important;
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2) !important;
     position: relative !important;
 }
 
 .nepali-datepicker .day.range-end {
-    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%) !important;
-    color: white !important;
-    font-weight: bold !important;
+    background: #0ea5e9 !important; /* Sky 500 */
+    color: #ffffff !important;
+    font-weight: 600 !important;
     border-radius: 50% !important;
-    box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.3) !important;
+    box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.2) !important;
     position: relative !important;
 }
 
 .nepali-datepicker .day.range-between {
-    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%) !important;
-    color: white !important;
+    background: #e0e7ff !important; /* Indigo 100 */
+    color: #1e1b4b !important;
     font-weight: 500 !important;
-    border-radius: 4px !important;
+    border-radius: 8px !important;
     position: relative !important;
 }
 
-.nepali-datepicker .day.range-between::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(90deg, transparent 0%, rgba(59, 130, 246, 0.3) 50%, transparent 100%);
-    border-radius: 4px;
-    z-index: -1;
-}
-
-/* Hover effects for range dates */
+/* Subtle hover for range dates */
 .nepali-datepicker .day.range-start:hover,
 .nepali-datepicker .day.range-end:hover,
 .nepali-datepicker .day.range-between:hover {
-    transform: scale(1.1) !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 6px 16px rgba(30, 41, 59, 0.12) !important;
     z-index: 10 !important;
     transition: all 0.2s ease !important;
 }
 
-/* Animation for range selection */
-@keyframes rangePulse {
-    0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7); }
-    70% { box-shadow: 0 0 0 10px rgba(59, 130, 246, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
+/* Gentle emphasis animation */
+@keyframes rangeFadeIn {
+    0% { transform: scale(0.96); opacity: 0.7; }
+    100% { transform: scale(1); opacity: 1; }
 }
 
 .nepali-datepicker .day.range-start,
-.nepali-datepicker .day.range-end {
-    animation: rangePulse 1s ease-out;
+.nepali-datepicker .day.range-end,
+.nepali-datepicker .day.range-between {
+    animation: rangeFadeIn 0.18s ease-out;
 }
 
 /* OK Button Styles - positioned like today button */

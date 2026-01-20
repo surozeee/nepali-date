@@ -207,6 +207,27 @@
             </div>
         </div>
 
+        <!-- Advanced Range Picker -->
+        <div class="demo-section">
+            <h2>🔗 Advanced Range Picker</h2>
+            <p>Two separate inputs with automatic minDate/maxDate constraints and bidirectional validation.</p>
+            <div class="form-group">
+                <label for="gijgo-start-date">Start Date:</label>
+                <input type="text" id="gijgo-start-date" placeholder="Select start date">
+            </div>
+            <div class="form-group">
+                <label for="gijgo-end-date">End Date:</label>
+                <input type="text" id="gijgo-end-date" placeholder="Select end date">
+            </div>
+            <div class="result" id="gijgo-range-display">📅 No dates selected</div>
+            <div class="demo-actions">
+                <button class="btn btn-info" onclick="showGijgoRangeInfo()">📊 Show Range Info</button>
+                <button class="btn btn-warning" onclick="clearGijgoRange()">🗑️ Clear Range</button>
+                <button class="btn btn-success" onclick="setGijgoRange({year: 2024, month: 1, day: 15}, {year: 2024, month: 1, day: 25})">🎯 Set Demo Range</button>
+            </div>
+        </div>
+
+
         <!-- Demo Actions -->
         <div class="demo-section">
             <h2>Demo Actions</h2>

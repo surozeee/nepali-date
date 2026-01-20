@@ -26,7 +26,9 @@
     disabledDateRanges: [],      // Array of disabled date ranges (BS format: [{start: {year, month, day}, end: {year, month, day}}, ...])
     defaultDate: null,           // Default date to set on initialization (BS format: {year, month, day} or 'YYYY-MM-DD')
     showToday: true,             // Show/hide the today button
-    showEnglishDateSubscript: true  // Show/hide English date subscripts
+    showEnglishDateSubscript: true, // Show/hide English date subscripts
+    range: false,                // Enable single-input range selection
+    rangeSeparator: ' - '        // Separator for range input value
   };
   
     /*** ---------------- Labels ---------------- ***/
@@ -209,6 +211,20 @@
       return settings.dateFormat.replace('YYYY',y).replace('MM',mm).replace('DD',dd);
     }
     function same(a,b){ return !!a && !!b && a.year===b.year && a.month===b.month && a.day===b.day; }
+    function compareDates(a,b){
+      if (!a || !b) return 0;
+      var aNum = a.year * 10000 + a.month * 100 + a.day;
+      var bNum = b.year * 10000 + b.month * 100 + b.day;
+      if (aNum < bNum) return -1;
+      if (aNum > bNum) return 1;
+      return 0;
+    }
+    function isBefore(a,b){ return compareDates(a,b) < 0; }
+    function isAfter(a,b){ return compareDates(a,b) > 0; }
+    function isBetween(date, start, end){
+      if (!date || !start || !end) return false;
+      return isAfter(date, start) && isBefore(date, end);
+    }
     
     // Date validation helper functions
     function isDateDisabled(date, settings) {
@@ -502,13 +518,77 @@
         
         var state = {
           isOpen:false,
-          selected:{year:initialDate.year, month:initialDate.month, day:initialDate.day},
+          selected: settings.range ? null : {year:initialDate.year, month:initialDate.month, day:initialDate.day},
           current: {year:initialDate.year, month:initialDate.month, day:initialDate.day},
+          range: settings.range ? { start: null, end: null, phase: 'start' } : null,
           view:'month',
           $dp:null, $overlay:null, bound:false
         };
         INSTANCES++;
-        $input.val(fmt(settings, state.selected));
+        if (!settings.range) {
+          $input.val(fmt(settings, state.selected));
+        } else {
+          $input.val('');
+        }
+
+        function updateRangeInputValue(){
+          if (!settings.range || !state.range) return;
+          if (state.range.start && state.range.end) {
+            $input.val(fmt(settings, state.range.start) + settings.rangeSeparator + fmt(settings, state.range.end));
+          } else if (state.range.start) {
+            $input.val(fmt(settings, state.range.start));
+          } else {
+            $input.val('');
+          }
+        }
+
+        function buildRangePayload(){
+          if (!settings.range || !state.range) return null;
+          var payload = [];
+          if (state.range.start) {
+            payload.push({
+              value: fmt(settings, state.range.start),
+              year: state.range.start.year,
+              month: state.range.start.month,
+              day: state.range.start.day
+            });
+          }
+          if (state.range.end) {
+            payload.push({
+              value: fmt(settings, state.range.end),
+              year: state.range.end.year,
+              month: state.range.end.month,
+              day: state.range.end.day
+            });
+          }
+          return payload;
+        }
+
+        function handleRangeSelection(date){
+          if (!state.range) {
+            state.range = { start: null, end: null, phase: 'start' };
+          }
+
+          if (!state.range.start || state.range.phase === 'start') {
+            state.range.start = date;
+            state.range.end = null;
+            state.range.phase = 'end';
+            state.selected = date;
+            state.current = { year: date.year, month: date.month, day: date.day };
+            updateRangeInputValue();
+            return;
+          }
+
+          if (isBefore(date, state.range.start)) {
+            return;
+          }
+
+          state.range.end = date;
+          state.range.phase = 'start';
+          state.selected = date;
+          state.current = { year: date.year, month: date.month, day: date.day };
+          updateRangeInputValue();
+        }
   
         function englishHeaderFor(yy, mm){
           var ad = bsToAD(yy, mm, 1);
@@ -655,10 +735,14 @@ function close(){
               var bsDate={year:cur.year,month:cur.month,day:d};
               var isT=same(bsDate,today), isS=state.selected && same(bsDate,state.selected);
               var isDisabled = isDateDisabled(bsDate, settings);
-              var cls='day'+(isT?' today':'')+(isS?' selected':'')+(isDisabled?' disabled':'');
+              var isRangeStart = settings.range && state.range && state.range.start && same(bsDate, state.range.start);
+              var isRangeEnd = settings.range && state.range && state.range.end && same(bsDate, state.range.end);
+              var isRangeBetween = settings.range && state.range && state.range.start && state.range.end && isBetween(bsDate, state.range.start, state.range.end);
+              var isRangeBlocked = settings.range && state.range && state.range.start && !state.range.end && isBefore(bsDate, state.range.start);
+              var cls='day'+(isT?' today':'')+(isS?' selected':'')+(isRangeStart?' range-start':'')+(isRangeEnd?' range-end':'')+(isRangeBetween?' range-between':'')+((isDisabled||isRangeBlocked)?' disabled':'');
               var eD=bsToAD(cur.year,cur.month,d);
-              var dataAction = isDisabled ? '' : 'data-action="select-day"';
-              var role = isDisabled ? 'role="button" aria-disabled="true"' : 'role="button" tabindex="0"';
+              var dataAction = (isDisabled||isRangeBlocked) ? '' : 'data-action="select-day"';
+              var role = (isDisabled||isRangeBlocked) ? 'role="button" aria-disabled="true"' : 'role="button" tabindex="0"';
               html+='<div class="'+cls+'" '+dataAction+' data-day="'+d+'" '+role+'>';
               html+='<div class="nepali-date">'+(settings.language==='english'?d:toNepNum(d))+'</div>';
               if (settings.showEnglishDateSubscript) {
@@ -810,6 +894,14 @@ function close(){
                 if (isDateDisabled(selectedDate, settings)) {
                   return; // Don't select disabled dates
                 }
+
+                if (settings.range) {
+                  handleRangeSelection(selectedDate);
+                  render();
+                  if (settings.onSelect) settings.onSelect.call($input[0], buildRangePayload());
+                  if (settings.autoClose && state.range && state.range.start && state.range.end) close();
+                  break;
+                }
                 
                 state.selected = selectedDate;
                 $input.val(fmt(settings, state.selected));
@@ -822,6 +914,14 @@ function close(){
                 // Check if today's date is disabled
                 if (isDateDisabled(t, settings)) {
                   return; // Don't select today if it's disabled
+                }
+
+                if (settings.range) {
+                  handleRangeSelection({year:t.year,month:t.month,day:t.day});
+                  render();
+                  if (settings.onSelect) settings.onSelect.call($input[0], buildRangePayload());
+                  if (settings.autoClose && state.range && state.range.start && state.range.end) close();
+                  break;
                 }
                 
                 state.current={year:t.year,month:t.month,day:t.day};
@@ -856,6 +956,10 @@ function close(){
           hide: close,
           isOpen: function(){ return state.isOpen; },
           getDate: function(){ return state.selected; },
+          getRange: function(){
+            if (!settings.range || !state.range) return { start: null, end: null };
+            return { start: state.range.start, end: state.range.end };
+          },
           setDate: function(date){
             var bs;
             if (date && typeof date==='object' && 'year' in date) {
@@ -872,12 +976,53 @@ function close(){
             }
             var dmax=GetDaysInMonth(bs.year, bs.month);
             if (bs.day<1) bs.day=1; if (bs.day>dmax) bs.day=dmax;
-            state.selected={year:bs.year,month:bs.month,day:bs.day};
-            state.current ={year:bs.year,month:bs.month,day:bs.day};
-            $input.val(fmt(settings, state.selected));
+            if (settings.range && state.range) {
+              state.range.start = {year:bs.year,month:bs.month,day:bs.day};
+              state.range.end = null;
+              state.range.phase = 'end';
+              state.selected = {year:bs.year,month:bs.month,day:bs.day};
+              state.current  = {year:bs.year,month:bs.month,day:bs.day};
+              updateRangeInputValue();
+            } else {
+              state.selected={year:bs.year,month:bs.month,day:bs.day};
+              state.current ={year:bs.year,month:bs.month,day:bs.day};
+              $input.val(fmt(settings, state.selected));
+            }
             if (state.$dp) render();
           },
-          clear: function(){ state.selected=null; $input.val(''); if (state.$dp) render(); },
+          setRange: function(startDate, endDate){
+            if (!settings.range || !state.range) return;
+            var start = parseDate(startDate);
+            var end = parseDate(endDate);
+            state.range.start = start;
+            state.range.end = end;
+            state.range.phase = 'start';
+            state.selected = end || start || null;
+            if (state.selected) {
+              state.current = { year: state.selected.year, month: state.selected.month, day: state.selected.day };
+            }
+            updateRangeInputValue();
+            if (state.$dp) render();
+          },
+          clearRange: function(){
+            if (!settings.range || !state.range) return;
+            state.range.start = null;
+            state.range.end = null;
+            state.range.phase = 'start';
+            state.selected = null;
+            $input.val('');
+            if (state.$dp) render();
+          },
+          clear: function(){
+            if (settings.range && state.range) {
+              state.range.start = null;
+              state.range.end = null;
+              state.range.phase = 'start';
+            }
+            state.selected=null;
+            $input.val('');
+            if (state.$dp) render();
+          },
           destroy: function(){
             close();
             if (state.$dp){ state.$dp.off('.ndp').remove(); state.$dp=null; }

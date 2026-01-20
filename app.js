@@ -79,68 +79,76 @@ function initializeDatepickers() {
         }
     });
 
-    // Date range picker with click-based constraint management
+    // Date range picker with proper min/max constraints
     var startDateValue = null;
     var endDateValue = null;
-    
-    $('#startDate').nepaliDatepicker({
-        theme: 'light',
-        language: 'nepali',
-        dateFormat: 'YYYY-MM-DD',
-        autoClose: true,
-        onSelect: function(date, formatted) {
-            console.log('Start date selected:', date, formatted);
-            startDateValue = formatted;
-            
-            // Update endDate with minDate constraint
-            $('#endDate').nepaliDatepicker('destroy');
-            $('#endDate').nepaliDatepicker({
-                theme: 'light',
-                language: 'nepali',
-                dateFormat: 'YYYY-MM-DD',
-                autoClose: true,
-                minDate: date,
-                onSelect: function(endDate, endFormatted) {
-                    console.log('End date selected:', endDate, endFormatted);
-                    endDateValue = endFormatted;
-                }
-            });
-        }
-    });
 
-    // Initialize endDate without constraints initially
-    $('#endDate').nepaliDatepicker({
-        theme: 'light',
-        language: 'nepali',
-        dateFormat: 'YYYY-MM-DD',
-        autoClose: true,
-        onSelect: function(date, formatted) {
-            console.log('End date selected:', date, formatted);
-            endDateValue = formatted;
-        }
-    });
-    
-    // Handle startDate click to disable dates before current selection
-    $('#startDate').on('click', function() {
-        if (startDateValue) {
-            // Second click - disable dates before current startDate
+    function isValidRange(startDate, endDate) {
+        if (!startDate || !endDate) return true;
+        if (startDate.year < endDate.year) return true;
+        if (startDate.year === endDate.year && startDate.month < endDate.month) return true;
+        return startDate.year === endDate.year &&
+            startDate.month === endDate.month &&
+            startDate.day <= endDate.day;
+    }
+
+    function updateStartDatepicker() {
+        var startPicker = $('#startDate').data('nepaliDatepicker');
+        if (startPicker) {
             $('#startDate').nepaliDatepicker('destroy');
-            $('#startDate').nepaliDatepicker({
-                theme: 'light',
-                language: 'nepali',
-                dateFormat: 'YYYY-MM-DD',
-                autoClose: true,
-                minDate: startDateValue,
-                maxDate: function() {
-                    return endDateValue;
-                },
-                onSelect: function(date, formatted) {
-                    console.log('Start date updated:', date, formatted);
-                    startDateValue = formatted;
-                }
-            });
         }
-    });
+
+        $('#startDate').nepaliDatepicker({
+            theme: 'light',
+            language: 'nepali',
+            dateFormat: 'YYYY-MM-DD',
+            autoClose: true,
+            maxDate: endDateValue || null,
+            onSelect: function(date, formatted) {
+                console.log('Start date selected:', date, formatted);
+                startDateValue = date;
+
+                if (endDateValue && !isValidRange(startDateValue, endDateValue)) {
+                    console.warn('Start date is after end date. Clearing end date.');
+                    endDateValue = null;
+                    $('#endDate').val('');
+                }
+
+                updateEndDatepicker();
+            }
+        });
+    }
+
+    function updateEndDatepicker() {
+        var endPicker = $('#endDate').data('nepaliDatepicker');
+        if (endPicker) {
+            $('#endDate').nepaliDatepicker('destroy');
+        }
+
+        $('#endDate').nepaliDatepicker({
+            theme: 'light',
+            language: 'nepali',
+            dateFormat: 'YYYY-MM-DD',
+            autoClose: true,
+            minDate: startDateValue || null,
+            onSelect: function(date, formatted) {
+                console.log('End date selected:', date, formatted);
+                endDateValue = date;
+
+                if (startDateValue && !isValidRange(startDateValue, endDateValue)) {
+                    console.warn('End date is before start date. Clearing end date.');
+                    endDateValue = null;
+                    $('#endDate').val('');
+                    return;
+                }
+
+                updateStartDatepicker();
+            }
+        });
+    }
+
+    updateStartDatepicker();
+    updateEndDatepicker();
 
 
     // Minimal style datepicker with default date
@@ -1015,9 +1023,7 @@ function clearRange() {
 // Unified Range Picker Functionality
 let unifiedRangeState = {
     startDate: null,
-    endDate: null,
-    isSelectingStart: true,
-    isRangeComplete: false
+    endDate: null
 };
 
 function initializeUnifiedRangePicker() {
@@ -1025,16 +1031,28 @@ function initializeUnifiedRangePicker() {
         theme: 'light',
         language: 'nepali',
         dateFormat: 'YYYY-MM-DD',
-        autoClose: false, // Don't auto-close after first selection
+        autoClose: true, // Close after end date selection (range mode)
         showToday: false, // Hide the Today button
-        onSelect: function(date, formatted) {
-            handleUnifiedRangeSelection(date, formatted);
+        range: true,
+        rangeSeparator: ' - ',
+        onSelect: function(selectedDates) {
+            const datepicker = $('#unified-range-picker').data('nepaliDatepicker');
+            if (datepicker && typeof datepicker.getRange === 'function') {
+                const range = datepicker.getRange();
+                unifiedRangeState.startDate = range.start ? { date: range.start, formatted: formatNepaliDate(range.start) } : null;
+                unifiedRangeState.endDate = range.end ? { date: range.end, formatted: formatNepaliDate(range.end) } : null;
+            } else if (Array.isArray(selectedDates)) {
+                const start = selectedDates[0];
+                const end = selectedDates[1];
+                unifiedRangeState.startDate = start ? { date: start, formatted: start.value || formatNepaliDate(start) } : null;
+                unifiedRangeState.endDate = end ? { date: end, formatted: end.value || formatNepaliDate(end) } : null;
+            }
+
+            updateUnifiedRangeDisplay();
         },
         onOpen: function() {
             console.log('Unified range picker opened');
             updateUnifiedRangeDisplay();
-            // Re-highlight any existing range when datepicker opens
-            setTimeout(highlightRangeDates, 100);
         },
         onClose: function() {
             console.log('Unified range picker closed');
@@ -1042,80 +1060,16 @@ function initializeUnifiedRangePicker() {
     });
 }
 
-function handleUnifiedRangeSelection(date, formatted) {
-    if (unifiedRangeState.isSelectingStart) {
-        // Check if clicking the same start date again
-        if (unifiedRangeState.startDate && 
-            unifiedRangeState.startDate.date.year === date.year &&
-            unifiedRangeState.startDate.date.month === date.month &&
-            unifiedRangeState.startDate.date.day === date.day) {
-            // Reset the range picker
-            resetRangePicker();
-            return;
-        }
-        
-        // Selecting start date - keep datepicker open
-        unifiedRangeState.startDate = { date: date, formatted: formatted };
-        unifiedRangeState.isSelectingStart = false;
-        unifiedRangeState.isRangeComplete = false;
-        
-        // Update input to show we're now selecting end date
-        $('#unified-range-picker').val(`${formatted} → Select End Date`);
-        
-        // Highlight the start date
-        highlightRangeDates();
-        
-        // Set minDate constraint to start date to disable dates before startDate
-        setMinDateConstraint(date);
-        
-        // Keep datepicker open by not calling close
-        console.log('Start date selected:', date, formatted);
-        console.log('Datepicker stays open for end date selection');
-        
-    } else {
-        // Check if clicking the same end date again
-        if (unifiedRangeState.endDate && 
-            unifiedRangeState.endDate.date.year === date.year &&
-            unifiedRangeState.endDate.date.month === date.month &&
-            unifiedRangeState.endDate.date.day === date.day) {
-            // Reset the range picker
-            resetRangePicker();
-            return;
-        }
-        
-        // Selecting end date - highlight range and show OK button
-        unifiedRangeState.endDate = { date: date, formatted: formatted };
-        unifiedRangeState.isSelectingStart = true;
-        unifiedRangeState.isRangeComplete = true;
-        
-        // Update input to show complete range
-        const startFormatted = unifiedRangeState.startDate.formatted;
-        const endFormatted = unifiedRangeState.endDate.formatted;
-        $('#unified-range-picker').val(`${startFormatted} to ${endFormatted}`);
-        
-        // Highlight the complete range
-        highlightRangeDates();
-        
-        // Show OK button instead of auto-closing
-        showRangeOKButton();
-        
-        console.log('End date selected:', date, formatted);
-        console.log('Range complete:', unifiedRangeState);
-    }
-    
-    updateUnifiedRangeDisplay();
-}
-
 function updateUnifiedRangeDisplay() {
     const $rangeText = $('#unified-range-text');
     
-    if (unifiedRangeState.isRangeComplete && unifiedRangeState.startDate && unifiedRangeState.endDate) {
+    if (unifiedRangeState.startDate && unifiedRangeState.endDate) {
         const startFormatted = unifiedRangeState.startDate.formatted;
         const endFormatted = unifiedRangeState.endDate.formatted;
         $rangeText.text(`✅ ${startFormatted} to ${endFormatted}`);
         $rangeText.css('border-left-color', '#10b981'); // Green for complete range
-    } else if (unifiedRangeState.startDate && !unifiedRangeState.endDate) {
-        $rangeText.text(`🔄 Start: ${unifiedRangeState.startDate.formatted} (Datepicker open - click to select end date)`);
+    } else if (unifiedRangeState.startDate) {
+        $rangeText.text(`🔄 Start: ${unifiedRangeState.startDate.formatted} (Select end date)`);
         $rangeText.css('border-left-color', '#f59e0b'); // Orange for partial range
     } else {
         $rangeText.text('📅 No dates selected (Click to select start date)');
@@ -1199,10 +1153,7 @@ function showUnifiedRangeInfo() {
                 
                 <div style="background: #f0fdf4; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #22c55e;">
                     <p style="margin: 0; color: #92400e; font-size: 14px; font-weight: 500;">
-                        📊 Range Status: ${unifiedRangeState.isRangeComplete ? 'Complete' : 'Partial'}
-                    </p>
-                    <p style="margin: 4px 0 0 0; color: #92400e; font-size: 12px;">
-                        Next: ${unifiedRangeState.isSelectingStart ? 'Select Start Date' : 'Select End Date'}
+                        📊 Range Status: ${unifiedRangeState.startDate && unifiedRangeState.endDate ? 'Complete' : 'Partial'}
                     </p>
                 </div>
             </div>
@@ -1218,270 +1169,16 @@ function showUnifiedRangeInfo() {
     });
 }
 
-function highlightRangeDates() {
-    // Remove any existing range highlights
-    $('.nepali-datepicker .day').removeClass('range-start range-end range-between');
-    
-    if (unifiedRangeState.startDate) {
-        const startDate = unifiedRangeState.startDate.date;
-        
-        // Find and highlight start date using data-day attribute
-        const $startDay = $(`.nepali-datepicker .day[data-day="${startDate.day}"]`).filter(function() {
-            // Check if this day belongs to the current month and year
-            const $day = $(this);
-            const $datepicker = $day.closest('.nepali-datepicker');
-            if ($datepicker.length === 0) return false;
-            
-            // Get current month and year from the datepicker
-            const currentMonth = $datepicker.find('.month-year').text();
-            // This is a simplified check - we'll use a more robust approach
-            return !$day.hasClass('other-month');
-        });
-        
-        if ($startDay.length > 0) {
-            $startDay.addClass('range-start');
-            console.log('Highlighted start date:', startDate);
-        }
-        
-        if (unifiedRangeState.endDate) {
-            const endDate = unifiedRangeState.endDate.date;
-            
-            // Find and highlight end date
-            const $endDay = $(`.nepali-datepicker .day[data-day="${endDate.day}"]`).filter(function() {
-                return !$(this).hasClass('other-month');
-            });
-            
-            if ($endDay.length > 0) {
-                $endDay.addClass('range-end');
-                console.log('Highlighted end date:', endDate);
-            }
-            
-            // Highlight dates between start and end
-            highlightDatesBetween(startDate, endDate);
-        }
-    }
-}
-
-function highlightDatesBetween(startDate, endDate) {
-    console.log('Highlighting dates between:', startDate, 'and', endDate);
-    
-    // Work with Nepali dates directly
-    let currentDate = { ...startDate };
-    const endDateCopy = { ...endDate };
-    
-    // Ensure start is before end
-    const startNum = startDate.year * 10000 + startDate.month * 100 + startDate.day;
-    const endNum = endDate.year * 10000 + endDate.month * 100 + endDate.day;
-    
-    if (startNum > endNum) {
-        // Swap dates if start is after end
-        const temp = currentDate;
-        currentDate = endDateCopy;
-        endDateCopy = temp;
-    }
-    
-    // Find all dates between start and end (inclusive)
-    while (true) {
-        const currentNum = currentDate.year * 10000 + currentDate.month * 100 + currentDate.day;
-        const endNum = endDateCopy.year * 10000 + endDateCopy.month * 100 + endDateCopy.day;
-        
-        if (currentNum > endNum) break;
-        
-        // Find the day element for this date
-        const $dayElement = $(`.nepali-datepicker .day[data-day="${currentDate.day}"]`).filter(function() {
-            return !$(this).hasClass('other-month');
-        });
-        
-        if ($dayElement.length > 0) {
-            $dayElement.addClass('range-between');
-            console.log('Highlighted date:', currentDate);
-        }
-        
-        // Move to next day
-        currentDate.day++;
-        // Use a simple approach for month days (this is approximate)
-        const monthDays = [31, 31, 32, 31, 32, 31, 30, 30, 29, 30, 29, 30];
-        const maxDays = monthDays[currentDate.month - 1] || 30;
-        
-        if (currentDate.day > maxDays) {
-            currentDate.day = 1;
-            currentDate.month++;
-            if (currentDate.month > 12) {
-                currentDate.month = 1;
-                currentDate.year++;
-            }
-        }
-    }
-}
-
-function setMinDateConstraint(startDate) {
-    // Destroy and recreate the datepicker with minDate constraint
-    const $input = $('#unified-range-picker');
-    const currentValue = $input.val();
-    
-    // Destroy the current datepicker
-    $input.nepaliDatepicker('destroy');
-    
-    // Recreate with minDate constraint to disable dates before startDate
-    $input.nepaliDatepicker({
-        theme: 'light',
-        language: 'nepali',
-        dateFormat: 'YYYY-MM-DD',
-        autoClose: false,
-        showToday: false,
-        minDate: startDate, // Set minDate to start date to disable dates before startDate
-        onSelect: function(date, formatted) {
-            handleUnifiedRangeSelection(date, formatted);
-        },
-        onOpen: function() {
-            console.log('Unified range picker opened');
-            updateUnifiedRangeDisplay();
-            // Re-highlight any existing range when datepicker opens
-            setTimeout(highlightRangeDates, 100);
-        },
-        onClose: function() {
-            console.log('Unified range picker closed');
-        }
-    });
-    
-    // Restore the input value
-    $input.val(currentValue);
-    
-    console.log('Set minDate constraint to:', startDate, '- dates before this will be disabled');
-}
-
-function showRangeOKButton() {
-    // Add OK button to the datepicker footer (like today button)
-    const $datepicker = $('.nepali-datepicker');
-    if ($datepicker.length > 0) {
-        // Remove existing OK button if any
-        $datepicker.find('.range-ok-button').remove();
-        
-        // Check if footer exists, if not create it
-        let $footer = $datepicker.find('.datepicker-footer');
-        if ($footer.length === 0) {
-            $footer = $('<div class="datepicker-footer"></div>');
-            $datepicker.append($footer);
-        }
-        
-        // Add OK button to footer
-        const okButton = `
-            <div class="range-ok-button">
-                <button class="btn-ok-range" onclick="confirmRangeSelection()">
-                    <i class="fas fa-check"></i> OK
-                </button>
-            </div>
-        `;
-        $footer.append(okButton);
-    }
-}
-
-function confirmRangeSelection() {
-    // Close the datepicker
-    const datepicker = $('#unified-range-picker').data('nepaliDatepicker');
-    if (datepicker && typeof datepicker.hide === 'function') {
-        datepicker.hide();
-        console.log('Datepicker closed after OK button click');
-    }
-    
-    // Remove OK button
-    $('.nepali-datepicker .range-ok-button').remove();
-}
-
-function resetRangePicker() {
-    // Reset the range state
-    unifiedRangeState.startDate = null;
-    unifiedRangeState.endDate = null;
-    unifiedRangeState.isSelectingStart = true;
-    unifiedRangeState.isRangeComplete = false;
-    
-    // Clear the input field
-    $('#unified-range-picker').val('');
-    
-    // Remove range highlights
-    $('.nepali-datepicker .day').removeClass('range-start range-end range-between');
-    
-    // Re-enable all dates
-    $('.nepali-datepicker .day').removeClass('disabled').removeAttr('aria-disabled').css({
-        'opacity': '',
-        'cursor': '',
-        'background-color': '',
-        'color': ''
-    });
-    
-    // Remove OK button if exists
-    $('.nepali-datepicker .range-ok-button').remove();
-    
-    // Reset minDate constraint by recreating the datepicker without constraints
-    resetDatepickerConstraints();
-    
-    updateUnifiedRangeDisplay();
-    console.log('Range picker reset - click same date to reset');
-}
-
-function resetDatepickerConstraints() {
-    // Destroy and recreate the datepicker without any constraints
-    const $input = $('#unified-range-picker');
-    const currentValue = $input.val();
-    
-    // Destroy the current datepicker
-    $input.nepaliDatepicker('destroy');
-    
-    // Recreate with original settings (no minDate/maxDate constraints)
-    $input.nepaliDatepicker({
-        theme: 'light',
-        language: 'nepali',
-        dateFormat: 'YYYY-MM-DD',
-        autoClose: false,
-        showToday: false,
-        minDate: null, // Explicitly set minDate to null
-        maxDate: null, // Explicitly set maxDate to null
-        onSelect: function(date, formatted) {
-            handleUnifiedRangeSelection(date, formatted);
-        },
-        onOpen: function() {
-            console.log('Unified range picker opened');
-            updateUnifiedRangeDisplay();
-            // Re-highlight any existing range when datepicker opens
-            setTimeout(highlightRangeDates, 100);
-        },
-        onClose: function() {
-            console.log('Unified range picker closed');
-        }
-    });
-    
-    // Restore the input value
-    $input.val(currentValue);
-    
-    console.log('Datepicker constraints reset - minDate and maxDate removed');
-}
-
 function clearUnifiedRange() {
+    const datepicker = $('#unified-range-picker').data('nepaliDatepicker');
+    if (datepicker && typeof datepicker.clearRange === 'function') {
+        datepicker.clearRange();
+    } else {
+        $('#unified-range-picker').val('');
+    }
+
     unifiedRangeState.startDate = null;
     unifiedRangeState.endDate = null;
-    unifiedRangeState.isSelectingStart = true;
-    unifiedRangeState.isRangeComplete = false;
-    
-    // Clear the input field
-    $('#unified-range-picker').val('');
-    
-    // Remove range highlights
-    $('.nepali-datepicker .day').removeClass('range-start range-end range-between');
-    
-    // Re-enable all dates
-    $('.nepali-datepicker .day').removeClass('disabled').removeAttr('aria-disabled').css({
-        'opacity': '',
-        'cursor': '',
-        'background-color': '',
-        'color': ''
-    });
-    
-    // Remove OK button if exists
-    $('.nepali-datepicker .range-ok-button').remove();
-    
-    // Reset datepicker constraints
-    resetDatepickerConstraints();
-    
     updateUnifiedRangeDisplay();
     console.log('Unified range cleared');
 }
@@ -1494,7 +1191,7 @@ function completeRange() {
             text: 'Please select an end date to complete the range.',
             confirmButtonColor: '#3b82f6'
         });
-    } else if (unifiedRangeState.isRangeComplete) {
+    } else if (unifiedRangeState.startDate && unifiedRangeState.endDate) {
         Swal.fire({
             icon: 'success',
             title: 'Range Complete!',
@@ -1523,7 +1220,6 @@ window.clearRange = clearRange;
 window.showUnifiedRangeInfo = showUnifiedRangeInfo;
 window.clearUnifiedRange = clearUnifiedRange;
 window.completeRange = completeRange;
-window.confirmRangeSelection = confirmRangeSelection;
 window.getCurrentDate = getCurrentDate;
 window.getCurrentNepaliDate = getCurrentNepaliDate;
 window.showGetCurrentDateDemo = showGetCurrentDateDemo;

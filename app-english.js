@@ -178,6 +178,12 @@ function initializeDatepickers() {
 
     // Initialize unified range picker
     initializeUnifiedRangePicker();
+    
+    // Initialize advanced date range pickers
+    initializeAdvancedRangePickers();
+    
+    // Initialize modal datepickers
+    initializeModalDatepickers();
 }
 
 // Setup configuration panel
@@ -606,6 +612,203 @@ function completeRange() {
     }
 }
 
+// Advanced date range picker functionality
+function initializeAdvancedRangePickers() {
+    // Create advanced range picker for dedicated inputs
+    if ($('#gijgo-start-date').length && $('#gijgo-end-date').length) {
+        var rangePicker = $('#gijgo-start-date, #gijgo-end-date').englishDateRangePicker({
+            theme: 'light',
+            language: 'english',
+            dateFormat: 'YYYY-MM-DD',
+            minDate: function() {
+                // Set minimum date to today
+                var today = new Date();
+                return {
+                    year: today.getFullYear(),
+                    month: today.getMonth() + 1,
+                    day: today.getDate()
+                };
+            },
+            maxDate: function() {
+                // Set maximum date to 1 year from today
+                var maxDate = new Date();
+                maxDate.setFullYear(maxDate.getFullYear() + 1);
+                return {
+                    year: maxDate.getFullYear(),
+                    month: maxDate.getMonth() + 1,
+                    day: maxDate.getDate()
+                };
+            },
+            onStartSelect: function(date, formatted) {
+                console.log('Advanced range start date selected:', date, formatted);
+                updateAdvancedRangeDisplay();
+            },
+            onEndSelect: function(date, formatted) {
+                console.log('Advanced range end date selected:', date, formatted);
+                updateAdvancedRangeDisplay();
+            },
+            onRangeSelect: function(startDate, startFormatted, endDate, endFormatted) {
+                console.log('Advanced range selected:', startFormatted, 'to', endFormatted);
+                updateAdvancedRangeDisplay();
+            },
+            onValidationError: function(message) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Invalid Date Range',
+                    text: message,
+                    confirmButtonColor: '#ef4444'
+                });
+            }
+        });
+        
+        // Store reference for later use
+        window.advancedRangePicker = rangePicker;
+    }
+}
+
+function updateAdvancedRangeDisplay() {
+    if (window.advancedRangePicker) {
+        var range = window.advancedRangePicker.getRange();
+        var displayText = '';
+        
+        if (range.start && range.end) {
+            displayText = `✅ ${range.startFormatted} to ${range.endFormatted}`;
+        } else if (range.start) {
+            displayText = `🔄 Start: ${range.startFormatted} (Select end date)`;
+        } else if (range.end) {
+            displayText = `🔄 End: ${range.endFormatted} (Select start date)`;
+        } else {
+            displayText = '📅 No dates selected';
+        }
+        
+        // Update display if element exists
+        var $display = $('#gijgo-range-display');
+        if ($display.length) {
+            $display.text(displayText);
+        }
+        
+        console.log('Advanced range display updated:', displayText);
+    }
+}
+
+// Advanced range picker demo functions
+function showGijgoRangeInfo() {
+    if (!window.advancedRangePicker) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'No Range Picker',
+            text: 'Advanced range picker not initialized.',
+            confirmButtonColor: '#f59e0b'
+        });
+        return;
+    }
+    
+    var range = window.advancedRangePicker.getRange();
+    
+    if (!range.start && !range.end) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'No Range Selected',
+            text: 'Please select a date range first.',
+            confirmButtonColor: '#f59e0b'
+        });
+        return;
+    }
+    
+    Swal.fire({
+        title: '📅 Advanced Date Range Information',
+        html: `
+            <div style="text-align: left; font-family: 'Inter', sans-serif;">
+                <div style="background: #f8fafc; padding: 20px; border-radius: 12px; margin: 20px 0; border-left: 4px solid #3182ce;">
+                    <h3 style="margin: 0 0 15px 0; color: #2d3748; font-size: 18px; font-weight: 600;">
+                        🇺🇸 English Date Range (Advanced)
+                    </h3>
+                    <p style="margin: 0; color: #4a5568; font-size: 16px; font-family: 'Courier New', monospace;">
+                        ${range.start ? range.startFormatted : 'Not selected'} 
+                        ${range.start && range.end ? 'to' : ''} 
+                        ${range.end ? range.endFormatted : ''}
+                    </p>
+                </div>
+                
+                <div style="background: #f0fdf4; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #22c55e;">
+                    <p style="margin: 0; color: #92400e; font-size: 14px; font-weight: 500;">
+                        📊 Range Status: ${range.start && range.end ? 'Complete' : 'Partial'}
+                    </p>
+                    <p style="margin: 4px 0 0 0; color: #92400e; font-size: 12px;">
+                        🔗 Advanced range picker with automatic minDate/maxDate constraints
+                    </p>
+                </div>
+            </div>
+        `,
+        width: '500px',
+        padding: '30px',
+        background: '#ffffff',
+        showConfirmButton: true,
+        confirmButtonText: '✨ Great!',
+        confirmButtonColor: '#3182ce',
+        showCloseButton: true,
+        closeButtonHtml: '<i class="fas fa-times"></i>'
+    });
+}
+
+function clearGijgoRange() {
+    if (window.advancedRangePicker) {
+        window.advancedRangePicker.clear();
+        updateAdvancedRangeDisplay();
+        console.log('Advanced range cleared');
+    }
+}
+
+function setGijgoRange(startDate, endDate) {
+    if (window.advancedRangePicker) {
+        window.advancedRangePicker.setRange(startDate, endDate);
+        updateAdvancedRangeDisplay();
+        console.log('Advanced range set:', startDate, 'to', endDate);
+    }
+}
+
+// Initialize modal datepickers
+function initializeModalDatepickers() {
+    // Initialize start date input in modal
+    $('#startDate').englishDatepicker({
+        theme: 'light',
+        language: 'english',
+        dateFormat: 'YYYY-MM-DD',
+        modal: true,
+        placeholder: 'Select Start Date',
+        onSelect: function(date, formatted) {
+            console.log('Modal start date selected:', date, formatted);
+            updateModalRangeDisplay();
+        }
+    });
+    
+    // Initialize end date input in modal
+    $('#endDate').englishDatepicker({
+        theme: 'light',
+        language: 'english',
+        dateFormat: 'YYYY-MM-DD',
+        modal: true,
+        placeholder: 'Select End Date',
+        onSelect: function(date, formatted) {
+            console.log('Modal end date selected:', date, formatted);
+            updateModalRangeDisplay();
+        }
+    });
+    
+    console.log('Modal datepickers initialized');
+}
+
+function updateModalRangeDisplay() {
+    var startDate = $('#startDate').val();
+    var endDate = $('#endDate').val();
+    
+    console.log('Modal range updated:', startDate, 'to', endDate);
+    
+    // You can add additional logic here to update any display elements
+    // or trigger other actions when dates are selected in the modal
+}
+
+
 // Export functions for global access
 window.openModal = openModal;
 window.closeModal = closeModal;
@@ -617,3 +820,6 @@ window.clearUnifiedRange = clearUnifiedRange;
 window.completeRange = completeRange;
 window.getCurrentEnglishDate = getCurrentEnglishDate;
 window.showGetCurrentDateDemo = showGetCurrentDateDemo;
+window.showGijgoRangeInfo = showGijgoRangeInfo;
+window.clearGijgoRange = clearGijgoRange;
+window.setGijgoRange = setGijgoRange;
